@@ -1,3 +1,16 @@
 # two-state-quantum-systems
 
-This repo is dedicated to exploring the dynamics of [two state quantum systems](https://en.wikipedia.org/wiki/Two-state_quantum_system). There will be a particular focus will be the interaction of such systems with bosonic fields as exemplified in the [Jaynes–Cummings model](https://en.wikipedia.org/wiki/Jaynes%E2%80%93Cummings_model) and the [spin-boson model](https://en.wikipedia.org/wiki/Quantum_dissipation#Dissipative_two-level_system).
+This repo is dedicated to exploring the dynamics of [two state quantum systems](https://en.wikipedia.org/wiki/Two-state_quantum_system). There will be a particular focus on the interaction of such systems with bosonic fields as exemplified in the [Jaynes–Cummings model](https://en.wikipedia.org/wiki/Jaynes%E2%80%93Cummings_model) and the [spin-boson model](https://en.wikipedia.org/wiki/Quantum_dissipation#Dissipative_two-level_system).
+
+## Why two state systems?
+The most common two state system discussed in introductory quantum mechanics courses is the spin of an electron. It was discovered experimentally, in [1922 by Stern and Gerlach](https://www.feynmanlectures.caltech.edu/II_35.html#Ch35-S2), that the spin of an electron along any direction is quantised, taking values of either <img src="/tex/05c9304bf445964d1a11d1504c87f8f1.svg?invert_in_darkmode&sanitize=true" align=middle width=38.10517259999999pt height=24.65753399999998pt/> or <img src="/tex/e8d4d0df661ff8a783e7efdb42747035.svg?invert_in_darkmode&sanitize=true" align=middle width=38.10517259999999pt height=24.65753399999998pt/>.  Although interesting in its own right, the mathematical description of spin has much broader applications - **any two state problem can be translated into an equivalent spinning electron problem**.
+
+It turns out that the dynamics of some complicated systems can be approximately described by considering only two states. For example:
+- [The ammonia molecule](https://www.feynmanlectures.caltech.edu/III_08.html#Ch8-S6) and the associated [ammonia maser](https://www.feynmanlectures.caltech.edu/III_09.html)
+- [Molecular bonding](https://www.feynmanlectures.caltech.edu/III_10.html#Ch10-S1)
+- [Nuclear forces](https://www.feynmanlectures.caltech.edu/III_10.html#Ch10-S2)
+- [Photon polarization](https://www.feynmanlectures.caltech.edu/III_11.html#Ch11-S4)
+- The decay of [strange particles](https://www.feynmanlectures.caltech.edu/III_11.html#Ch11-S5)
+- ... etc
+
+It is therefore worthwhile to develop a strong intuition about how two state systems behave.
