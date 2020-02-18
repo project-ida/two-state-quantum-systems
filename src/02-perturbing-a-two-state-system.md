@@ -19,9 +19,7 @@ jupyter:
 # 2 - Perturbing a two state system
 
 
-Requriements to read the first tutorial before this one.
-
-In this tutorial we are going to explore the effects that an external field has on a two state system
+In this tutorial we are going to explore what happens if we connect a two state system to the "outside world". Or, put another way, what happens when we perturb a two state system?
 
 ```python
 %matplotlib inline
@@ -60,7 +58,7 @@ $$
 
 We discovered that the two energy states split apart, $E_0+A$ and $E_0-A$.
 
-Now we are going to explore how this coupled two state system changes when we perturb it
+Now we are going to explore how this coupled two state system changes when we perturb it.
 
 
 
@@ -149,9 +147,9 @@ plt.plot((deltas/A),(E0-deltas),'k--',label="$E_0 \pm \delta$");
 plt.legend()
 ```
 
-As the perturbation increases the coupling becomes less and less important. We can see this in the energy which approaches $E_0 \pm \delta$, i.e. no dependence on $A$ at all.
+As the perturbation increases, the coupling becomes less and less important. We can see this in the energy which approaches $E_0 \pm \delta$, i.e. no dependence on $A$ at all.
 
-The exact energy takes the form $E_0 \pm \sqrt{A^2 + \delta^2}$ (this simple system can be solved exactly)
+The exact energy takes the form $E_0 \pm \sqrt{A^2 + \delta^2}$ (link out to formal solution for this system)
 
 We will now consider the case when the purturbation is small, i.e $\delta/A \ll 1$. In this case the energies are approximately
 
@@ -160,7 +158,7 @@ E_I = E_0 + A +\frac{\delta^2}{2A} \\
 E_{II} = E_0 - A -\frac{\delta^2}{2A}
 $$
 
-One might hope to be able to calcualte this using [first order perturbation theory](https://en.wikipedia.org/wiki/Perturbation_theory_(quantum_mechanics)#First_order_corrections) (see also more compact explanation [here](https://math.stackexchange.com/a/626736)), but the $\delta^2$ tells you this isn't possible.
+As a side note, one might hope to be able to calcualte the above approximate energies using [first order perturbation theory](https://en.wikipedia.org/wiki/Perturbation_theory_(quantum_mechanics)#First_order_corrections) (see also more compact explanation [here](https://math.stackexchange.com/a/626736)), but the $\delta^2$ tells you this isn't possible.
 
 You can explicity see this by using QuTip to calculate the [matrix element](http://qutip.org/docs/latest/guide/guide-basics.html?highlight=matrix%20element#functions-operating-on-qobj-class) between the perturbation $\delta\sigma_z$ and the unperturbed eigenvectors.
 
@@ -172,9 +170,10 @@ delta*sigmaz().matrix_element(in_phase,in_phase)
 ## 2.2 Time dependent perturbation
 
 
-http://qutip.org/docs/latest/guide/dynamics/dynamics-master.html#unitary-evolution
+Now let's consider a tiem dependent perturbation of the form $\delta\cos(\omega t)$. With QuTiP, we can add [time dependence in several ways](http://qutip.org/docs/latest/guide/dynamics/dynamics-time.html#function-based-time-dependence)
 
-http://qutip.org/docs/latest/guide/dynamics/dynamics-time.html#function-based-time-dependence
+
+### Off resonance
 
 ```python
 E0 = 1.0
@@ -185,7 +184,7 @@ H0 = E0*qeye(2) - A*sigmax()
 
 H1 =  delta*sigmaz()
 
-H = [H0,[H1,'cos(0.2*t)']]
+H = [H0,[H1,'cos(0.25*t)']]
 
 times = np.linspace(0.0, 700.0, 1000) 
 
@@ -223,15 +222,41 @@ df.plot(title="Real part of amplitudes Re($\psi$)", ax=axes[0]);
 (df.abs()**2).plot(title="Probabilities $|\psi|^2$", ax=axes[1]);
 ```
 
-We now see the period even clearer, it's determined by the size of $\delta$
+### Resonance
+
+```python
+E0 = 1.0
+delta = 0.01
+A = 0.1
+
+H0 = E0*qeye(2) - A*sigmax() 
+
+H1 =  delta*sigmaz()
+
+H = [H0,[H1,'cos(0.2*t)']]
+
+times = np.linspace(0.0, 700.0, 1000) 
+
+result = sesolve(H, in_phase, times)
+df =  states_to_df(result.states, times)
+
+```
+
+```python
+df = change_basis_to_df(result.states, times, [in_phase,out_phase], ["in_phase", "out_phase"])
+```
+
+```python
+fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(15,6))
+df.plot(title="Real part of amplitudes Re($\psi$)", ax=axes[0]);
+(df.abs()**2).plot(title="Probabilities $|\psi|^2$", ax=axes[1]);
+```
+
+We can see the period even clearer now, it's determined by the size of $\delta$
 
 $$
 T = \frac{2\pi}{\delta} \approx 630
 $$
-
-```python
-2*np.pi/(delta)
-```
 
 ```python
 
