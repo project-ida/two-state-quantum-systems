@@ -199,6 +199,8 @@ df.plot(title="Real part of amplitudes Re($\psi$)", ax=axes[0]);
 (df.abs()**2).plot(title="Probabilities $|\psi|^2$", ax=axes[1]);
 ```
 
+Changing basis helps us see what's going on more easily.
+
 ```python
 def change_basis_to_df(states, times, new_basis, new_basis_labels):
     psi_new_basis_0 = np.zeros(len(times),dtype="complex128")  # To store the amplitude of the new_basis_0 state
