@@ -21,6 +21,8 @@ jupyter:
 
 In this tutorial we are going to explore what happens if we connect a two state system to the "outside world". Or, put another way, what happens when we perturb a two state system?
 
+A reminder that frequency ad energy have the same unnits here
+
 ```python
 %matplotlib inline
 import matplotlib.pyplot as plt
@@ -72,6 +74,8 @@ H = \begin{bmatrix}
 \end{bmatrix} = E_0 I - A \sigma_x + \delta\sigma_z
 $$
 
+In effect we increase the energy of the |+> and lower the energy of the |->
+
 ```python
 def states_to_df(states,times):
     psi_plus = np.zeros(len(times),dtype="complex128")  # To store the amplitude of the |+> state
@@ -92,9 +96,13 @@ in_phase = (plus + minus).unit()
 out_phase = (plus - minus).unit()
 ```
 
+We'll begin by taking the purturbation $\delta = 2A$.
+
+We also start exactly as last time (in FigXXXX) with the system in the |+> state. Also same coupling as last time A=0.1
+
 ```python
 E0 = 1.0
-delta = 0.01
+delta = 0.2
 A = 0.1
 
 H = E0*qeye(2) - A*sigmax() + delta*sigmaz()
@@ -102,91 +110,97 @@ H = E0*qeye(2) - A*sigmax() + delta*sigmaz()
 times = np.linspace(0.0, 70.0, 1000) 
 
 # First let's get the evolution of the state when initialised as "in phase"
-result = sesolve(H, in_phase, times)
+result = sesolve(H, plus, times)
 df =  states_to_df(result.states, times)
 
 ```
 
 ```python
 fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(15,6))
-df.plot(title="Real part of amplitudes Re($\psi$)", ax=axes[0]);
-(df.abs()**2).plot(title="Probabilities $|\psi|^2$", ax=axes[1]);
+df.plot(title="Real part of amplitudes Re($\psi$)     (Fig 1)", ax=axes[0]);
+(df.abs()**2).plot(title="Probabilities $|\psi|^2$     (Fig 2)", ax=axes[1]);
 ```
 
-In phase state $|+> + \,\  |->$  no longer a stationary state. This is not too surprising. We have in effect raised the energy of the plus state and lowered the energy of the minus state so things have changed.
+Just as in the previous tutorial, we see Rabi oscillations in the probability because |+> and |-> are not stationary states. The behaviour is again like $\cos^2(\Omega t)$, but somewhat modified by the perturbation.
+1. The period of oscillations has gone from 63 to about 29 (recall, A is the same)
+2. Secondly, instead of a complete osciallation from 0 to 1 of both states, we see that we are more likely to find the state in |+>. 
 
-We can see what the true stationary states should be:
+We can understand 2 by recalling that the perturbation creates an energy difference between the |+> and |->.  We can think of the perturbation as a barrier between the two states - the larger the barrier, the less effective the coupling between the states will be and the more likely you'll stay in the state you started in.
+
+To understand 1 we recall that the Rabi frequency arrises as the beating between the different frequencies of the stationary states, i.e. $\Omega = \Delta E/2$. We therefore need to calculate the energy of the stationary states, i.e. we need to calculate the eigenvalues of the Hamiltonian.
+
+Let's do this for a number of different perturbation strengths:
+
+```python
+n_deltas = 50
+smallest_delta = 0.01
+deltas = smallest_delta*np.array(range(0,n_deltas))
+upper = np.zeros(n_deltas)
+lower = np.zeros(n_deltas)
+
+for i, d in enumerate(deltas):
+    H_delta = E0*qeye(2) - A*sigmax() + d*sigmaz()
+    E = H_delta.eigenenergies()
+    upper[i] = E[1]
+    lower[i] = E[0]
+energies = pd.DataFrame(data={"up":upper, "low":lower, "$\delta$/A":deltas/A})
+```
+
+```python
+energies.plot(x="$\delta$/A", title="Energy     (Fig 3)", figsize=(7,6));
+plt.plot((deltas/A),(E0+deltas),'k--')
+plt.plot((deltas/A),(E0-deltas),'k--',label="$E_0 \pm \delta$");
+plt.legend();
+```
+
+Let's see if Fig 3 makes sense. 
+
+In the extreme, as $\delta\rightarrow \infty$, the energy asymptotically approaches to $E_0 \pm \delta$ - this is consistent with the coupling becoming less and less important. At the other extreme, $\delta \rightarrow 0$ we recover the result from the last tutorial, i.e. $E_0 \pm A$.
+
+The form of the energy curve is actually a relatively simple formula $E_0 \pm \sqrt{A^2 + \delta^2}$ (we won't derive this result here, but instead link you to a [lecture from Richard Feynman](https://www.feynmanlectures.caltech.edu/III_09.html#Ch9-S2)). From this we can now calculate $\Omega = \Delta E/2 = \sqrt{A^2 + \delta^2} = \sqrt{0.1^2 + 0.2^2} = 0.22$ giving a Rabi oscillation period of $2\pi/\Omega = 29$ that we saw graphically in Fig 2.
+
+
+
+
+
+
+It's also instructive to see how the stationary states themselves have changed due to the perturbation
 
 ```python
 H.eigenstates()
 ```
 
-The lower energy state is symmetric as before and we have less of the plus state and more of the minus state which creates the lowest energy.
+We see that the lower energy state is symmetric as in the previous tutorial (i.e both have the same sign) and we have less of the energetically expensive |+> state and more of the |->.
 
-Let's see how the energy of the stationary states changes as the perturbation increases
-
-
-```python
-n_deltas = 50
-deltas = delta*np.array(range(0,n_deltas))
-upper = np.zeros(n_deltas)
-lower = np.zeros(n_deltas)
-
-for i, d in enumerate(deltas):
-    H = E0*qeye(2) - A*sigmax() + d*sigmaz()
-    E = H.eigenenergies()
-    upper[i] = E[1]
-    lower[i] = E[0]
-Energies = pd.DataFrame(data={"up":upper, "low":lower, "$\delta$/A":deltas/A})
-```
-
-```python
-Energies.plot(x="$\delta$/A", title="Energy", figsize=(7,6));
-plt.plot((deltas/A),(E0+deltas),'k--')
-plt.plot((deltas/A),(E0-deltas),'k--',label="$E_0 \pm \delta$");
-plt.legend()
-```
-
-As the perturbation increases, the coupling becomes less and less important. We can see this in the energy which approaches $E_0 \pm \delta$, i.e. no dependence on $A$ at all.
-
-The exact energy takes the form $E_0 \pm \sqrt{A^2 + \delta^2}$ (link out to formal solution for this system)
-
-We will now consider the case when the purturbation is small, i.e $\delta/A \ll 1$. In this case the energies are approximately
-
-$$
-E_I = E_0 + A +\frac{\delta^2}{2A} \\
-E_{II} = E_0 - A -\frac{\delta^2}{2A}
-$$
-
-As a side note, one might hope to be able to calcualte the above approximate energies using [first order perturbation theory](https://en.wikipedia.org/wiki/Perturbation_theory_(quantum_mechanics)#First_order_corrections) (see also more compact explanation [here](https://math.stackexchange.com/a/626736)), but the $\delta^2$ tells you this isn't possible.
-
-You can explicity see this by using QuTip to calculate the [matrix element](http://qutip.org/docs/latest/guide/guide-basics.html?highlight=matrix%20element#functions-operating-on-qobj-class) between the perturbation $\delta\sigma_z$ and the unperturbed eigenvectors.
+Other than the symmetry, there isn't much similarity with the stationary states from the last tutorial. This makes sense when we recall that $\delta=2A$ - it's a strong perturbation so it changes the system a lot.
 
 
-```python
-delta*sigmaz().matrix_element(in_phase,in_phase)
-```
+There is some really interesting physics that happens when we don't perturb the system too much, i.e $\delta/A \ll 1$, so we are going to explore this regime next in the context of time dependent perturbation.
+
 
 ## 2.2 Time dependent perturbation
 
 
-Now let's consider a tiem dependent perturbation of the form $\delta\cos(\omega t)$. With QuTiP, we can add [time dependence in several ways](http://qutip.org/docs/latest/guide/dynamics/dynamics-time.html#function-based-time-dependence)
+Now let's consider a time dependent perturbation of the form $\delta\cos(\omega t)$. With QuTiP, we can add [time dependence in several ways](http://qutip.org/docs/latest/guide/dynamics/dynamics-time.html#function-based-time-dependence)
 
 
-### Off resonance
+### Resonance
+
+
+We do expect something interesting to happen when the frequency of the perturbation $\omega$ matches the frequency difference of the unpertubed states, i.e. when $\omega = \omega_0 \equiv 2A$
 
 ```python
 E0 = 1.0
-delta = 0.01
+delta = 0.001
 A = 0.1
 
 H0 = E0*qeye(2) - A*sigmax() 
 
 H1 =  delta*sigmaz()
 
-H = [H0,[H1,'cos(0.25*t)']]
+H = [H0,[H1,'cos(0.2*t)']]
 
-times = np.linspace(0.0, 700.0, 1000) 
+times = np.linspace(0.0, 15000.0, 1000) 
 
 result = sesolve(H, in_phase, times)
 df =  states_to_df(result.states, times)
@@ -195,16 +209,28 @@ df =  states_to_df(result.states, times)
 
 ```python
 fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(15,6))
-df.plot(title="Real part of amplitudes Re($\psi$)", ax=axes[0]);
-(df.abs()**2).plot(title="Probabilities $|\psi|^2$", ax=axes[1]);
+df.plot(title="Real part of amplitudes Re($\psi$)     (Fig 5)", ax=axes[0]);
+(df.abs()**2).plot(title="Probabilities $|\psi|^2$     (Fig 6)", ax=axes[1]);
 ```
 
-Changing basis helps us see what's going on more easily.
+We can clearly see something interesting is happening, the probabilities are undergoing full oscillation from 1 to 0.
+
+It is however, quite difficult to be more specific from this plot. That's because we are still using the |+> and |-> basis to describe the system. The best basis to work with is one in which the states are exactly, or at least close to, the stationary states.
+
+Since we are perturbing the system only slightly, it makes sense to choose the basis to be the stationary states from unperturbed system, i.e. from the isolated two state system with coupled states. Let's rewrite them here for convenience:
+
+$\frac{|+> + \,\  |->}{\sqrt{2}}$ - in phase (a.k.a symmetric)
+
+$\frac{|+> - \,\  |->}{\sqrt{2}}$ - out of phase (a.k.a anti-symmetric)
+
+Changing the basis of a state is actually very easy in QuTiP, we just take any state `s` and apply the [transform](http://qutip.org/docs/latest/apidoc/classes.html?highlight=transform#qutip.Qobj.transform) method to it `s.transform(new_base_states)`.
+
+Each state vector needs to be transformed separately, so let's create a function to do this for the many states that comes from solving the Schrödinger equation.
 
 ```python
 def change_basis_to_df(states, times, new_basis, new_basis_labels):
     psi_new_basis_0 = np.zeros(len(times),dtype="complex128")  # To store the amplitude of the new_basis_0 state
-    psi_new_basis_1 = np.zeros(len(times),dtype="complex128") # To store the amplitude of the new_basis_0 state
+    psi_new_basis_1 = np.zeros(len(times),dtype="complex128") # To store the amplitude of the new_basis_1 state
 
     for i, state in enumerate(states):
         transformed_state = state.transform(new_basis)
@@ -224,20 +250,44 @@ df.plot(title="Real part of amplitudes Re($\psi$)", ax=axes[0]);
 (df.abs()**2).plot(title="Probabilities $|\psi|^2$", ax=axes[1]);
 ```
 
-### Resonance
+Now, we can see the that even though we only perturb the system slightly, i.e $\delta/A = 0.1$ is small, when we resonantly perturb the system, we cause a significant change, i.e. we cause the the system to transition between higher an lower energy states - this is the essence of stimulated emission/absorption from atomic systems.
+
+
+
+---
+
+
+period even clearer now, it's determined by the size of $\delta$
+
+$$
+T = \frac{2\pi}{\delta} \approx 630
+$$
+
+```python
+
+```
+
+### Off resonance
+
+
+Let's change the frequency just a little bit to see how sensitive this resonance is. 
+
+We'll make $(\omega-\omega_0)/\omega_0 = 1\%$ 
+
+i.e $\omega=0.202$
 
 ```python
 E0 = 1.0
-delta = 0.01
+delta = 0.001
 A = 0.1
 
 H0 = E0*qeye(2) - A*sigmax() 
 
 H1 =  delta*sigmaz()
 
-H = [H0,[H1,'cos(0.2*t)']]
+H = [H0,[H1,'cos(0.202*t)']]
 
-times = np.linspace(0.0, 700.0, 1000) 
+times = np.linspace(0.0, 15000.0, 1000) 
 
 result = sesolve(H, in_phase, times)
 df =  states_to_df(result.states, times)
@@ -245,20 +295,44 @@ df =  states_to_df(result.states, times)
 ```
 
 ```python
+fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(15,6))
+df.plot(title="Real part of amplitudes Re($\psi$)     (Fig 5)", ax=axes[0]);
+(df.abs()**2).plot(title="Probabilities $|\psi|^2$     (Fig 6)", ax=axes[1]);
+```
+
+```python
+
+```
+
+Let's apply this function to the simulation we did with $(\omega-\omega_0)/\omega_0 = 1\%$
+
+```python
 df = change_basis_to_df(result.states, times, [in_phase,out_phase], ["in_phase", "out_phase"])
 ```
 
 ```python
 fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(15,6))
-df.plot(title="Real part of amplitudes Re($\psi$)", ax=axes[0]);
-(df.abs()**2).plot(title="Probabilities $|\psi|^2$", ax=axes[1]);
+df.plot(title="Real part of amplitudes Re($\psi$)     (Fig 7)", ax=axes[0]);
+(df.abs()**2).plot(title="Probabilities $|\psi|^2$     (Fig 8)", ax=axes[1]);
 ```
 
-We can see the period even clearer now, it's determined by the size of $\delta$
 
-$$
-T = \frac{2\pi}{\delta} \approx 630
-$$
+
+```python
+Ht = (H0+H1).transform([in_phase,out_phase])
+```
+
+```python
+Ht
+```
+
+```python
+
+```
+
+```python
+
+```
 
 ```python
 
