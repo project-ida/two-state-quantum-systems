@@ -134,7 +134,7 @@ df_stationary.plot(title="Real part of amplitudes Re($\psi$)", ax=axes[0]);
 (df_stationary.abs()**2).plot(title="Probabilities $|\psi|^2$", ax=axes[1]);
 ```
 
-The probability to find the system in the $|+>$ state (i.e. $|\psi_+|^2$) state remains constant throughout because it is a stationary state, i.e. a state of constant energy.
+The probability to find the system in the $|+>$ state (i.e. $|\psi_+|^2$) state remains constant throughout because the system is in what we call a **stationary state**, i.e. a state of constant energy.
 
 The amplitude oscillates at a frequency determined by the $E_0$ parameter which we set to equal 1 at the start and so we have a period of $2\pi$.
 
