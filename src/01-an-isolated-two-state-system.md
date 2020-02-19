@@ -130,8 +130,8 @@ df_stationary =  states_to_df(result.states, times)
 
 ```python
 fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(15,6))
-df_stationary.plot(title="Real part of amplitudes Re($\psi$)", ax=axes[0]);
-(df_stationary.abs()**2).plot(title="Probabilities $|\psi|^2$", ax=axes[1]);
+df_stationary.plot(title="Real part of amplitudes Re($\psi$)     (Fig 1)", ax=axes[0]);
+(df_stationary.abs()**2).plot(title="Probabilities $|\psi|^2$     (Fig 2)", ax=axes[1]);
 ```
 
 The probability to find the system in the $|+>$ state (i.e. $|\psi_+|^2$) state remains constant throughout because the system is in what we call a **stationary state**, i.e. a state of constant energy.
@@ -198,8 +198,8 @@ df_coupled =  states_to_df(result.states, times)
 
 ```python
 fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(15,6))
-df_coupled.plot(title="Real part of amplitudes Re($\psi$)", ax=axes[0]);
-(df_coupled.abs()**2).plot(title="Probabilities $|\psi|^2$", ax=axes[1]);
+df_coupled.plot(title="Real part of amplitudes Re($\psi$)     (Fig 3)", ax=axes[0]);
+(df_coupled.abs()**2).plot(title="Probabilities $|\psi|^2$     (Fig 4)", ax=axes[1]);
 ```
 
 Now the situation is more complicated.
@@ -252,14 +252,14 @@ df_coupled_out_phase =  states_to_df(result.states, times)
 ```python
 ## First plot the In phase solution
 fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(15,6))
-df_coupled_in_phase.plot(title="Real part of amplitudes Re($\psi$)", ax=axes[0]);
-(df_coupled_in_phase.abs()**2).plot(title="Probabilities $|\psi|^2$", ax=axes[1]);
+df_coupled_in_phase.plot(title="Real part of amplitudes Re($\psi$)     (Fig 5)", ax=axes[0]);
+(df_coupled_in_phase.abs()**2).plot(title="Probabilities $|\psi|^2$     (Fig 6)", ax=axes[1]);
 fig.suptitle('In phase', fontsize=20)
 
 ## Secondly plot the Out of phase solution
 fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(15,6))
-df_coupled_out_phase.plot(title="Real part of amplitudes Re($\psi$)", ax=axes[0]);
-(df_coupled_out_phase.abs()**2).plot(title="Probabilities $|\psi|^2$", ax=axes[1]);
+df_coupled_out_phase.plot(title="Real part of amplitudes Re($\psi$)     (Fig 7)", ax=axes[0]);
+(df_coupled_out_phase.abs()**2).plot(title="Probabilities $|\psi|^2$     (Fig 8)", ax=axes[1]);
 fig.suptitle('Out of phase', fontsize=20);
 
 # Use the following to remove the y-offset from out of phase probabilities if you find there is one
@@ -283,7 +283,7 @@ result_out_phase = sesolve(H, out_phase, times, [H])
 
 ```python
 plt.figure(figsize=(7,6))
-plt.title("Expectation value of energy")
+plt.title("Expectation value of energy     (Fig 9)")
 plt.plot(result_in_phase.expect[0], label="in phase")
 plt.plot(result_out_phase.expect[0], label="out of phase")
 plt.legend();
@@ -297,7 +297,7 @@ $E_0 + A$ for $|+> - \,\  |->$ - out of phase
 
 So, there is energetic price to be paid for the states to be out of phase with each other.
 
-Returning to the Rabi oscillations, we can now calculate $\Omega = \Delta E /2 = A$ which gives an oscillation period of $2\pi/A \approx 63$ - this matches very nicely.
+Returning to the Rabi oscillations, we can now calculate $\Omega = \Delta E /2 = A$ which gives an oscillation period of $2\pi/A \approx 63$ - this matches very nicely with what we saw in Fig 4.
 
 
 Although it is fun and insightful to go through the process of solving the Schrödinger equation, there is another way to get at the stationary states and their corresponding energies - we simply need to find the eigenvectors and eigenvalues of the hamiltonian.
