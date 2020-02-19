@@ -190,7 +190,7 @@ A = 0.1 # coupling "strength"
 
 H = E0*qeye(2) - A*sigmax()
 
-times = np.linspace(0.0, 60.0, 1000) # simulation time
+times = np.linspace(0.0, 70.0, 1000) # simulation time
 
 result = sesolve(H, psi0, times)
 df_coupled =  states_to_df(result.states, times)
