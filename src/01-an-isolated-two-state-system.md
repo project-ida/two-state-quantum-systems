@@ -135,9 +135,9 @@ df_stationary.plot(title="Real part of amplitudes Re($\psi$)", ax=axes[0]);
 (df_stationary.abs()**2).plot(title="Probabilities $|\psi|^2$", ax=axes[1]);
 ```
 
-The probability to find the system in the $|+>$ state (i.e. $|\psi_+|^2$) state remains constant throughout because it is a stationary state, i.e. a state of constant energy.
+The probability to find the system in the $|+>$ state (i.e. $|\psi_+|^2$) state remains constant throughout because the system is in what we call a **stationary state**, i.e. a state of constant energy.
 
-The amplitude oscillates at a frequency determined by the $a$ parameter which we set to equal 1 at the start and so we have a period of $2\pi$.
+The amplitude oscillates at a frequency determined by the $E_0$ parameter which we set to equal 1 at the start and so we have a period of $2\pi$.
 
 
 ## 1.2 Coupling between two states of the same energy
@@ -205,7 +205,7 @@ df_coupled.plot(title="Real part of amplitudes Re($\psi$)", ax=axes[0]);
 
 Now the situation is more complicated.
 
-Although we again initialised the system in $|+>$ state, the probability to find the system in that state at a later time is no longer constant - it slowly oscillates. This tells us that the $|+>$ is no longer a state of constant energy (same for $|->$). What's going on?
+Although we again initialised the system in the $|+>$ state, the probability to find the system in that state at a later time is no longer constant - it slowly oscillates (in this case as $\cos^2(At)$). These oscialltions (somtimes called [Rabi oscillations](https://en.wikipedia.org/wiki/Two-state_quantum_system#Rabi_formula_for_a_static_perturbation)) tell us that  $|+>$ is no longer a state of constant energy (same for $|->$). What's going on?
 
 This behaviour is identical to a system of two coupled pendulums - each state in the quantum system is analagous to one of the pendulums. If you displace only one pendulum, then its maximum amplitude oscillates slowly as it transfers energy to the second pendulum and then back again (as you can see in this [video](https://youtu.be/CjJVBvDNxcE?t=56)).
 
