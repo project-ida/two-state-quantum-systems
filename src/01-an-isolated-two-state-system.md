@@ -204,7 +204,7 @@ df_coupled.plot(title="Real part of amplitudes Re($\psi$)", ax=axes[0]);
 
 Now the situation is more complicated.
 
-Although we again initialised the system in $|+>$ state, the probability to find the system in that state at a later time is no longer constant - it slowly oscillates. This tells us that the $|+>$ is no longer a state of constant energy (same for $|->$). What's going on?
+Although we again initialised the system in the $|+>$ state, the probability to find the system in that state at a later time is no longer constant - it slowly oscillates. These oscillations (often called [Rabi oscillations](https://en.wikipedia.org/wiki/Two-state_quantum_system#Rabi_formula_for_a_static_perturbation)) tell us that  $|+>$ is no longer a state of constant energy (same for $|->$). What's going on?
 
 This behaviour is identical to a system of two coupled pendulums - each state in the quantum system is analagous to one of the pendulums. If you displace only one pendulum, then its maximum amplitude oscillates slowly as it transfers energy to the second pendulum and then back again (as you can see in this [video](https://youtu.be/CjJVBvDNxcE?t=56)).
 
@@ -219,6 +219,8 @@ $|+> + \,\  |->$ - in phase
 $|+> - \,\ |->$ - out of phase
 
 should be our states of constant energy - our stationary states (we will of course need to normalise these states).
+
+We can also expect to be able to describe the above Rabi oscillations in probability with something like $\cos^2(\Omega t)$, where $\Omega = \Delta E /2$ (the Rabi frequency) is given by the difference in energy (c.f. beat frequency) between the two new stationary states.
 
 Let's use QuTiP to see this.
 
@@ -294,6 +296,8 @@ $E_0 - A$ for $|+> + \,\  |->$ - in phase
 $E_0 + A$ for $|+> - \,\  |->$ - out of phase
 
 So, there is energetic price to be paid for the states to be out of phase with each other.
+
+Returning to the Rabi oscillations, we can now calculate $\Omega = \Delta E /2 = A$ which gives an oscillation period of $2\pi/A \approx 63$ - this matches very nicely.
 
 
 Although it is fun and insightful to go through the process of solving the Schrödinger equation, there is another way to get at the stationary states and their corresponding energies - we simply need to find the eigenvectors and eigenvalues of the hamiltonian.
