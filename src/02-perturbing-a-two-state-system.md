@@ -13,7 +13,7 @@ jupyter:
     name: python3
 ---
 
-<a href="https://colab.research.google.com/github/project-ida/two-state-quantum-systems/blob/master/02-perturbing-a-two-state-system.ipynb" target="_parent\"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>
+<a href="https://colab.research.google.com/github/project-ida/two-state-quantum-systems/blob/master/02-perturbing-a-two-state-system.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>
 
 
 # 2 - Perturbing a two state system
@@ -159,7 +159,7 @@ In the extreme, as $\delta\rightarrow \infty$, the energy asymptotically approac
 
 The form of the energy curve is actually a relatively simple formula $E_0 \pm \sqrt{A^2 + \delta^2}$ (we won't derive this result here, but instead link you to a [lecture from Richard Feynman](https://www.feynmanlectures.caltech.edu/III_09.html#Ch9-S2)). From this we can now calculate $\Omega = \Delta E/2 = \sqrt{A^2 + \delta^2} = \sqrt{0.1^2 + 0.2^2} = 0.22$ giving a Rabi oscillation period of $2\pi/\Omega = 29$ that we saw graphically in Fig 2.
 
-
+For more information on the depdence of energy on the various parts the hamiltonian, consult the topic of [avoided crossings](https://en.wikipedia.org/wiki/Avoided_crossing).
 
 
 
