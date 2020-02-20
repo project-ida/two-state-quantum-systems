@@ -220,7 +220,7 @@ $|+> - \,\ |->$ - out of phase
 
 should be our states of constant energy - our stationary states (we will of course need to normalise these states).
 
-We can also expect to be able to describe the above Rabi oscillations in probability with something like $\cos^2(\Omega t)$, where $\Omega = \Delta E /2$ (the Rabi frequency) is given by the difference in energy (c.f. beat frequency) between the two new stationary states.
+We can also expect to be able to describe the above Rabi oscillations in probability with something like $\cos^2(\Omega t/2)$, where $\Omega = \Delta E$ (the Rabi frequency) is given by the difference in energy (c.f. beat frequency) between the two new stationary states.
 
 Let's use QuTiP to see this.
 
@@ -297,7 +297,7 @@ $E_0 + A$ for $|+> - \,\  |->$ - out of phase
 
 So, there is energetic price to be paid for the states to be out of phase with each other.
 
-Returning to the Rabi oscillations, we can now calculate $\Omega = \Delta E /2 = A$ which gives an oscillation period of $2\pi/A \approx 63$ - this matches very nicely with what we saw in Fig 4.
+Returning to the Rabi oscillations, we can now calculate $\Omega = \Delta E =2A$ which gives an oscillation period of $2\pi/2A \approx 31$ - this matches very nicely with what we saw in Fig 4.
 
 
 Although it is fun and insightful to go through the process of solving the Schrödinger equation, there is another way to get at the stationary states and their corresponding energies - we simply need to find the eigenvectors and eigenvalues of the hamiltonian.
