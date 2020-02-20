@@ -130,13 +130,13 @@ df_stationary =  states_to_df(result.states, times)
 
 ```python
 fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(15,6))
-df_stationary.plot(title="Real part of amplitudes Re($\psi$)", ax=axes[0]);
-(df_stationary.abs()**2).plot(title="Probabilities $|\psi|^2$", ax=axes[1]);
+df_stationary.plot(title="Real part of amplitudes Re($\psi$)     (Fig 1)", ax=axes[0]);
+(df_stationary.abs()**2).plot(title="Probabilities $|\psi|^2$     (Fig 2)", ax=axes[1]);
 ```
 
-The probability to find the system in the $|+>$ state (i.e. $|\psi_+|^2$) state remains constant throughout because it is a stationary state, i.e. a state of constant energy.
+The probability to find the system in the $|+>$ state (i.e. $|\psi_+|^2$) state remains constant throughout because the system is in what we call a **stationary state**, i.e. a state of constant energy.
 
-The amplitude oscillates at a frequency determined by the $a$ parameter which we set to equal 1 at the start and so we have a period of $2\pi$.
+The amplitude oscillates at a frequency determined by the $E_0$ parameter which we set to equal 1 at the start and so we have a period of $2\pi$.
 
 
 ## 1.2 Coupling between two states of the same energy
@@ -190,7 +190,7 @@ A = 0.1 # coupling "strength"
 
 H = E0*qeye(2) - A*sigmax()
 
-times = np.linspace(0.0, 60.0, 1000) # simulation time
+times = np.linspace(0.0, 70.0, 1000) # simulation time
 
 result = sesolve(H, psi0, times)
 df_coupled =  states_to_df(result.states, times)
@@ -198,17 +198,17 @@ df_coupled =  states_to_df(result.states, times)
 
 ```python
 fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(15,6))
-df_coupled.plot(title="Real part of amplitudes Re($\psi$)", ax=axes[0]);
-(df_coupled.abs()**2).plot(title="Probabilities $|\psi|^2$", ax=axes[1]);
+df_coupled.plot(title="Real part of amplitudes Re($\psi$)     (Fig 3)", ax=axes[0]);
+(df_coupled.abs()**2).plot(title="Probabilities $|\psi|^2$     (Fig 4)", ax=axes[1]);
 ```
 
 Now the situation is more complicated.
 
-Although we again initialised the system in $|+>$ state, the probability to find the system in that state at a later time is no longer constant - it slowly oscillates. This tells us that the $|+>$ is no longer a state of constant energy (same for $|->$). What's going on?
+Although we again initialised the system in the $|+>$ state, the probability to find the system in that state at a later time is no longer constant - it slowly oscillates. These oscillations (often called [Rabi oscillations](https://en.wikipedia.org/wiki/Two-state_quantum_system#Rabi_formula_for_a_static_perturbation)) tell us that  $|+>$ is no longer a state of constant energy (same for $|->$). What's going on?
 
 This behaviour is identical to a system of two coupled pendulums - each state in the quantum system is analagous to one of the pendulums. If you displace only one pendulum, then its maximum amplitude oscillates slowly as it transfers energy to the second pendulum and then back again (as you can see in this [video](https://youtu.be/CjJVBvDNxcE?t=56)).
 
-In the language of classical physics, this slow oscillation of the maximum amplitude results from the [beating](https://en.wikipedia.org/wiki/Beat_(acoustics) of two frequencies that correspond to different [normal modes](https://www.physics.utoronto.ca/~sandra/PHY238Y/Lectures/Lect4_Coupl_osc.pdf). These modes can be distinguished when you displace both pendulums, first in phase and then out of phase (see [this video](https://youtu.be/CjJVBvDNxcE?t=14)). 
+In the language of classical physics, this slow oscillation of the maximum amplitude results from the [beating](https://en.wikipedia.org/wiki/Beat_(acoustics)) of two frequencies that correspond to different [normal modes](https://www.physics.utoronto.ca/~sandra/PHY238Y/Lectures/Lect4_Coupl_osc.pdf). These modes can be distinguished when you displace both pendulums, first in phase and then out of phase (see [this video](https://youtu.be/CjJVBvDNxcE?t=14)). 
 
 In the absence of coupling, there are also two frequencies in the system, but they are identical because the pendulums are identical. In effect, the coupling splits the two frequencies apart and that is also what's happening in our quantum system.
 
@@ -219,6 +219,8 @@ $|+> + \,\  |->$ - in phase
 $|+> - \,\ |->$ - out of phase
 
 should be our states of constant energy - our stationary states (we will of course need to normalise these states).
+
+We can also expect to be able to describe the above Rabi oscillations in probability with something like $\cos^2(\Omega t/2)$, where $\Omega = \Delta E$ (the Rabi frequency) is given by the difference in energy (c.f. beat frequency) between the two new stationary states.
 
 Let's use QuTiP to see this.
 
@@ -250,14 +252,14 @@ df_coupled_out_phase =  states_to_df(result.states, times)
 ```python
 ## First plot the In phase solution
 fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(15,6))
-df_coupled_in_phase.plot(title="Real part of amplitudes Re($\psi$)", ax=axes[0]);
-(df_coupled_in_phase.abs()**2).plot(title="Probabilities $|\psi|^2$", ax=axes[1]);
+df_coupled_in_phase.plot(title="Real part of amplitudes Re($\psi$)     (Fig 5)", ax=axes[0]);
+(df_coupled_in_phase.abs()**2).plot(title="Probabilities $|\psi|^2$     (Fig 6)", ax=axes[1]);
 fig.suptitle('In phase', fontsize=20)
 
 ## Secondly plot the Out of phase solution
 fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(15,6))
-df_coupled_out_phase.plot(title="Real part of amplitudes Re($\psi$)", ax=axes[0]);
-(df_coupled_out_phase.abs()**2).plot(title="Probabilities $|\psi|^2$", ax=axes[1]);
+df_coupled_out_phase.plot(title="Real part of amplitudes Re($\psi$)     (Fig 7)", ax=axes[0]);
+(df_coupled_out_phase.abs()**2).plot(title="Probabilities $|\psi|^2$     (Fig 8)", ax=axes[1]);
 fig.suptitle('Out of phase', fontsize=20);
 
 # Use the following to remove the y-offset from out of phase probabilities if you find there is one
@@ -281,7 +283,7 @@ result_out_phase = sesolve(H, out_phase, times, [H])
 
 ```python
 plt.figure(figsize=(7,6))
-plt.title("Expectation value of energy")
+plt.title("Expectation value of energy     (Fig 9)")
 plt.plot(result_in_phase.expect[0], label="in phase")
 plt.plot(result_out_phase.expect[0], label="out of phase")
 plt.legend();
@@ -294,6 +296,8 @@ $E_0 - A$ for $|+> + \,\  |->$ - in phase
 $E_0 + A$ for $|+> - \,\  |->$ - out of phase
 
 So, there is energetic price to be paid for the states to be out of phase with each other.
+
+Returning to the Rabi oscillations, we can now calculate $\Omega = \Delta E =2A$ which gives an oscillation period of $2\pi/2A \approx 31$ - this matches very nicely with what we saw in Fig 4.
 
 
 Although it is fun and insightful to go through the process of solving the Schrödinger equation, there is another way to get at the stationary states and their corresponding energies - we simply need to find the eigenvectors and eigenvalues of the hamiltonian.
