@@ -121,13 +121,13 @@ df.plot(title="Real part of amplitudes Re($\psi$)     (Fig 1)", ax=axes[0]);
 (df.abs()**2).plot(title="Probabilities $|\psi|^2$     (Fig 2)", ax=axes[1]);
 ```
 
-Just as in the previous tutorial, we see Rabi oscillations in the probability because |+> and |-> are not stationary states. The behaviour is again like $\cos^2(\Omega t)$, but somewhat modified by the perturbation.
-1. The period of oscillations has gone from 63 to about 29 (recall, A is the same)
+Just as in the previous tutorial, we see Rabi oscillations in the probability because |+> and |-> are not stationary states. The behaviour is again like $\cos^2(\Omega t/2)$, but somewhat modified by the perturbation.
+1. The period of oscillations has gone from 31 to about 14 (recall, A is the same)
 2. Secondly, instead of a complete osciallation from 0 to 1 of both states, we see that we are more likely to find the state in |+>. 
 
 We can understand 2 by recalling that the perturbation creates an energy difference between the |+> and |->.  We can think of the perturbation as a barrier between the two states - the larger the barrier, the less effective the coupling between the states will be and the more likely you'll stay in the state you started in.
 
-To understand 1 we recall that the Rabi frequency arrises as the beating between the different frequencies of the stationary states, i.e. $\Omega = \Delta E/2$. We therefore need to calculate the energy of the stationary states, i.e. we need to calculate the eigenvalues of the Hamiltonian.
+To understand 1 we recall that the Rabi frequency arrises as the beating between the different frequencies of the stationary states, i.e. $\Omega = \Delta E$. We therefore need to calculate the energy of the stationary states, i.e. we need to calculate the eigenvalues of the Hamiltonian.
 
 Let's do this for a number of different perturbation strengths:
 
@@ -157,7 +157,7 @@ Let's see if Fig 3 makes sense.
 
 In the extreme, as $\delta\rightarrow \infty$, the energy asymptotically approaches to $E_0 \pm \delta$ - this is consistent with the coupling becoming less and less important. At the other extreme, $\delta \rightarrow 0$ we recover the result from the last tutorial, i.e. $E_0 \pm A$.
 
-The form of the energy curve is actually a relatively simple formula $E_0 \pm \sqrt{A^2 + \delta^2}$ (we won't derive this result here, but instead link you to a [lecture from Richard Feynman](https://www.feynmanlectures.caltech.edu/III_09.html#Ch9-S2)). From this we can now calculate $\Omega = \Delta E/2 = \sqrt{A^2 + \delta^2} = \sqrt{0.1^2 + 0.2^2} = 0.22$ giving a Rabi oscillation period of $2\pi/\Omega = 29$ that we saw graphically in Fig 2.
+The form of the energy curve is actually a relatively simple formula $E_0 \pm \sqrt{A^2 + \delta^2}$ (we won't derive this result here, but instead link you to a [lecture from Richard Feynman](https://www.feynmanlectures.caltech.edu/III_09.html#Ch9-S2)). From this we can now calculate $\Omega = \Delta E = 2\sqrt{A^2 + \delta^2} = 2\sqrt{0.1^2 + 0.2^2} = 0.44$ giving a Rabi oscillation period of $2\pi/\Omega = 14$ that we saw graphically in Fig 2.
 
 For more information on the depdence of energy on the various parts the hamiltonian, consult the topic of [avoided crossings](https://en.wikipedia.org/wiki/Avoided_crossing).
 
@@ -276,9 +276,9 @@ The oscillation of the probability is again referred to as Rabi oscillations (or
 
 Specifically, $\Omega = \delta$, giving a period of $2\pi/\Omega = 2\pi/0.001 \approx 6300$.
 
-This result is not immediately intuitive (see [derivation](https://en.wikipedia.org/wiki/Rabi_problem#Semiclassical_approach)). We will return to this at a later point and for now continue exploring.
+This result is not immediately intuitive (see [derivation](https://en.wikipedia.org/wiki/Rabi_problem#Semiclassical_approach)) - we will return to this at a later point. 
 
-Now that we've seen the effect of resonance, it is natural to wonder how sensitive is to changes in frequency.
+For now we will continue exploring. Now that we've seen the effect of resonance, it is natural to wonder how sensitive is the effect to changes in frequency.
 
 
 ### Off resonance
