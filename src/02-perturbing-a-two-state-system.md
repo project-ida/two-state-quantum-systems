@@ -340,11 +340,3 @@ We can see that the resonance is exquisitely sensitive. When the frequency is ju
 
 ## Next up...
 So far, we've developed an intuition for a simple two state system and how it behaves in a presence of an external perturbation. We've uncovered the physical basis for stimulated emission and absoption in atomic systems. You might be wondering, what about spontaneous emission? We cannot describe it using this model 😞. We must go a level deeper and cosider not only how the perturbation acts on the two state system, but how the two state system acts on the perturbation. Put another way, we need to consider the perturbation as a field that can itself be quantised 🤯.
-
-```python
-Ht = (H0+H1).transform([in_phase,out_phase])
-```
-
-```python
-Ht
-```
