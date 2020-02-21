@@ -19,11 +19,17 @@ jupyter:
 # 2 - Perturbing a two state system
 
 
-In this tutorial we are going to explore what happens if we connect a two state system to the "outside world". Or, put another way, what happens when we perturb a two state system?
+In this tutorial we are going to explore what happens when we connect a two state system to the "outside world". Or, put another way, what happens when we perturb a two state system? We'll look at two cases:
+1. Static perturbations
+2. Small, time-dependent perturbations
 
-A reminder that frequency ad energy have the same unnits here
+A reminder that in QuTiP $\hbar=1$ and so frequency and energy are completely interchangable.
+
+
+First, let's load the libraries and some custom code to make plotting easier later.
 
 ```python
+# Libraries
 %matplotlib inline
 import matplotlib.pyplot as plt
 import numpy as np
@@ -76,7 +82,7 @@ $$
 where $I$ is the identity matrix and $ \sigma_x$ one of the Pauli matrices.
 <!-- #endregion -->
 
-In this tutorial, we will introduce a perturbation in energy, $\delta$, that differentiates between the two states. Physically, one can think of this as e.g. applying an electric field to a molecule with a permanent dipole moment - i.e. we couple the two state system to the "outside world". We can then represent the Hamiltonian as:
+In this tutorial, we will introduce a perturbation in energy, $\delta$, that differentiates between the two states. Physically, one can think of this as e.g. applying an electric field to a molecule with a permanent dipole moment. We can then represent the Hamiltonian as:
 
 $$
 H = \begin{bmatrix}
