@@ -177,7 +177,18 @@ We see that the energy has changed a lot due to the perturbation, what about the
 H.eigenstates()
 ```
 
-We see that the lower energy state is symmetric as in the previous tutorial (i.e both have the same sign) and we have less of the energetically expensive |+> state and more of the |->.
+Compare these to the stationary states we found in the previous tutorial -  let's rewrite them here for convenience:
+
+$\frac{|+> + \,\  |->}{\sqrt{2}}$ - in phase (a.k.a symmetric) - lower energy state
+
+$\frac{|+> - \,\  |->}{\sqrt{2}}$ - out of phase (a.k.a anti-symmetric) - higher energy state
+
+```python
+in_phase = (plus + minus).unit()
+out_phase = (plus - minus).unit()
+```
+
+We see that the lower energy state is symmetric as in the previous tutorial (i.e both parts of the state have the same sign) and we have less of the energetically expensive |+> state and more of the |->.
 
 Other than the symmetry, there isn't much similarity with the stationary states from the last tutorial. This makes sense when we recall that $\delta=2A$ - it's a strong perturbation so it changes the system a lot.
 
@@ -210,9 +221,11 @@ The question now is, what should we choose the frequency $\omega$ to be?
 
 Because we are only perturbing the system slightly, we can expect that the energy difference between the two unperturbed stationary states (i.e. $2A$) should still be something of interest. It is natural therefore to begin by setting $\omega = \omega_0 \equiv 2A$. 
 
-Intuitively we do expect some kind of resonance phenomenon because we are matching the driving frequency to the "natural" frequency of the two state system. 
+Intuitively we do expect some kind of resonance phenomenon because we are matching the driving frequency to the "natural" frequency of the two state system - but how will this resonance manifest?
 
-Let's see how things play out.
+Let's start things off in a stationary state of the unperturbed system, specifically, |+> + |->. Does the system stay close to this state as we might expect, given the smallness of the perturbation.
+
+Let's see.
 
 ```python
 E0 = 1.0
@@ -234,24 +247,14 @@ df_res =  states_to_df(result.states, times)
 
 ```python
 fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(15,6))
-df_res.plot(title="Real part of amplitudes Re($\psi$)     (Fig 5)", ax=axes[0]);
-(df_res.abs()**2).plot(title="Probabilities $|\psi|^2$     (Fig 6)", ax=axes[1]);
+df_res.plot(title="Real part of amplitudes Re($\psi$)     (Fig 4)", ax=axes[0]);
+(df_res.abs()**2).plot(title="Probabilities $|\psi|^2$     (Fig 5)", ax=axes[1]);
 ```
 
 We can clearly see something interesting is happening. The probabilities are undergoing full oscillation from 1 to 0 and we can see a much longer oscillation timescale than before.
 
-It is however, quite difficult to be more specific from this plot. That's because we are still using the |+> and |-> basis to describe the system. The best basis to work with is one in which the base states are exactly, or at least close to, the stationary states.
+It is however, quite difficult to be more specific from this plot. That's because we are still using the |+> and |-> basis to describe the system. The best basis to work with is one in which the base states are exactly, or at least close to, the stationary states. In this case, that's $\frac{|+> + \,\  |->}{\sqrt{2}}$  and $\frac{|+> - \,\  |->}{\sqrt{2}}$.
 
-Since we are perturbing the system only slightly, it makes sense to choose the basis to be the stationary states from unperturbed system, i.e. from the isolated two state system with coupled states. Let's rewrite them here for convenience:
-
-$\frac{|+> + \,\  |->}{\sqrt{2}}$ - in phase (a.k.a symmetric)
-
-$\frac{|+> - \,\  |->}{\sqrt{2}}$ - out of phase (a.k.a anti-symmetric)
-
-```python
-in_phase = (plus + minus).unit()
-out_phase = (plus - minus).unit()
-```
 
 Changing the basis of a state is actually very easy in QuTiP, we just take any state `s` and apply the [transform](http://qutip.org/docs/latest/apidoc/classes.html?highlight=transform#qutip.Qobj.transform) method to it `s.transform(new_base_states)`.
 
@@ -276,8 +279,8 @@ df_res_basis = change_basis_to_df(result.states, times, [in_phase,out_phase], ["
 
 ```python
 fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(15,6))
-df_res_basis.plot(title="Real part of amplitudes Re($\psi$)", ax=axes[0]);
-(df_res_basis.abs()**2).plot(title="Probabilities $|\psi|^2$", ax=axes[1]);
+df_res_basis.plot(title="Real part of amplitudes Re($\psi$)     (Fig 6)", ax=axes[0]);
+(df_res_basis.abs()**2).plot(title="Probabilities $|\psi|^2$     (Fig 7)", ax=axes[1]);
 ```
 
 Now, we can see better.
@@ -317,25 +320,19 @@ df_off_res =  states_to_df(result.states, times)
 ```
 
 ```python
-fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(15,6))
-df_off_res.plot(title="Real part of amplitudes Re($\psi$)     (Fig 5)", ax=axes[0]);
-(df_off_res.abs()**2).plot(title="Probabilities $|\psi|^2$     (Fig 6)", ax=axes[1]);
-```
-
-```python
 df_off_res_basis = change_basis_to_df(result.states, times, [in_phase,out_phase], ["|x> + |->", "|x> - |->"])
 ```
 
 ```python
 fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(15,6))
-df_off_res_basis.plot(title="Real part of amplitudes Re($\psi$)     (Fig 7)", ax=axes[0]);
-(df_off_res_basis.abs()**2).plot(title="Probabilities $|\psi|^2$     (Fig 8)", ax=axes[1]);
+df_off_res_basis.plot(title="Real part of amplitudes Re($\psi$)     (Fig 8)", ax=axes[0]);
+(df_off_res_basis.abs()**2).plot(title="Probabilities $|\psi|^2$     (Fig 9)", ax=axes[1]);
 ```
 
 
 
 
-We can see that the resonance is exquisitely sensitive. When the frequency is just 1% off resonance, the amplitude of probability oscillation is reduced to 20% of it's value at resonance. The Rabi frequency has also changed. The modified value is often called the [generalised Rabi frequency](https://en.wikipedia.org/wiki/Rabi_frequency#Generalized_Rabi_frequency) and has the form $\bar\Omega = \sqrt{\Omega^2 + (\omega-\omega_0)^2} =  \sqrt{\delta^2 + (\omega-\omega_0)^2} = \sqrt{0.001^2 + 0.002^2} = 0.002$, giving the period $2\pi/\bar\Omega = 2\pi/0.002 \approx 3100$ that we can see in Fig 8.
+We can see that the resonance is exquisitely sensitive. When the frequency is just 1% off resonance, the amplitude of probability oscillation is reduced to 20% of it's previous value. The Rabi frequency has also changed. The modified value is often called the [generalised Rabi frequency](https://en.wikipedia.org/wiki/Rabi_frequency#Generalized_Rabi_frequency) and has the form $\bar\Omega = \sqrt{\Omega^2 + (\omega-\omega_0)^2} =  \sqrt{\delta^2 + (\omega-\omega_0)^2} = \sqrt{0.001^2 + 0.002^2} = 0.002$, giving the period $2\pi/\bar\Omega = 2\pi/0.002 \approx 3100$ that we can see in Fig 9.
 
 
 ## Next up...
