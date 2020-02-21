@@ -18,3 +18,4 @@ It is therefore worthwhile to develop a strong intuition about how two state sys
 ## Tutorials
 
 - [01 - An isolated two state system](01-an-isolated-two-state-system.ipynb)
+- [02 - Perturbing a two state system](02-perturbing-a-two-state-system.ipynb)
