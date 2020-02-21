@@ -284,11 +284,7 @@ For now we will continue exploring. Now that we've seen the effect of resonance,
 ### Off resonance
 
 
-Let's change the frequency just a little bit to see how sensitive this resonance is. 
-
-We'll make $(\omega-\omega_0)/\omega_0 = 1\%$ 
-
-i.e $\omega=0.202$
+Let's start by changing the frequency so that $(\omega-\omega_0)/\omega_0 = 1\%$.
 
 ```python
 E0 = 1.0
@@ -325,6 +321,9 @@ df_off_res_basis.plot(title="Real part of amplitudes Re($\psi$)     (Fig 7)", ax
 ```
 
 
+
+
+We can see that the resonance is exquisitely sensitive. When the frequency is just 1% off resonance, the amplitude of probability oscillation is reduced to 20% of it's value at resonance. The Rabi frequency has also changed. The modified value is often called the [generalised Rabi frequency](https://en.wikipedia.org/wiki/Rabi_frequency#Generalized_Rabi_frequency) and has the form $\bar\Omega = \sqrt{\Omega^2 + (\omega-\omega_0)^2} =  \sqrt{\delta^2 + (\omega-\omega_0)^2} = \sqrt{0.001^2 + 0.002^2} = 0.002$, giving the period $2\pi/\bar\Omega = 2\pi/0.002 \approx 3100$ that we can see in Fig 8.
 
 ```python
 Ht = (H0+H1).transform([in_phase,out_phase])
