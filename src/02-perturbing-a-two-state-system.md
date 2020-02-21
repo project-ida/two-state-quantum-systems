@@ -29,54 +29,13 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from qutip import *
+import warnings
+warnings.filterwarnings('ignore')
 
 ## note, if you start getting errors when using pandas with complex numbers then update Pandas
 ## - there was a bug that's been recently fixed https://github.com/pandas-dev/pandas/issues/27484
-```
 
-## 2.1 Static perturbation
-
-<!-- #region -->
-Last time we looked at an isolated two state system whose energies were identical. The hamiltonian for this system looked like this
-
-
-$$
-H = \begin{bmatrix}
- E_0  &  0  \\
- 0  &  E_0  \\
-\end{bmatrix} = E_0 I
-$$
-
-where $I$ is the identity matrix.
-<!-- #endregion -->
-
-When we allowed the possibility that the two states could be coupled (qm tunneling) i.e. the Hamiltonian looks like:
-$$
-H = \begin{bmatrix}
- E_0  &  -A  \\
- -A  &  E_0  \\
-\end{bmatrix} = E_0 I - A \sigma_x
-$$
-
-We discovered that the two energy states split apart, $E_0+A$ and $E_0-A$.
-
-Now we are going to explore how this coupled two state system changes when we perturb it.
-
-
-
-
-Now we introduce a perturbation to the energy of the two states which differentiates between the two states. E.g. Applying an electric field to a molecule with a permanent dipole moment.
-
-$$
-H = \begin{bmatrix}
- E_0 + \delta  &  -A  \\
- -A  &  E_0 - \delta  \\
-\end{bmatrix} = E_0 I - A \sigma_x + \delta\sigma_z
-$$
-
-In effect we increase the energy of the |+> and lower the energy of the |->
-
-```python
+# Function created in 01 tutorial to make plotting of states calculated from `sesolve` easier
 def states_to_df(states,times):
     psi_plus = np.zeros(len(times),dtype="complex128")  # To store the amplitude of the |+> state
     psi_minus = np.zeros(len(times),dtype="complex128") # To store the amplitude of the |-> state
@@ -88,17 +47,59 @@ def states_to_df(states,times):
     return pd.DataFrame(data={"+":psi_plus, "-":psi_minus}, index=times)
 ```
 
+## 2.1 Static perturbation
+
+<!-- #region -->
+Last time we looked at an isolated two state system whose base states **|+>** and **|->** were represented as
+
+$$
+|+> = \begin{bmatrix}
+ 1   \\
+ 0   \\
+ \end{bmatrix}, 
+|-> = \begin{bmatrix}
+ 0   \\
+ 1   \\
+\end{bmatrix}
+$$
+
+and whose energies $E_0$ were identical. When we considered that coupling between the states could occur (with strength $A$), the hamiltonian for the system could then be represented as
+
+$$
+H = \begin{bmatrix}
+ E_0  &  -A  \\
+ -A  &  E_0  \\
+\end{bmatrix} = E_0 I - A \sigma_x
+$$
+
+
+where $I$ is the identity matrix and $ \sigma_x$ one of the Pauli matrices.
+<!-- #endregion -->
+
+In this tutorial, we will introduce a perturbation in energy, $\delta$, that differentiates between the two states. Physically, one can think of this as e.g. applying an electric field to a molecule with a permanent dipole moment - i.e. we couple the two state system to the "outside world". We can then represent the Hamiltonian as:
+
+$$
+H = \begin{bmatrix}
+ E_0 + \delta  &  -A  \\
+ -A  &  E_0 - \delta  \\
+\end{bmatrix} = E_0 I - A \sigma_x + \delta\sigma_z
+$$
+
+In effect this perturbation increase the energy of the |+> state and lowers the energy of the |-> state.
+
+Let's explore how this changes the previous case of an isolated two state system.
+
+
+As before, we represent the base states in QuTip as:
+
 ```python
 plus = basis(2, 0)
 minus = basis(2, 1)
-
-in_phase = (plus + minus).unit()
-out_phase = (plus - minus).unit()
 ```
 
-We'll begin by taking the purturbation $\delta = 2A$.
+We'll use the same parameters as in the pervious tutorial, i.e. $E_0=1$, $A=0.1$, throughout this tutorial.
 
-We also start exactly as last time (in FigXXXX) with the system in the |+> state. Also same coupling as last time A=0.1
+We'll begin by taking the purturbation to be $\delta = 2A$ and initialising the system in the |+> state.
 
 ```python
 E0 = 1.0
@@ -109,7 +110,6 @@ H = E0*qeye(2) - A*sigmax() + delta*sigmaz()
 
 times = np.linspace(0.0, 70.0, 1000) 
 
-# First let's get the evolution of the state when initialised as "in phase"
 result = sesolve(H, plus, times)
 df =  states_to_df(result.states, times)
 
@@ -121,7 +121,7 @@ df.plot(title="Real part of amplitudes Re($\psi$)     (Fig 1)", ax=axes[0]);
 (df.abs()**2).plot(title="Probabilities $|\psi|^2$     (Fig 2)", ax=axes[1]);
 ```
 
-Just as in the previous tutorial, we see Rabi oscillations in the probability because |+> and |-> are not stationary states. The behaviour is again like $\cos^2(\Omega t/2)$, but somewhat modified by the perturbation.
+Just as in the previous tutorial (see Figs 3 & 4), we see Rabi oscillations in the probability because |+> and |-> are not stationary states. The behaviour is again like $\cos^2(\Omega t/2)$, but somewhat modified by the perturbation.
 
 1. The period of oscillations has gone from 31 to about 14 (recall, we have kept A the same)
 2. Instead of a complete osciallation from 0 to 1 of both states, we see that we are more likely to find the state as |+>. 
@@ -241,6 +241,11 @@ Since we are perturbing the system only slightly, it makes sense to choose the b
 $\frac{|+> + \,\  |->}{\sqrt{2}}$ - in phase (a.k.a symmetric)
 
 $\frac{|+> - \,\  |->}{\sqrt{2}}$ - out of phase (a.k.a anti-symmetric)
+
+```python
+in_phase = (plus + minus).unit()
+out_phase = (plus - minus).unit()
+```
 
 Changing the basis of a state is actually very easy in QuTiP, we just take any state `s` and apply the [transform](http://qutip.org/docs/latest/apidoc/classes.html?highlight=transform#qutip.Qobj.transform) method to it `s.transform(new_base_states)`.
 
