@@ -276,7 +276,7 @@ The oscillation of the probability is again referred to as Rabi oscillations (or
 
 Specifically, $\Omega = \delta$, giving a period of $2\pi/\Omega = 2\pi/0.001 \approx 6300$.
 
-This result is not immediately intuitive (see [derivation](https://en.wikipedia.org/wiki/Rabi_problem#Semiclassical_approach)) - we will return to this at a later point. 
+This result is not immediately intuitive (see [derivation](https://en.wikipedia.org/wiki/Rabi_problem#Semiclassical_approach)), so we will return to this at a later point and derive it using perturbation theory.
 
 For now we will continue exploring. Now that we've seen the effect of resonance, it is natural to wonder how sensitive is the effect to changes in frequency.
 
