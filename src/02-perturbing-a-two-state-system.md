@@ -166,7 +166,7 @@ In the extreme, as $\delta\rightarrow \infty$, the energy asymptotically approac
 
 The form of the energy curve is actually a relatively simple formula $E_0 \pm \sqrt{A^2 + \delta^2}$ (we won't derive this result here, but instead link you to a [lecture from Richard Feynman](https://www.feynmanlectures.caltech.edu/III_09.html#Ch9-S2)). From this we can now calculate $\Omega = \Delta E = 2\sqrt{A^2 + \delta^2} = 2\sqrt{0.1^2 + 0.2^2} = 0.44$ giving a Rabi oscillation period of $2\pi/\Omega = 14$ that we saw graphically in Fig 2.
 
-For more of a deep dive into the dependence of energy on the various parts the Hamiltonian, consult the intimately topic of [avoided crossings](https://en.wikipedia.org/wiki/Avoided_crossing).
+For more of a deep dive into the dependence of energy on the various parts the Hamiltonian, consult the intimately connected topic of [avoided crossings](https://en.wikipedia.org/wiki/Avoided_crossing).
 
 
 
