@@ -132,7 +132,7 @@ Just as in the previous tutorial (see Figs 3 & 4), we see Rabi oscillations in t
 1. The period of oscillations has gone from 31 to about 14 (recall, we have kept A the same)
 2. Instead of a complete oscillation from 0 to 1 of both states, we see that we are more likely to find the state as |+>. 
 
-We can understand 2 by recalling that the perturbation creates an energy difference between the |+> and |->.  We can think of the perturbation as a barrier between the two states - the larger the barrier the less effective the coupling between the states will be and the more likely you'll stay in the state you started in.
+We can understand 2 by recalling that the perturbation creates an energy difference between the |+> and |->.  We can think of the perturbation as a splitting of the two level eigenvalues (at zero coupling) due to some external interaction. In the case of two wells separated by a barrier, the introduction of the $\delta$ corresponds to a lowering/raising of one of the two wells, keeping the other fixed and without changing the barrier in between.
 
 To understand 1 we recall that the Rabi frequency arises as the beating between the different frequencies of the stationary states, i.e. $\Omega = \Delta E$. We therefore need to calculate the energy of the stationary states, i.e. we need to calculate the eigenvalues of the Hamiltonian.
 
