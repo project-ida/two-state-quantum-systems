@@ -88,7 +88,7 @@ psi
 psi.dag() * ssz * psi
 ```
 
-A general quantum state of the vector product of two spin 1/2 particles as a linear combination
+## A general quantum state of the vector product of two spin 1/2 particles as a linear combination
 
 ```python
 uu=tensor(basis(2,0), basis(2,0))
@@ -96,10 +96,10 @@ ud=tensor(basis(2,0), basis(2,1))    #all combinations
 du=tensor(basis(2,1), basis(2,0))
 dd=tensor(basis(2,1), basis(2,1))
 
-a=Qobj([[2]])   #coefficients for all combinations
-b=Qobj([[1]])
-c=Qobj([[-3]])
-d=Qobj([[0]])
+a=1j   #coefficients for all combinations
+b=1
+c=0
+d=0
 
 psig= (a*uu + b*ud + c*du + d*dd).unit()
 psig
@@ -111,6 +111,38 @@ psig
 
 ```python
 psig.dag() * ssz * psig   
+```
+
+# Now we want to find the matrix representation of the operator $S^2$
+
+
+
+```python
+sigmam()
+```
+
+```python
+ssz
+ssx= tensor(sx,qeye(2)) + tensor(qeye(2),sx)
+ssy= tensor(sy,qeye(2)) + tensor(qeye(2),sy)
+
+ss2= ssx**2 + ssy**2 + ssz**2 # + 2*( tensor(sx,qeye(2)) * tensor(qeye(2),sx)  +  tensor(sy,qeye(2)) * tensor(qeye(2),sy) + tensor(sz,qeye(2)) * tensor(qeye(2),sz)   )
+ss2  #here is the total spin operator  
+```
+
+This operator should allow to understand when a state is in an eigenstate of the total angular momentum: as you see it is not diagonal, it means that in this representation $|1>\otimes |2>$ needs to be rotated in order to have a diagonal (degenerate) $S^2$
+
+```python
+evals, ekets = ss2.eigenstates()
+evals
+```
+
+```python
+ekets[0]
+```
+
+```python
+(ud.dag()*ekets[0])*(ekets[0].dag()*ud)
 ```
 
 ```python
