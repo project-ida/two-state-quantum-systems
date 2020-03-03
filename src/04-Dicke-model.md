@@ -65,18 +65,20 @@ gamma = 0.15
 ```
 
 ```python
-M = 16
-N = 4
+M = 16  #max number of photons (excitation of the boson field)
+N = 4   #number of spoin-1/2
 j = N/2.0
 n = 2*j + 1
 
+'I feel like that we are not considering the singlet and all the other j<2 states creating j'
+
 a  = tensor(destroy(M), qeye(n))
-Jp = tensor(qeye(M), jmat(j, '+'))
+Jp = tensor(qeye(M), jmat(j, '+'))   #jmat is a functin to create the total angular momentum operator
 Jm = tensor(qeye(M), jmat(j, '-'))
 Jz = tensor(qeye(M), jmat(j, 'z'))
 
 H0 = w * a.dag() * a + w0 * Jz
-H1 = 1.0 / sqrt(N) * (a + a.dag()) * (Jp + Jm)
+H1 = 1.0 / np.sqrt(N) * (a + a.dag()) * (Jp + Jm)
 H = H0 + g * H1
 
 H
@@ -94,8 +96,9 @@ hinton(H, ax=ax);
 ```python
 g_vec = np.linspace(0.01, 1.0, 20)
 
-# Ground state and steady state for the Hamiltonian: H = H0 + g * H1
+# Ground state and steady state for the Hamiltonian: H = H0 + g * H1V
 psi_gnd_list = [(H0 + g * H1).groundstate()[1] for g in g_vec]
+
 ```
 
 ## Cavity ground state occupation probability
