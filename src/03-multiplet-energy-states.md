@@ -34,35 +34,30 @@ sdw
 ```
 
 ```python
-sx=0.5*Qobj([[0, 1],[1, 0]])
-sx
-```
-
-```python
+sx=0.5*Qobj([[0, 1],[1, 0]])      #also 0.5*sigmax()
 sy=0.5*Qobj([[0, -1j],[+1j, 0]])
-sy
-```
-
-```python
 sz=0.5*Qobj([[1,0],[0,-1]])
-sz
+
 ```
 
 Once we created the conventional Spin projection matrices $S_i$, we can make the $S^2$
 
 ```python
-s2=sx*sx + sy*sy + sz*sz
+s2=sx**2 + sy**2 + sz**2
 s2
 ```
 
 ```python
-sup=fock(2,1)
+sup=fock(2,1)      #"excited" fock state that conventionally is spin down here
 
-sup.dag()*sz*sup
+sup.dag()*sz*sup   #explicit expectation value
+expect(sz,sup)     #Qutip function for expectation value
 ```
 
 ## Now we are ready to make a tensor product and produce a simple hamiltonian
 $$H = \sum_ {i}S_z ^{(i)}$$
+
+In this representation:  $$ 1/2 \otimes 1/2$$
 
 ```python
 sz_1=tensor(sz,qeye(2))
@@ -71,7 +66,7 @@ H = sz_1 + sz_2
 H
 ```
 
-But $H$ now seems to be the total $S_z=S_z^{(i)} +S_z^{(2)}$
+Now $H$ is the total $S_z=S_z^{(i)} +S_z^{(2)}$
 
 
 ## N.B. : in QuTip, excited 2D (fock) states are those with spin down
@@ -115,6 +110,9 @@ psig.dag() * ssz * psig
 
 # Now we want to find the matrix representation of the operator $S^2$
 
+According to these [lecture notes](https://ocw.mit.edu/courses/physics/8-05-quantum-physics-ii-fall-2013/lecture-notes/MIT8_05F13_Chap_10.pdf), eq. 2.9, 
+$$1 \oplus 0 = 1/2 \otimes 1/2$$ 
+we want find the right matrix representation for for a sum of angular momenta as described in eq. 2.19.
 
 
 ```python
@@ -126,7 +124,7 @@ ssz
 ssx= tensor(sx,qeye(2)) + tensor(qeye(2),sx)
 ssy= tensor(sy,qeye(2)) + tensor(qeye(2),sy)
 
-ss2= ssx**2 + ssy**2 + ssz**2 # + 2*( tensor(sx,qeye(2)) * tensor(qeye(2),sx)  +  tensor(sy,qeye(2)) * tensor(qeye(2),sy) + tensor(sz,qeye(2)) * tensor(qeye(2),sz)   )
+ss2= ssx**2 + ssy**2 + ssz**2 # + 2* tensor(sx,qeye(2)) * tensor(qeye(2),sx)  +  tensor(sigmam(),qeye(2)) * tensor(qeye(2),sigmap()) + tensor(sigmap(),qeye(2)) * tensor(qeye(2),sigmam())   
 ss2  #here is the total spin operator  
 ```
 
@@ -149,6 +147,24 @@ ekets[0]
 
 ```python
 jmat(0, '-')
+```
+
+```python
+sigmam()
+```
+
+```python
+kk=(tensor(sx,qeye(2)) + tensor(qeye(2),sx))**2
+kk
+```
+
+```python
+kk=tensor(sx,qeye(2))**2 + tensor(qeye(2),sx)**2
+kk
+```
+
+```python
+
 ```
 
 ```python
