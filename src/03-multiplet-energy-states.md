@@ -13,10 +13,10 @@ jupyter:
     name: python3
 ---
 
-# Making sense of the total spin operator in the energy levels analogy
+# Making sense of the total spin operator (and the energy level analogy)
 
-$S$ is always thought as the combination of many total spin operators, $S^2$ should have a clear matrix form. 
-In this notebook we investigate the behavior of $S^2$ and the analogy that people make with [energy level states](https://coldfusionblog.net/2014/05/19/introduction-to-superradiance/)
+$S$ or $J$ is always thought as the combination of many total spin operators, $S^2$ should have a clear matrix form. 
+In this notebook we investigate the behavior of $S^2$ and the analogy that people make when **dealing with [energy level states](https://coldfusionblog.net/2014/05/19/introduction-to-superradiance/)**
 
 ```python
 %matplotlib inline
@@ -28,7 +28,7 @@ import matplotlib.pyplot as plt
 ```
 
 ```python
-sup=Qobj([[1],[0]])
+sup=Qobj([[1],[0]])  #warming up with spin up and down
 sdw=Qobj([[0],[1]])
 sdw
 ```
@@ -69,7 +69,7 @@ H
 Now $H$ is the total $S_z=S_z^{(i)} +S_z^{(2)}$
 
 
-## N.B. : in QuTip, excited 2D (fock) states are those with spin down
+***N.B. : in QuTip, excited 2D (fock) states are those with spin down***
 
 ```python
 ssz=H
@@ -80,10 +80,12 @@ psi
 ## Average value of $S_z$ in a composite state (tensor product state)
 
 ```python
-psi.dag() * ssz * psi
+expect(ssz, psi)
 ```
 
-## A general quantum state of the vector product of two spin 1/2 particles as a linear combination
+### A general quantum state of the vector product of two spin 1/2 particles ($ 1/2 \otimes 1/2$), constructed as a linear combination
+
+Let's see how it works and how it behaves when feeded to the Hamiltonian
 
 ```python
 uu=tensor(basis(2,0), basis(2,0))
@@ -102,7 +104,7 @@ psig
 
 ```
 
-## Average value of $S_z$ in a general state
+### Average value of $S_z$ in a general state
 
 ```python
 psig.dag() * ssz * psig   
@@ -110,13 +112,24 @@ psig.dag() * ssz * psig
 
 # Now we want to find the matrix representation of the operator $S^2$
 
-According to these [lecture notes](https://ocw.mit.edu/courses/physics/8-05-quantum-physics-ii-fall-2013/lecture-notes/MIT8_05F13_Chap_10.pdf), eq. 2.9, 
+According to these [lecture notes](https://ocw.mit.edu/courses/physics/8-05-quantum-physics-ii-fall-2013/lecture-notes/MIT8_05F13_Chap_10.pdf), eq. 2.9, the representatin we are intereste in is
 $$1 \oplus 0 = 1/2 \otimes 1/2$$ 
-we want find the right matrix representation for for a sum of angular momenta as described in eq. 2.19.
+we want find the right matrix representation for a sum of angular momenta as described in eq. 2.19:
 
+$$ S^2 = (S^{(1)} + S^{(2)})^2 = (S^{(1)})^2 + (S^{(2)})^2 + 2S^{(1)}\cdot S^{(2)} $$
+$$  = (S^{(1)})^2 + (S^{(2)})^2 + 2S_z^{(1)} S_z^{(2)} + S_-^{(1)} S_+^{(2)}  + S_+^{(1)} S_-^{(2)} $$
+
+where, to be fully explicit, $S^{(1)}=S \otimes  1$
+
+While, for calculating the square $(S^{(1)})^2$ we follow the intuitive rule of equation 1.26 [here](https://ocw.mit.edu/courses/physics/8-05-quantum-physics-ii-fall-2013/lecture-notes/MIT8_05F13_Chap_09.pdf)
+Then it follows that
+
+$$ S^2 = S_x^2 + S_y^2 + S_z^2  $$
+
+which is simpler, since we already found the components of the total angular momentum (spin).
 
 ```python
-sigmam()
+
 ```
 
 ```python
@@ -146,11 +159,11 @@ ekets[0]
 # $1 \oplus 0 = 1/2 \otimes 1/2$  : we should find the right representation for this
 
 ```python
-jmat(0, '-')
+jmat(0.5, 'z')
 ```
 
 ```python
-sigmam()
+sz
 ```
 
 ```python
