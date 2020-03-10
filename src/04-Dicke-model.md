@@ -28,12 +28,16 @@ import numpy as np
 from qutip import *
 ```
 
+<!-- #region -->
 ## Introduction
 
 The Dicke Hamiltonian consists of a cavity mode and $N$ spin-1/2 coupled to the cavity:
 
 <center>
 $\displaystyle H_D = \omega_0 \sum_{i=1}^N \sigma_z^{(i)} + \omega a^\dagger a + \sum_{i}^N \frac{\lambda}{\sqrt{N}}(a + a^\dagger)(\sigma_+^{(i)}+\sigma_-^{(i)})$
+    
+This can be written in terms of the total Energy multiplet state (total angular momentum formalism), without considering the lower multiplet states because the Hamiltonian $H$ commute with $S^2$, and therefore the time evolution does not involve a change of $S^2$: we will remain in the same Hilbert subspace.
+
 
 $\displaystyle H_D = \omega_0 J_z + \omega a^\dagger a +  \frac{\lambda}{\sqrt{N}}(a + a^\dagger)(J_+ + J_-)$
 </center>
@@ -49,7 +53,10 @@ $\displaystyle J_\pm = \sum_{i=1}^N \sigma_\pm^{(i)}$
 ### References
 
  * [R.H. Dicke, Phys. Rev. 93, 99–110 (1954)](http://dx.doi.org/10.1103/PhysRev.93.99)
-
+ 
+ 
+## *Still I have to figure out why it make sense to consider a total spin $S^2$ formalism since we deal  with energy: What is the physical meaning of $S^2$ here?*
+<!-- #endregion -->
 
 ## Setup problem in QuTiP
 
