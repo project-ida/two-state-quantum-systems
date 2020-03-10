@@ -156,26 +156,6 @@ ekets[0]
 (ud.dag()*ekets[0])*(ekets[0].dag()*ud)
 ```
 
-# $1 \oplus 0 = 1/2 \otimes 1/2$  : we should find the right representation for this
-
-```python
-jmat(0.5, 'z')
-```
-
-```python
-sz
-```
-
-```python
-kk=(tensor(sx,qeye(2)) + tensor(qeye(2),sx))**2
-kk
-```
-
-```python
-kk=tensor(sx,qeye(2))**2 + tensor(qeye(2),sx)**2
-kk
-```
-
 ```python
 
 ```

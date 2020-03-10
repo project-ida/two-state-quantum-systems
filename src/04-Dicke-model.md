@@ -211,13 +211,13 @@ def calulcate_entropy(M, N, g_vec):
     Jz = tensor(qeye(M), jmat(j, 'z'))
 
     H0 = w * a.dag() * a + w0 * Jz
-    H1 = 1.0 / sqrt(N) * (a + a.dag()) * (Jp + Jm)
+    H1 = 1.0 / np.sqrt(N) * (a + a.dag()) * (Jp + Jm)
 
     # Ground state and steady state for the Hamiltonian: H = H0 + g * H1
     psi_gnd_list = [(H0 + g * H1).groundstate()[1]  for g in g_vec]
     
-    entropy_cavity = zeros(shape(g_vec))
-    entropy_spin   = zeros(shape(g_vec))
+    entropy_cavity = np.zeros(shape(g_vec))
+    entropy_spin   = np.zeros(shape(g_vec))
 
     for idx, psi_gnd in enumerate(psi_gnd_list):
 
@@ -256,7 +256,7 @@ axes.legend()
 # average number thermal photons in the bath coupling to the resonator
 n_th = 0.25
 
-c_ops = [sqrt(kappa * (n_th + 1)) * a, sqrt(kappa * n_th) * a.dag()]
+c_ops = [np.sqrt(kappa * (n_th + 1)) * a, np.sqrt(kappa * n_th) * a.dag()]
 #c_ops = [sqrt(kappa) * a, sqrt(gamma) * Jm]
 ```
 
@@ -313,7 +313,7 @@ for idx, rho_ss in enumerate(rho_ss_sublist):
 
     # plot its fock-state distribution
     ax = plt.subplot2grid(fig_grid, (1, idx))
-    ax.bar(arange(0, M), real(rho_ss_cavity.diag()), color="blue", alpha=0.6)
+    ax.bar(np.arange(0, M), np.real(rho_ss_cavity.diag()), color="blue", alpha=0.6)
     ax.set_ylim(0, 1)
     
 # plot the cavity occupation probability in the ground state
@@ -332,9 +332,9 @@ for g in g_vec[::4]:
 ## Entropy
 
 ```python
-entropy_tot    = zeros(shape(g_vec))
-entropy_cavity = zeros(shape(g_vec))
-entropy_spin   = zeros(shape(g_vec))
+entropy_tot    = np.zeros(shape(g_vec))
+entropy_cavity = np.zeros(shape(g_vec))
+entropy_spin   = np.zeros(shape(g_vec))
 
 for idx, rho_ss in enumerate(rho_ss_list):
 
@@ -365,4 +365,8 @@ fig.tight_layout()
 from qutip.ipynbtools import version_table
 
 version_table()
+```
+
+```python
+
 ```
