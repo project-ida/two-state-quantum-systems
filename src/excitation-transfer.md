@@ -81,15 +81,13 @@ in_phase = (plus + minus).unit()
 out_phase = (plus - minus).unit()
 ```
 
-It is often convenient to represent the system in terms of its stationary states, i.e. use the stationary states to form a new basis. Let' see what the Hamiltonian looks like when we do this.
-
-Let's continue to use our previous values for $E_0$ and $A$
+It is often convenient to represent the system in terms of its stationary states, i.e. use the stationary states to form a new basis. Let's see what the Hamiltonian looks like when we do this.
 
 ```python
 H.transform([out_phase,in_phase])
 ```
 
-The transformed Hamiltonian can be represented as 
+As we can see, the transformed Hamiltonian can be represented as 
 
 $$
 H = \begin{bmatrix}
@@ -98,7 +96,7 @@ H = \begin{bmatrix}
 \end{bmatrix} = E_0 I + A \sigma_z
 $$
 
-Because it is only energy differences that can be physically measured, $E_0$ is often set to zero for convenience, leaving us with
+Because it is only energy differences that can be physically measured, $E_0$ is often set to zero for convenience. We will follow this convention for the rest of this notebook. Our two state Hamiltonian is then:
 
 $$
 H = \begin{bmatrix}
@@ -133,7 +131,7 @@ M = 3                # M-1 is maximum number of phonons to simulate
 >TODO: Need to physically motivate the interaction terms in H
 
 
-We'll begin with a strong coupling, in the sense that $g=A$
+We'll begin with a strong coupling, i.e. $g\sim A$
 
 ```python
 g = 0.1
@@ -170,7 +168,7 @@ Now that we are using tensor products it can be a bit confusing to understand wh
 H.dims[0]
 ```
 
-The first number tells us the number of different states the phonon field can be in (i.e. 0, 1 or 2 phonons). The other two numbers tell us the number of states that our two-systems can be in (obviously there are 2, the clue is in the name ;-)).
+The first number tells us the number of different states the phonon field can be in (i.e. 0, 1 or 2 phonons). The other two numbers tell us the number of states that our two-systems can be in (obviously there are 2, the clue is in the name 😉).
 
 The total number of states is given by 3x2x2 = 12. The amplitude for the system at any one time is therefore a vector of length 12 which conceptually can be represented as:
 
@@ -191,7 +189,7 @@ $$
 \end{bmatrix}
 $$
 
-Where the first number, e.g. 0,1,2 is the number of phonons in the field, the first ± represents the state of the first two state system, and the second ± represents the state of the second two state system.
+Where the first number, i.e. 0,1 or 2, is the number of phonons in the field, the first ± represents the state of the first two state system, and the second ± represents the state of the second two state system.
 
 
 
@@ -267,7 +265,7 @@ $$
 \end{bmatrix} 
 $$
 
-We'll need to set our initial state to be:
+We'll therefore need to set our initial state to be:
 
 ```python
 psi0 =  tensor(basis(M, 0), basis(2, 0), basis(2, 1))
@@ -275,19 +273,21 @@ psi0 =  tensor(basis(M, 0), basis(2, 0), basis(2, 1))
 
 i.e. we start off with no phonons, particle 1 in an excited (+) state and particle 2 in a lower energy (-) state.
 
+Now we will solve the Schrödinger equation
+
 ```python
 times = np.linspace(0.0, 500.0, 10000) # simulation time
 result = sesolve(H, psi0, times) 
 ```
 
 ```python
-df_excited = states_to_df(result.states, times)
+df = states_to_df(result.states, times)
 ```
 
 ```python
 fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(15,6))
-df_excited.plot(title="Real part of amplitudes Re($\psi$)     (Fig 1)", ax=axes[0]);
-(df_excited.abs()**2).plot(title="Probabilities $|\psi|^2$     (Fig 2))", ax=axes[1]);
+df.plot(title="Real part of amplitudes Re($\psi$)     (Fig 1)", ax=axes[0]);
+(df.abs()**2).plot(title="Probabilities $|\psi|^2$     (Fig 2))", ax=axes[1]);
 ```
 
 From Fig 2 we can see that system starts off with particle number 1 excited (orange line) and over time the excitation is transfered to particle number 2 (green line). This transfer appears to have been mediated by phonons with much less energy than the transition energy of the particle - recall that:
@@ -316,7 +316,3 @@ plt.legend();
 ```
 
 To be continued ...
-
-```python
-
-```
