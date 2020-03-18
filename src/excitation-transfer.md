@@ -367,7 +367,39 @@ df.plot(title="Real part of amplitudes Re($\psi$)     (Fig 5)", ax=axes[0]);
 plt.legend(loc="right");
 ```
 
-Fig 6 seems to show that, even when the coupling is very weak, we can still get what we might call non-resonant excitation transfer - it just takes a long time. This is unlike the case in the previous tutorial where an off-resonant perturbation from an external (non quantised field) was not able to cause a complete transition form one state to another.
+Fig 6 seems to show that, even when the coupling is very weak, we can still get what we might call non-resonant excitation transfer - it just takes a long time. This is unlike the case in the previous tutorial where an off-resonant perturbation from an external (non quantised field) was not able to cause a complete transition form one state to another (see Fig 9). Note that we can the same result if we allow 19 phonons to be present, i.e. $M=20$ (it just takes a long time to run so we don't do it here).
+
+
+We can look at the expectation values of the different parts of the Hamiltonian to give us more insight.
+
+```python
+result = sesolve(H, psi0, times, [two_state_1, two_state_2, phonons, interaction]) 
+```
+
+```python
+plt.figure(figsize=(8,6))
+plt.plot(times,result.expect[0], label="Particle 1 energy")
+plt.plot(times,result.expect[1], label="Particle 2 energy")
+plt.plot(times,result.expect[2], label="Phonon energy")
+plt.plot(times,result.expect[3], label="Interaction energy")
+plt.legend();
+```
+
+We can hardly see the phonon, or interaction energy so let's look at them separately.
+
+```python
+plt.figure(figsize=(8,6))
+plt.plot(times,result.expect[2],  label="Phonon energy")
+plt.legend();
+```
+
+```python
+plt.figure(figsize=(8,6))
+plt.plot(times,result.expect[3],  label="Interaction energy")
+plt.legend();
+```
+
+The phonon and interaction energy are both very small. I'm not sure how to interpret this yet and whether it is physical.
 
 
 ... To be continued
