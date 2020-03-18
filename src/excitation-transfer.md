@@ -204,7 +204,7 @@ def states_to_df(states,times):
     
     data = {}
     for i in range(0,states[0].shape[0]):
-        which_mode = divmod(i,M+1)
+        which_mode = divmod(i,4)
         if which_mode[1] == 0:
             two_state = "+ , +"
         elif which_mode[1] == 1:
@@ -217,7 +217,7 @@ def states_to_df(states,times):
     
     for i, state in enumerate(states):
         for j, psi in enumerate(state):
-            which_mode = divmod(j,M+1)
+            which_mode = divmod(j,4)
             if which_mode[1] == 0:
                 two_state = "+ , +"
             elif which_mode[1] == 1:
@@ -234,7 +234,7 @@ def states_to_df(states,times):
 ## Simulation
 
 
-Excitation transfer in the context of our tensor product notation would correspond to the following change of state 
+Excitation transfer in the context of our tensor product notation would correspond to the following change of state
 
 $$
  \begin{bmatrix}
@@ -267,6 +267,8 @@ $$
  0   \\
 \end{bmatrix} 
 $$
+
+(ignoring phase factors like $e^{i\phi}$). 
 
 We'll therefore need to set our initial state to be:
 
@@ -318,5 +320,3 @@ plt.plot(times, result.expect[1], label="Particle 2 energy")
 plt.plot(times, result.expect[2], label="Field energy")
 plt.legend();
 ```
-
-To be continued ...
