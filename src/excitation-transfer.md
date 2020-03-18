@@ -349,7 +349,7 @@ df.plot(title="Real part of amplitudes Re($\psi$)     (Fig 3)", ax=axes[0]);
 plt.legend(loc="right");
 ```
 
-Fig 4 shows us that no excitation transfer takes place. This is perhaps not so surprising because the frequency of the phonons is not resonant with the two state transition, i.e. $E_{phonon}  \neq 2A \equiv \omega_0$. We learnt in the last tutorial that being of resonance by just 1% had a profound affect on the dynamics - full transfer from one state to another did not occur. In the above simulation $|E_{phonon}-\omega_0| / \omega_0 = 90\%$!
+Fig 4 shows us that no excitation transfer takes place. This is perhaps not so surprising because the frequency of the phonons is not resonant with the two state transition, i.e. $E_{phonon}  \neq 2A \equiv \omega_0$. We learnt in the last tutorial that being off resonance by just 1% had a profound affect on the dynamics - full transfer from one state to another did not occur. In the above simulation $|E_{phonon}-\omega_0| / \omega_0 = 90\%$!
 
 We are however working with a quantised field now, so maybe things aren't quite the same. Let's try running the simulation for a longer time.
 
