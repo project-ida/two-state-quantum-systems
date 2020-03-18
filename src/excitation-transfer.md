@@ -306,17 +306,72 @@ E_phonon
 2*A
 ```
 
-We can start to dig into this a bit more by looking at the expectation value of the different parts of the Hamiltonian
+We must however also recall that so far $g=A$ and so there is a strong coupling between the two state systems and the field. It might be more physically realistic to took at the case where the coupling to the field is a small perturbation. We will proceed in the same way as we did in `02-perturbing-a-two-state-system`, i.e. set $g/A = 0.01 \ll 1$
+
+
+### Weak coupling
+
+
+We start by only changing the coupling strength and keep everything else the same
 
 ```python
-result = sesolve(H, psi0, times, [two_state_1, two_state_2, phonons]) 
+A = 0.1
+N = 10                 # number of phonon quanta needed to exite the particle
+E_phonon = 2*A / N     # phonon energy
+M =  3                 # M-1 is maximum number of phonons to simulate
+g = 0.001              # weak coupling
+
+a  = tensor(destroy(M), qeye(2), qeye(2))  # phonon destruction operator
+sm1 = tensor(qeye(M), sigmam(), qeye(2))   # sigma_minus operator for two-state system number 1 
+sz1 = tensor(qeye(M), sigmaz(),  qeye(2))  # sigma_z for two-state system number 1 
+sm2 = tensor(qeye(M), qeye(2), sigmam())   # sigma_minus operator for two-state system number 2
+sz2 = tensor(qeye(M), qeye(2), sigmaz())   # sigma_z for two-state system number 2
+
+two_state_1  =    A*sz1
+two_state_2  =    A*sz2
+phonons      =    E_phonon*a.dag()*a
+interaction  =    g*(a.dag() + a) * (sm1 + sm1.dag()) + g*(a.dag() + a) * (sm2 + sm2.dag())
+
+H = two_state_1 + two_state_2 + phonons + interaction
 ```
 
 ```python
-plt.figure(figsize=(8,6))
-plt.title("Expectation values of energy     (Fig 3)")
-plt.plot(times, result.expect[0], label="Particle 1 energy")
-plt.plot(times, result.expect[1], label="Particle 2 energy")
-plt.plot(times, result.expect[2], label="Field energy")
-plt.legend();
+psi0 =  tensor(basis(M, 0), basis(2, 0), basis(2, 1))
+times = np.linspace(0.0, 5000.0, 1000) # simulation time
+result = sesolve(H, psi0, times) 
+df = states_to_df(result.states, times)
+```
+
+```python
+fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(15,6))
+df.plot(title="Real part of amplitudes Re($\psi$)     (Fig 3)", ax=axes[0]);
+(df.abs()**2).plot(title="Probabilities $|\psi|^2$     (Fig 4))", ax=axes[1]);
+plt.legend(loc="right");
+```
+
+Fig 4 shows us that no excitation transfer takes place. This is perhaps not so surprising because the frequency of the phonons is not resonant with the two state transition, i.e. $E_{phonon}  \neq 2A \equiv \omega_0$. We learnt in the last tutorial that being of resonance by just 1% had a profound affect on the dynamics - full transfer from one state to another did not occur. In the above simulation $|E_{phonon}-\omega_0| / \omega_0 = 90\%$!
+
+We are however working with a quantised field now, so maybe things aren't quite the same. Let's try running the simulation for a longer time.
+
+```python
+psi0 =  tensor(basis(M, 0), basis(2, 0), basis(2, 1))
+times = np.linspace(0.0, 5000000.0, 10000) # simulation time
+result = sesolve(H, psi0, times) 
+df = states_to_df(result.states, times)
+```
+
+```python
+fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(15,6))
+df.plot(title="Real part of amplitudes Re($\psi$)     (Fig 5)", ax=axes[0]);
+(df.abs()**2).plot(title="Probabilities $|\psi|^2$     (Fig 6))", ax=axes[1]);
+plt.legend(loc="right");
+```
+
+Fig 6 seems to show that, even when the coupling is very weak, we can still get what we might call non-resonant excitation transfer - it just takes a long time. This is unlike the case in the previous tutorial where an off-resonant perturbation from an external (non quantised field) was not able to cause a complete transition form one state to another.
+
+
+... To be continued
+
+```python
+
 ```
