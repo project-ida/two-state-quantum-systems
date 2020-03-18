@@ -13,6 +13,9 @@ jupyter:
     name: python3
 ---
 
+<a href="https://colab.research.google.com/github/project-ida/two-state-quantum-systems/blob/matt-sandbox/excitation-transfer.ipynb\" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <a href="https://nbviewer.jupyter.org/github/project-ida/two-state-quantum-systems/blob/matt-sandbox/excitation-transfer.ipynb" target="_parent"><img src="https://nbviewer.jupyter.org/static/img/nav_logo.svg" alt="Open In nbviewer" width="100"/></a>
+
+
 # Excitation transfer
 
 
@@ -309,6 +312,7 @@ result = sesolve(H, psi0, times, [two_state_1, two_state_2, phonons])
 
 ```python
 plt.figure(figsize=(8,6))
+plt.title("Expectation values of energy     (Fig 3)")
 plt.plot(times, result.expect[0], label="Particle 1 energy")
 plt.plot(times, result.expect[1], label="Particle 2 energy")
 plt.plot(times, result.expect[2], label="Field energy")
