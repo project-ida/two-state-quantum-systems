@@ -27,6 +27,7 @@ This notebook is a first attempt at trying to observe an excitation transfer eve
 ```python
 %matplotlib inline
 import matplotlib.pyplot as plt
+from IPython.display import Image
 import numpy as np
 import pandas as pd
 from qutip import *
@@ -162,10 +163,12 @@ interaction  =    g*(a.dag() + a) * (sm1 + sm1.dag()) + g*(a.dag() + a) * (sm2 +
 H = two_state_1 + two_state_2 + phonons + interaction
 ```
 
-## Understanding the state vector
+## Understanding the mechanism for excitation transfer
 
 
-Now that we are using tensor products it can be a bit confusing to understand what everything means. Let's look at the dimensions for the Hamiltonian.
+To understand the mechanics of excitation transfer, we need to understand a bit more of the Hamiltonian we've just created.
+
+Now that we are using tensor products it can be a bit confusing to understand what everything means. Let's look at the dimensions for the Hamiltonian first.
 
 ```python
 H.dims[0]
@@ -173,7 +176,33 @@ H.dims[0]
 
 The first number tells us the number of different states the phonon field can be in (i.e. 0, 1 or 2 phonons). The other two numbers tell us the number of states that our two-systems can be in (obviously there are 2, the clue is in the name 😉).
 
-The total number of states is given by 3x2x2 = 12. The amplitude for the system at any one time is therefore a vector of length 12 which conceptually can be represented as:
+The total number of states is given by 3x2x2 = 12. 
+
+We can understand these 12 states and how they are coupled by visualising the Hamiltoniain. In QutTiP we can do this with the [`hinton`](http://qutip.org/docs/latest/apidoc/functions.html?highlight=hinton#module-qutip.visualization) function.
+
+```python
+f, ax = hinton(H)
+ax.tick_params(axis='x',labelrotation=90)
+ax.set_title("Matrix elements of H     (Fig 1)");
+```
+
+The states are enumerated by $|n,m_1,m_2>$, where $n$ is the number of phonons and $m_i$ describes the state of the ith particle (0 is the higher energy `+` state, 1 is the lower energy `-` state).
+
+The colour of each square of the Hinton diagram indicates the value of what we call the matrix elements of $H$. We write this as $<a,b,c |H| d,e,f>$, were a, b, c, d, e, f are the different numbers representing the 12 states. The matrix elements tell us how coupled the various states are to each other. In essence, the matrix elements tell us whether (and how quickly) one state can directly transition into another state.
+
+For example, $<0,0,1 |H| 0,1,0>$ is a matrix element that describes excitation transfer from particle 1 to particle 2. We can see from Fig 1 that $<0,0,1 |H| 0,1,0> = 0$. We can therefore already tell, just by looking at the this plot, that there cannot be a direct transfer of an excitation from particle 1 to particle 2. There can however be excitation transfer mediated by $|1,0,0>$ and $|1,1,1>$ because both of these states couple to the initial ($| 0,0,1>$) and final ($| 0,1,0>$) states. 
+
+Let's visually trace the path of an indirect excitation transfer from $| 0,0,1> \rightarrow |1,0,0> \rightarrow | 0,1,0>$.
+
+```python
+print("                Matrix elements of H     (Fig 2)")
+Image(filename='indirect-transfer.png') 
+```
+
+## Understanding the state vector
+
+
+We've seen that there are 12 possible states for the system. It can be helpful to represent the levels of the two state systems using ± notation rather than the 0,1 notation. This helps us remember which state has the higher/lower energy. The amplitude for the system at any time cant then be represented conceptually as:
 
 $$
 \begin{bmatrix}
@@ -234,8 +263,8 @@ def states_to_df(states,times):
 ## Simulation
 
 
-Excitation transfer in the context of our tensor product notation would correspond to the following change of state
-
+We are going simulate the system described by $H$ above and see whether we can observe an indirect excitation transfer event from
+$| 0,0,1> \rightarrow | 0,1,0> $. In the context of our tensor product notation, we will be looking for a change of state vector like this:
 $$
  \begin{bmatrix}
  0    \\
@@ -268,7 +297,7 @@ $$
 \end{bmatrix} 
 $$
 
-(ignoring phase factors like $e^{i\phi}$). 
+(ignoring phase factors like $e^{i\phi}$).
 
 We'll therefore need to set our initial state to be:
 
@@ -291,11 +320,11 @@ df = states_to_df(result.states, times)
 
 ```python
 fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(15,6))
-df.plot(title="Real part of amplitudes Re($\psi$)     (Fig 1)", ax=axes[0]);
-(df.abs()**2).plot(title="Probabilities $|\psi|^2$     (Fig 2))", ax=axes[1]);
+df.plot(title="Real part of amplitudes Re($\psi$)     (Fig 3)", ax=axes[0]);
+(df.abs()**2).plot(title="Probabilities $|\psi|^2$     (Fig 4))", ax=axes[1]);
 ```
 
-From Fig 2 we can see that system starts off with particle number 1 excited (orange line) and over time the excitation is transfered to particle number 2 (green line). This transfer appears to have been mediated by phonons with much less energy than the transition energy of the particle - recall that:
+From Fig 4 we can see that system starts off with particle number 1 excited (orange line) and over time the excitation is transfered to particle number 2 (green line). This transfer appears to have been mediated by phonons with much less energy than the transition energy of the particle - recall that:
 
 ```python
 E_phonon
@@ -344,12 +373,12 @@ df = states_to_df(result.states, times)
 
 ```python
 fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(15,6))
-df.plot(title="Real part of amplitudes Re($\psi$)     (Fig 3)", ax=axes[0]);
-(df.abs()**2).plot(title="Probabilities $|\psi|^2$     (Fig 4))", ax=axes[1]);
+df.plot(title="Real part of amplitudes Re($\psi$)     (Fig 5)", ax=axes[0]);
+(df.abs()**2).plot(title="Probabilities $|\psi|^2$     (Fig 6))", ax=axes[1]);
 plt.legend(loc="right");
 ```
 
-Fig 4 shows us that no excitation transfer takes place. This is perhaps not so surprising because the frequency of the phonons is not resonant with the two state transition, i.e. $E_{phonon}  \neq 2A \equiv \omega_0$. We learnt in the last tutorial that being off resonance by just 1% had a profound affect on the dynamics - full transfer from one state to another did not occur. In the above simulation $|E_{phonon}-\omega_0| / \omega_0 = 90\%$!
+Fig 6 shows us that no excitation transfer takes place. This is perhaps not so surprising because the frequency of the phonons is not resonant with the two state transition, i.e. $E_{phonon}  \neq 2A \equiv \omega_0$. We learnt in the last tutorial that being off resonance by just 1% had a profound affect on the dynamics - full transfer from one state to another did not occur. In the above simulation $|E_{phonon}-\omega_0| / \omega_0 = 90\%$!
 
 We are however working with a quantised field now, so maybe things aren't quite the same. Let's try running the simulation for a longer time.
 
@@ -362,18 +391,18 @@ df = states_to_df(result.states, times)
 
 ```python
 fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(15,6))
-df.plot(title="Real part of amplitudes Re($\psi$)     (Fig 5)", ax=axes[0]);
-(df.abs()**2).plot(title="Probabilities $|\psi|^2$     (Fig 6))", ax=axes[1]);
+df.plot(title="Real part of amplitudes Re($\psi$)     (Fig 7)", ax=axes[0]);
+(df.abs()**2).plot(title="Probabilities $|\psi|^2$     (Fig 8))", ax=axes[1]);
 plt.legend(loc="right");
 ```
 
-Fig 6 seems to show that, even when the coupling is very weak, we can still get what we might call non-resonant excitation transfer - it just takes a long time. This is unlike the case in the previous tutorial where an off-resonant perturbation from an external (non quantised field) was not able to cause a complete transition form one state to another (see Fig 9). Note that we can the same result if we allow 19 phonons to be present, i.e. $M=20$ (it just takes a long time to run so we don't do it here).
+Fig 8 seems to show that, even when the coupling is very weak, we can still get what we might call non-resonant excitation transfer - it just takes a long time. This is unlike the case in the previous tutorial where an off-resonant perturbation from an external (non quantised field) was not able to cause a complete transition form one state to another (see Fig 9). Note that we can the same result if we allow 19 phonons to be present, i.e. $M=20$ (it just takes a long time to run so we don't do it here).
 
 
 At first glance it might seem surprising that we don't see anything from states with 1 or 2 phonons. We must however recognise that the coupling of the 2 particles to the field, i.e. `g` is the same for both. Therefore any shifting of the two state energy levels due to the field (often referred to as `dressed` states/levels) will also be the same for both, i.e. there is no energy difference between +- and -+ and so no energetic need for a phonon to be involved in the transfer. Hagelstein discusses this in more depth in his paper [Excitation transfer in two two-level systems coupled to an oscillator](https://arxiv.org/abs/0803.1906v1) (in particular Eq 31, with g1=g2).
 
 
-The Hagelstein paper above also gives an expression for the effective excitation transfer coupling between the two particles (his Eq 14). The coupling is proportional to the phonon energy. As we have seen in previous tutorials, rabi type oscillations occur at a freuency determined by the couping strength. We can therefore expect to find that by doubling our phonon energy the period of oscillation seen in Fig 6 will half. Let's see. 
+The Hagelstein paper above also gives an expression for the effective excitation transfer coupling between the two particles (his Eq 14). The coupling is proportional to the phonon energy. As we have seen in previous tutorials, rabi type oscillations occur at a freuency determined by the couping strength. We can therefore expect to find that by doubling our phonon energy the period of oscillation seen in Fig 8 will half. Let's see. 
 
 
 To double the phonon energy we must change $N$ from 10 to 5.
@@ -408,8 +437,8 @@ df = states_to_df(result.states, times)
 
 ```python
 fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(15,6))
-df.plot(title="Real part of amplitudes Re($\psi$)     (Fig 5)", ax=axes[0]);
-(df.abs()**2).plot(title="Probabilities $|\psi|^2$     (Fig 6))", ax=axes[1]);
+df.plot(title="Real part of amplitudes Re($\psi$)     (Fig 9)", ax=axes[0]);
+(df.abs()**2).plot(title="Probabilities $|\psi|^2$     (Fig 10))", ax=axes[1]);
 plt.legend(loc="right");
 ```
 
