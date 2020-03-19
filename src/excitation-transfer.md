@@ -370,40 +370,47 @@ plt.legend(loc="right");
 Fig 6 seems to show that, even when the coupling is very weak, we can still get what we might call non-resonant excitation transfer - it just takes a long time. This is unlike the case in the previous tutorial where an off-resonant perturbation from an external (non quantised field) was not able to cause a complete transition form one state to another (see Fig 9). Note that we can the same result if we allow 19 phonons to be present, i.e. $M=20$ (it just takes a long time to run so we don't do it here).
 
 
-We can look at the expectation values of the different parts of the Hamiltonian to give us more insight.
+At first glance it might seem surprising that we don't see anything from states with 1 or 2 phonons. We must however recognise that the coupling of the 2 particles to the field, i.e. `g` is the same for both. Therefore any shifting of the two state energy levels due to the field (often referred to as `dressed` states/levels) will also be the same for both, i.e. there is no energy difference between +- and -+ and so no energetic need for a phonon to be involved in the transfer. Hagelstein discusses this in more depth in his paper [Excitation transfer in two two-level systems coupled to an oscillator](https://arxiv.org/abs/0803.1906v1) (in particular Eq 31, with g1=g2).
+
+
+The Hagelstein paper above also gives an expression for the effective excitation transfer coupling between the two particles (his Eq 14). The coupling is proportional to the phonon energy. As we have seen in previous tutorials, rabi type oscillations occur at a freuency determined by the couping strength. We can therefore expect to find that by doubling our phonon energy the period of oscillation seen in Fig 6 will half. Let's see. 
+
+
+To double the phonon energy we must change $N$ from 10 to 5.
 
 ```python
-result = sesolve(H, psi0, times, [two_state_1, two_state_2, phonons, interaction]) 
+A = 0.1
+N = 5                 # number of phonon quanta needed to exite the particle
+E_phonon = 2*A / N     # phonon energy
+M =  3                 # M-1 is maximum number of phonons to simulate
+g = 0.001              # weak coupling
+
+a  = tensor(destroy(M), qeye(2), qeye(2))  # phonon destruction operator
+sm1 = tensor(qeye(M), sigmam(), qeye(2))   # sigma_minus operator for two-state system number 1 
+sz1 = tensor(qeye(M), sigmaz(),  qeye(2))  # sigma_z for two-state system number 1 
+sm2 = tensor(qeye(M), qeye(2), sigmam())   # sigma_minus operator for two-state system number 2
+sz2 = tensor(qeye(M), qeye(2), sigmaz())   # sigma_z for two-state system number 2
+
+two_state_1  =    A*sz1
+two_state_2  =    A*sz2
+phonons      =    E_phonon*a.dag()*a
+interaction  =    g*(a.dag() + a) * (sm1 + sm1.dag()) + g*(a.dag() + a) * (sm2 + sm2.dag())
+
+H = two_state_1 + two_state_2 + phonons + interaction
 ```
 
 ```python
-plt.figure(figsize=(8,6))
-plt.plot(times,result.expect[0], label="Particle 1 energy")
-plt.plot(times,result.expect[1], label="Particle 2 energy")
-plt.plot(times,result.expect[2], label="Phonon energy")
-plt.plot(times,result.expect[3], label="Interaction energy")
-plt.legend();
-```
-
-We can hardly see the phonon, or interaction energy so let's look at them separately.
-
-```python
-plt.figure(figsize=(8,6))
-plt.plot(times,result.expect[2],  label="Phonon energy")
-plt.legend();
+psi0 =  tensor(basis(M, 0), basis(2, 0), basis(2, 1))
+times = np.linspace(0.0, 5000000.0, 10000) # simulation time
+result = sesolve(H, psi0, times) 
+df = states_to_df(result.states, times)
 ```
 
 ```python
-plt.figure(figsize=(8,6))
-plt.plot(times,result.expect[3],  label="Interaction energy")
-plt.legend();
+fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(15,6))
+df.plot(title="Real part of amplitudes Re($\psi$)     (Fig 5)", ax=axes[0]);
+(df.abs()**2).plot(title="Probabilities $|\psi|^2$     (Fig 6))", ax=axes[1]);
+plt.legend(loc="right");
 ```
 
-The phonon and interaction energy are both very small. I'm not sure how to interpret this yet and whether it is physical.
-
-
-... To be continued
-
-```python
-
-```
+The period does indeed to appear to have halved.
