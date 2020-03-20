@@ -370,15 +370,16 @@ but let's start from an arbitrary number N_start
 M                #previously defined
 N_start=100      #initial starting point
 
-a_tot=destroy(N_start+M)
+a_tot=destroy(N_start+M)    #complete destroy operator
 
-a_part = a_tot[ N_start : N_start+M , N_start : N_start+M]
+a_part = a_tot[ N_start : N_start+M , N_start : N_start+M]   #but let's just bring the part that we need
 a_q=Qobj(a_part)
 a_q
 ```
 
 ```python
-
+NN=a_q.dag()*a_q   #number operator
+NN
 ```
 
 ```python
@@ -402,6 +403,17 @@ H = two_state_1 + two_state_2 + phonons + interaction
 f, ax = hinton(H)
 ax.tick_params(axis='x',labelrotation=90)
 ax.set_title("Matrix elements of H     (Fig 1)");
+```
+
+```python
+times = np.linspace(0.0, 50.0, 1000) # simulation time
+result = sesolve(H, psi0, times) 
+
+df = states_to_df(result.states, times)
+
+fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(15,6))
+df.plot(title="Real part of amplitudes Re($\psi$)     (Fig 3)", ax=axes[0]);
+(df.abs()**2).plot(title="Probabilities $|\psi|^2$     (Fig 4))", ax=axes[1]);
 ```
 
 ```python
