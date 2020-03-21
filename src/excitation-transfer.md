@@ -155,12 +155,14 @@ sz2 = tensor(qeye(M), qeye(2), sigmaz())   # sigma_z for two-state system number
 ```
 
 ```python
-two_state_1  =    A*sz1
-two_state_2  =    A*sz2
-phonons      =    E_phonon*a.dag()*a
-interaction  =    g*(a.dag() + a) * (sm1 + sm1.dag()) + g*(a.dag() + a) * (sm2 + sm2.dag())
+two_state_1    =    A*sz1
+two_state_2    =    A*sz2
+phonons        =    E_phonon*a.dag()*a
+interaction_1  =    g*(a.dag() + a) * (sm1 + sm1.dag())
+interaction_2  =    g*(a.dag() + a) * (sm2 + sm2.dag())
 
-H = two_state_1 + two_state_2 + phonons + interaction
+
+H = two_state_1 + two_state_2 + phonons + interaction_1 + interaction_2
 ```
 
 ## Understanding the mechanism for excitation transfer
@@ -327,7 +329,17 @@ df.plot(title="Real part of amplitudes Re($\psi$)     (Fig 3)", ax=axes[0]);
 From Fig 4 we can see that system starts off with particle number 1 excited (orange line) and over time the excitation is transfered to particle number 2 (green line). This transfer appears to have been mediated by phonons with much less energy than the transition energy of the particle - recall that:
 
 ```python
+times = np.linspace(0.0, 500.0, 10000) # simulation time
+result = sesolve(H, psi0, times, [a.dag()*a])
+plt.plot(times,result.expect[0])
+```
+
+```python
 E_phonon
+```
+
+```python
+
 ```
 
 ```python
@@ -356,12 +368,14 @@ sz1 = tensor(qeye(M), sigmaz(),  qeye(2))  # sigma_z for two-state system number
 sm2 = tensor(qeye(M), qeye(2), sigmam())   # sigma_minus operator for two-state system number 2
 sz2 = tensor(qeye(M), qeye(2), sigmaz())   # sigma_z for two-state system number 2
 
-two_state_1  =    A*sz1
-two_state_2  =    A*sz2
-phonons      =    E_phonon*a.dag()*a
-interaction  =    g*(a.dag() + a) * (sm1 + sm1.dag()) + g*(a.dag() + a) * (sm2 + sm2.dag())
+two_state_1    =    A*sz1
+two_state_2    =    A*sz2
+phonons        =    E_phonon*a.dag()*a
+interaction_1  =    g*(a.dag() + a) * (sm1 + sm1.dag())
+interaction_2  =    g*(a.dag() + a) * (sm2 + sm2.dag())
 
-H = two_state_1 + two_state_2 + phonons + interaction
+
+H = two_state_1 + two_state_2 + phonons + interaction_1 + interaction_2
 ```
 
 ```python
@@ -420,12 +434,14 @@ sz1 = tensor(qeye(M), sigmaz(),  qeye(2))  # sigma_z for two-state system number
 sm2 = tensor(qeye(M), qeye(2), sigmam())   # sigma_minus operator for two-state system number 2
 sz2 = tensor(qeye(M), qeye(2), sigmaz())   # sigma_z for two-state system number 2
 
-two_state_1  =    A*sz1
-two_state_2  =    A*sz2
-phonons      =    E_phonon*a.dag()*a
-interaction  =    g*(a.dag() + a) * (sm1 + sm1.dag()) + g*(a.dag() + a) * (sm2 + sm2.dag())
+two_state_1    =    A*sz1
+two_state_2    =    A*sz2
+phonons        =    E_phonon*a.dag()*a
+interaction_1  =    g*(a.dag() + a) * (sm1 + sm1.dag())
+interaction_2  =    g*(a.dag() + a) * (sm2 + sm2.dag())
 
-H = two_state_1 + two_state_2 + phonons + interaction
+
+H = two_state_1 + two_state_2 + phonons + interaction_1 + interaction_2
 ```
 
 ```python
@@ -443,3 +459,140 @@ plt.legend(loc="right");
 ```
 
 The period does indeed to appear to have halved.
+
+```python
+from qutip.ipynbtools import plot_animation
+```
+
+```python
+
+```
+
+```python
+
+```
+
+```python
+
+```
+
+```python
+A = 0.1
+N = 5                 # number of phonon quanta needed to exite the particle
+E_phonon = 2*A / N     # phonon energy
+M =  20001                 # M-1 is maximum number of phonons to simulate
+g = 0.001              # weak coupling
+
+a  = tensor(destroy(M), qeye(2), qeye(2))  # phonon destruction operator
+sm1 = tensor(qeye(M), sigmam(), qeye(2))   # sigma_minus operator for two-state system number 1 
+sz1 = tensor(qeye(M), sigmaz(),  qeye(2))  # sigma_z for two-state system number 1 
+sm2 = tensor(qeye(M), qeye(2), sigmam())   # sigma_minus operator for two-state system number 2
+sz2 = tensor(qeye(M), qeye(2), sigmaz())   # sigma_z for two-state system number 2
+
+two_state_1    =    A*sz1
+two_state_2    =    A*sz2
+phonons        =    E_phonon*a.dag()*a
+interaction_1  =    g*(a.dag() + a) * (sm1 + sm1.dag())
+interaction_2  =    g*(a.dag() + a) * (sm2 + sm2.dag())
+
+
+H = two_state_1 + two_state_2 + phonons + interaction_1 + interaction_2
+```
+
+```python
+psi0 =  tensor(basis(M, 10001), basis(2, 0), basis(2, 1))
+times = np.linspace(0.0, 50.0, 10000) # simulation time
+result = sesolve(H, psi0, times) 
+
+```
+
+```python
+df = states_to_df(result.states, times)
+```
+
+```python
+fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(15,6))
+df.plot(title="Real part of amplitudes Re($\psi$)     (Fig 9)", ax=axes[0]);
+(df.abs()**2).plot(title="Probabilities $|\psi|^2$     (Fig 10))", ax=axes[1]);
+plt.legend(loc="right");
+```
+
+```python
+
+```
+
+```python
+
+```
+
+```python
+
+```
+
+```python
+
+```
+
+```python
+
+```
+
+```python
+
+```
+
+```python
+
+```
+
+```python
+sigmam()
+```
+
+```python
+A = 0.1
+N = 11                 # number of phonon quanta needed to exite the particle
+E_phonon = 2*A / N     # phonon energy
+M =  20001                 # M-1 is maximum number of phonons to simulate
+g = 0.001              # weak coupling
+
+a  = tensor(destroy(M), qeye(2), qeye(2))  # phonon destruction operator
+sm1 = tensor(qeye(M), sigmam(), qeye(2))   # sigma_minus operator for two-state system number 1 
+sz1 = tensor(qeye(M), sigmaz(),  qeye(2))  # sigma_z for two-state system number 1 
+sm2 = tensor(qeye(M), qeye(2), sigmam())   # sigma_minus operator for two-state system number 2
+sz2 = tensor(qeye(M), qeye(2), sigmaz())   # sigma_z for two-state system number 2
+
+two_state_1    =    A*sz1
+two_state_2    =    A*(13/11)*sz2
+phonons        =    E_phonon*a.dag()*a
+interaction_1  =    g*(a.dag() + a) * (sm1 + sm1.dag())
+interaction_2  =    g*(a.dag() + a) * (sm2 + sm2.dag())
+
+
+H = two_state_1 + two_state_2 + phonons + interaction_1 + interaction_2
+```
+
+```python
+n = 10001 # n-1 is starting number of phonons
+```
+
+```python
+g_hagel = g*np.sqrt(n-1)/(2*A)
+g_hagel
+```
+
+```python
+I= i*(a - a.dag())*tensor(qeye(M), sigmay(),  qeye(2))
+```
+
+```python
+for i in range(0,200):
+    psi0 =  tensor(basis(M, n), basis(2, 0), basis(2, 1))
+    psi1 =  tensor(basis(M, n+i), basis(2, 1), basis(2, 1))
+    mat = I.matrix_element(psi0,psi1)
+    print(mat/E_phonon)
+```
+
+```python
+
+```
