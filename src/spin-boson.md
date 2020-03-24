@@ -14,17 +14,20 @@ jupyter:
 ---
 
 ```python
-%matplotlib inline
-import matplotlib.pyplot as plt
-from IPython.display import Image
 import numpy as np
 import pandas as pd
 from qutip import *
-warnings.filterwarnings('ignore')
+
 from itertools import product
-import plotly.express as px
+
 from scipy.optimize import minimize_scalar
 from scipy.signal import argrelextrema
+
+%matplotlib inline
+import matplotlib.pyplot as plt
+import plotly.express as px
+
+warnings.filterwarnings('ignore')
 ```
 
 ## SJB code
