@@ -71,7 +71,7 @@ if parity != "all":
     for s in mn_from_index:
         subset_idx.append(state_number_index([M,2],s))
     
-    # Labels for hinton plots (use xlabels=ket_labels, ylabels = bra_labels) in case we want to plot later
+    # Labels for hinton plots in case we want to plot it later (use xlabels=ket_labels, ylabels = bra_labels)
     bra_labels = ["$\langle$"+str(n)+", "+str(m)+"|" for (n,m) in mn_from_index]
     ket_labels = ["|"+str(n)+", "+str(m)+"$\\rangle$" for (n,m) in mn_from_index]
 
@@ -87,7 +87,7 @@ if parity != "all":
 ```python
 d = {"coupling":np.linspace(0,max_coupling,ng)}
 for i in range(num_states):
-    d[f"energy_{i}"] = np.zeros(ng)
+    d[f"level_{i}"] = np.zeros(ng)
     
 df = pd.DataFrame(data=d)
 ```
@@ -102,19 +102,20 @@ for index, row in df.iterrows():
 ```
 
 ```python
-melt = df.melt(id_vars=["coupling"],var_name="level",value_name="energy")
+df.plot(x="coupling",ylim=[1146,1154],figsize=(10,6),legend=False);
+plt.ylabel("Energy ($\hbar\omega$)");
+
+
+# It can be easier to initially explore with an interactive plot like the one below (it does take more memory though).
+# melt = df.melt(id_vars=["coupling"],var_name="level",value_name="energy")
+# fig = px.line(melt,x="coupling",y="energy",color="level",width=900,height=600)
+# fig.layout.showlegend = False 
+# fig.show()
 ```
 
 ```python
-fig = px.line(melt,x="coupling",y="energy",color="level",width=900,height=600)
-fig.layout.showlegend = False 
-fig.show()
-```
-
-```python
-fig = px.line(df,x="coupling",y="energy_150",width=900,height=600)
-fig.layout.showlegend = False 
-fig.show()
+df[["coupling","level_150","level_149"]].plot(x="coupling",figsize=(10,6));
+plt.ylabel("Energy ($\hbar\omega$)");
 ```
 
 ## Let's look at the energy difference between the levels
@@ -125,13 +126,19 @@ df_diff["coupling"] = df["coupling"]
 ```
 
 ```python
-melt_diff = df_diff.melt(id_vars=["coupling"],var_name="level",value_name="energy")
+df_diff.plot(x="coupling",ylim=[0,3],figsize=(10,6),legend=False);
+plt.ylabel("$\Delta E$ ($\hbar\omega$)");
+
+# It can be easier to initially explore with an interactive plot like the one below (it does take more memory though).
+# melt_diff = df_diff.melt(id_vars=["coupling"],var_name="level",value_name="energy")
+# fig = px.line(melt_diff,x="coupling",y="energy",color="level",width=900,height=600)
+# fig.layout.showlegend = False 
+# fig.show()
 ```
 
 ```python
-fig = px.line(melt_diff,x="coupling",y="energy",color="level",width=900,height=600)
-fig.layout.showlegend = False 
-fig.show()
+df_diff[["coupling","level_150","level_149"]].plot(x="coupling",figsize=(10,6));
+plt.ylabel("$\Delta E$ ($\hbar\omega$)");
 ```
 
 # Let's try and make of plot $\delta E_{min}$ vs coupling like Peter did
@@ -142,31 +149,55 @@ To make a plot like Peters in his 2008 paper we essentially have to track the mu
 SJB does this by [tracking energy eigenvalues number 50 and 51](https://github.com/sbyrnes321/cf/blob/1a34a461c3b15e26cad3a15de3402142b07422d9/spinboson.py#L265). He tracks this by using `minimize_scalar` to find the precise mins. For now, I'll use `argrelextrema` to find the multiple min points automatically.
 
 ```python
-g_at_min = []
-delta_E_min = []
-
-argmin = argrelextrema(df_diff["energy_150"].values, np.less)[0]
-g_at_min = (df_diff["coupling"][argmin].values*np.sqrt(1200)).tolist()
-delta_E_min = df_diff["energy_150"][argmin].values.tolist()
-
-# We should use something like below as well like SJB, but my crube method makes the final plot look strange.
-# argmin = argrelextrema(df_diff["energy_51"].values, np.less)[0]
-# g_at_min += (df_diff["coupling"][argmin].values*np.sqrt(1200)).tolist()
-# delta_E_min += df_diff["energy_51"][argmin].values.tolist()
+df_diff_subset = df_diff[["coupling","level_150","level_149"]]
 ```
 
 ```python
-plt.figure(figsize=(10,8))
-plt.scatter(g_at_min,delta_E_min)
-plt.xlabel("g")
-plt.ylabel("$\delta E / \hbar\omega$");
+df_diff_subset["min"] =  df_diff_subset[["level_150","level_149"]].min(axis=1)
 ```
 
 ```python
-plt.figure(figsize=(10,8))
-plt.semilogy(g_at_min, delta_E_min,marker='.')
-plt.xlabel("g")
-plt.ylabel("$\delta E / \hbar\omega$");
+df_diff_subset["level_min"] = df_diff_subset[["level_150","level_149"]].idxmin(axis=1).str.split("_",expand = True)[1]
+```
+
+```python
+df_diff_subset[["coupling","level_150","level_149","min"]].plot(x="coupling",figsize=(10,6));
+plt.ylabel("$\Delta E$ ($\hbar\omega$)");
+```
+
+```python
+argmin = argrelextrema(df_diff_subset["min"].values, np.less)[0]
+anti_crossing = df_diff_subset.iloc[argmin][["coupling","min","level_min"]]
+anti_crossing["g"] = anti_crossing["coupling"]*np.sqrt((M_min+M_max)/2)
+anti_crossing.reset_index(inplace=True,drop=True)
+```
+
+```python
+anti_crossing.plot.line(x="g",y="min",logy=True,figsize=(10,6),ylim=[0.0001,0.2]);
+```
+
+```python
+def ev(g,i):
+    H = two_state + phonons + g*interaction
+    evals, ekets = H.eigenstates()
+    return evals[i] - evals[i-1] 
+```
+
+```python
+dg = (max_coupling - min_coupling)/ng
+```
+
+```python
+for index, row in poo.iterrows():
+    res = minimize_scalar(ev,args=int(row["level_min"]),bracket=[row["coupling"]-dg, row["coupling"]+dg])
+    anti_crossing.loc[index, "coupling"] = res.x
+    anti_crossing.loc[index, "min"] = res.fun
+anti_crossing["g"] = anti_crossing["coupling"]*np.sqrt((M_min+M_max)/2)
+```
+
+```python
+anti_crossing.plot.line(x="g",y="min",logy=True,figsize=(10,6), ylim=[1e-7,1e-2], xlim=[0,1],grid=True,marker=".");
+plt.ylabel("$\Delta E_{min}$ ($\hbar\omega$)");
 ```
 
 ## Investigating phonon number
@@ -178,7 +209,7 @@ num = (a.dag()*a).extract_states(subset_idx)
 ```python
 d = {"coupling":np.linspace(0,max_coupling,ng)}
 for i in range(num_states):
-    d[f"num_{i}"] = np.zeros(ng)
+    d[f"level_{i}"] = np.zeros(ng)
     
 df_num = pd.DataFrame(data=d)
 ```
@@ -193,23 +224,8 @@ for index, row in df_num.iterrows():
 ```
 
 ```python
-df_num.head()
-```
-
-```python
-melt_num = df_num.melt(id_vars=["coupling"],var_name="level",value_name="number")
-```
-
-```python
-fig = px.line(melt_num,x="coupling",y="number",color="level",width=900,height=600)
-fig.layout.showlegend = False 
-fig.show()
-```
-
-```python
-fig = px.line(df_num,x="coupling",y="num_150",width=900,height=600)
-fig.layout.showlegend = False 
-fig.show()
+df_num[["coupling","level_150"]].plot(x="coupling",figsize=(10,6));
+plt.ylabel("<N>");
 ```
 
 ```python
