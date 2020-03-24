@@ -224,7 +224,7 @@ for index, row in df_num.iterrows():
 ```
 
 ```python
-df_num[["coupling","level_150"]].plot(x="coupling",figsize=(10,6));
+df_num[["coupling","level_150","level_149"]].plot(x="coupling",figsize=(10,6));
 plt.ylabel("<N>");
 ```
 
