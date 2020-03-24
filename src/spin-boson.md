@@ -111,6 +111,12 @@ fig.layout.showlegend = False
 fig.show()
 ```
 
+```python
+fig = px.line(df,x="coupling",y="energy_150",width=900,height=600)
+fig.layout.showlegend = False 
+fig.show()
+```
+
 ## Let's look at the energy difference between the levels
 
 ```python
@@ -128,12 +134,6 @@ fig.layout.showlegend = False
 fig.show()
 ```
 
-```python
-fig = px.line(df_diff,x="coupling",y="energy_50",width=900,height=600)
-fig.layout.showlegend = False 
-fig.show()
-```
-
 # Let's try and make of plot $\delta E_{min}$ vs coupling like Peter did
 
 
@@ -145,9 +145,9 @@ SJB does this by [tracking energy eigenvalues number 50 and 51](https://github.c
 g_at_min = []
 delta_E_min = []
 
-argmin = argrelextrema(df_diff["energy_50"].values, np.less)[0]
+argmin = argrelextrema(df_diff["energy_150"].values, np.less)[0]
 g_at_min = (df_diff["coupling"][argmin].values*np.sqrt(1200)).tolist()
-delta_E_min = df_diff["energy_50"][argmin].values.tolist()
+delta_E_min = df_diff["energy_150"][argmin].values.tolist()
 
 # We should use something like below as well like SJB, but my crube method makes the final plot look strange.
 # argmin = argrelextrema(df_diff["energy_51"].values, np.less)[0]
@@ -169,16 +169,47 @@ plt.xlabel("g")
 plt.ylabel("$\delta E / \hbar\omega$");
 ```
 
-```python
+## Investigating phonon number
 
+```python
+num = (a.dag()*a).extract_states(subset_idx)
 ```
 
 ```python
-
+d = {"coupling":np.linspace(0,max_coupling,ng)}
+for i in range(num_states):
+    d[f"num_{i}"] = np.zeros(ng)
+    
+df_num = pd.DataFrame(data=d)
 ```
 
 ```python
+for index, row in df_num.iterrows():
+    # c.f. https://coldfusionblog.net/2017/07/09/numerical-spin-boson-model-part-1/
+    H = two_state + phonons + row.coupling*interaction
+    evals, ekets = H.eigenstates()
+    df_num.iloc[index,1:] = expect(num,ekets)
+    
+```
 
+```python
+df_num.head()
+```
+
+```python
+melt_num = df_num.melt(id_vars=["coupling"],var_name="level",value_name="number")
+```
+
+```python
+fig = px.line(melt_num,x="coupling",y="number",color="level",width=900,height=600)
+fig.layout.showlegend = False 
+fig.show()
+```
+
+```python
+fig = px.line(df_num,x="coupling",y="num_150",width=900,height=600)
+fig.layout.showlegend = False 
+fig.show()
 ```
 
 ```python
