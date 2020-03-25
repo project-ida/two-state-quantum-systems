@@ -38,7 +38,7 @@ import plotly.express as px
 warnings.filterwarnings('ignore')
 ```
 
-## SJB code
+## How do the energy levels change with varying coupling?
 
 ```python
 E = 1.0                   # two level energy difference
@@ -129,7 +129,10 @@ df[["coupling","level_150","level_149"]].plot(x="coupling",figsize=(10,6));
 plt.ylabel("Energy ($\hbar\omega$)");
 ```
 
-## Let's look at the energy difference between the levels
+## How do the anti-crossings change with varying coupling?
+
+
+The anti-crossings manifest when the difference in the energy levels is at its minimum
 
 ```python
 df_diff = df.drop('coupling', axis=1).diff(axis=1).dropna(axis=1)
@@ -147,17 +150,17 @@ plt.ylabel("$\Delta E$ ($\hbar\omega$)");
 # fig.show()
 ```
 
+We can see that there are many times when the differences between the levels almost goes to zero. Let's look at two adjacent differences, level_150 and level_149
+
 ```python
 df_diff[["coupling","level_150","level_149"]].plot(x="coupling",figsize=(10,6));
 plt.ylabel("$\Delta E$ ($\hbar\omega$)");
 ```
 
-# Let's try and make of plot $\delta E_{min}$ vs coupling like Peter did
+To investigate these minimums, i.e. the enery gap at the anti-crossings, we can first start by using `argrelextrema` to get find the multiple local minimums.
 
 
-To make a plot like Peters in his 2008 paper we essentially have to track the multiple minima you see in the above graphs.
-
-SJB does this by [tracking energy eigenvalues number 50 and 51](https://github.com/sbyrnes321/cf/blob/1a34a461c3b15e26cad3a15de3402142b07422d9/spinboson.py#L265). He tracks this by using `minimize_scalar` to find the precise mins. For now, I'll use `argrelextrema` to find the multiple min points automatically.
+Let's join the levels together to make it more convenient.
 
 ```python
 df_diff_subset = df_diff[["coupling","level_150","level_149"]]
@@ -187,7 +190,12 @@ anti_crossing.reset_index(inplace=True,drop=True)
 anti_crossing.plot.line(x="g",y="min",logy=True,figsize=(10,6),ylim=[0.0001,0.2]);
 ```
 
+We can consider the above as our first "guess" at the value of coupling where the anti-crossings are.
+
+We can go further and use `minimize_scalar` to find a more precise value of both the coupling at the anti-crossing and the energy separation at that point. 
+
 ```python
+# Define a function which returns the energy difference between two levels for a given coupling
 def ev(g,i):
     H = two_state + phonons + g*interaction
     evals, ekets = H.eigenstates()
@@ -199,7 +207,7 @@ dg = (max_coupling - min_coupling)/ng
 ```
 
 ```python
-for index, row in poo.iterrows():
+for index, row in anti_crossing.iterrows():
     res = minimize_scalar(ev,args=int(row["level_min"]),bracket=[row["coupling"]-dg, row["coupling"]+dg])
     anti_crossing.loc[index, "coupling"] = res.x
     anti_crossing.loc[index, "min"] = res.fun
@@ -212,6 +220,9 @@ plt.ylabel("$\Delta E_{min}$ ($\hbar\omega$)");
 ```
 
 ## Investigating phonon number
+
+
+We will now look at the difference in phonon number when going from one energy level to the next. We might expect it to change by one...let's see.
 
 ```python
 num = (a.dag()*a).extract_states(subset_idx)
@@ -235,10 +246,14 @@ for index, row in df_num.iterrows():
 ```
 
 ```python
+df_num[["coupling","level_150","level_149"]].head()
+```
+
+We see that even for zero coupling, levels 149 and 150 differ in phonon number by 9. How does this change as the coupling changes?
+
+```python
 df_num[["coupling","level_150","level_149"]].plot(x="coupling",figsize=(10,6));
 plt.ylabel("<N>");
 ```
 
-```python
-
-```
+As we approach the anti-crossing it appears that the levels "exchange" quanta with each other, 13, 15, 17 etc.
