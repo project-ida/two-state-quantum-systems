@@ -63,6 +63,9 @@ sz = tensor(qeye(M),sigmaz())              # z component of the "spin" of the tw
 two_state     =  E*sz/2                         # two state system energy
 phonons       =  E_phonon*(a.dag()*a+0.5)       # phonon field energy
 interaction   = (a.dag() + a) * (sm + sm.dag()) # interaction energy - needs to be multiplied by coupling constant in final H
+
+num           = a.dag()*a  # phonon number operator
+spin          = sz/2       # z component of spin
 ```
 
 ```python
@@ -91,6 +94,8 @@ if parity != "all":
     two_state    = two_state.extract_states(subset_idx) 
     phonons      = phonons.extract_states(subset_idx) 
     interaction  = interaction.extract_states(subset_idx) 
+    num          = (a.dag()*a).extract_states(subset_idx)
+    spin         = spin.extract_states(subset_idx)
     
     
 ```
@@ -101,6 +106,11 @@ for i in range(num_states):
     d[f"level_{i}"] = np.zeros(ng)
     
 df = pd.DataFrame(data=d)
+
+# We'll create some dataframes to store expectation values for: 
+df_num = pd.DataFrame(data=d) # phonon number
+df_sz = pd.DataFrame(data=d)  # z component of spin
+df_int = pd.DataFrame(data=d) # interaction energy
 ```
 
 ```python
@@ -109,6 +119,11 @@ for index, row in df.iterrows():
     H = two_state + phonons + row.coupling*interaction
     evals, ekets = H.eigenstates()
     df.iloc[index,1:] = np.real(evals/E_phonon)
+    
+    # We'll also calculate some expectation values so we don't have to do it later
+    df_num.iloc[index,1:] = expect(num,ekets)           # phonon number
+    df_sz.iloc[index,1:] = expect(spin,ekets)           # z component of spin
+    df_int.iloc[index,1:] = expect(interaction,ekets)   # interaction energy
     
 ```
 
@@ -222,34 +237,15 @@ plt.ylabel("$\Delta E_{min}$ ($\hbar\omega$)");
 ## Investigating phonon number
 
 
-We will now look at the difference in phonon number when going from one energy level to the next. We might expect it to change by one...let's see.
+We will now look at the difference in phonon number when going from one energy level to the next. We might expect it to change by one...we'll see.
 
-```python
-num = (a.dag()*a).extract_states(subset_idx)
-```
-
-```python
-d = {"coupling":np.linspace(0,max_coupling,ng)}
-for i in range(num_states):
-    d[f"level_{i}"] = np.zeros(ng)
-    
-df_num = pd.DataFrame(data=d)
-```
-
-```python
-for index, row in df_num.iterrows():
-    # c.f. https://coldfusionblog.net/2017/07/09/numerical-spin-boson-model-part-1/
-    H = two_state + phonons + row.coupling*interaction
-    evals, ekets = H.eigenstates()
-    df_num.iloc[index,1:] = expect(num,ekets)
-    
-```
+We already calculated the expectation value of the phonon number for the energy eigenstates, so we just need to plot them.
 
 ```python
 df_num[["coupling","level_150","level_149"]].head()
 ```
 
-We see that even for zero coupling, levels 149 and 150 differ in phonon number by 9. How does this change as the coupling changes?
+We see that even the zero coupling, levels 149 and 150 differ in phonon number by 9. How does this change as the coupling changes?
 
 ```python
 df_num[["coupling","level_150","level_149"]].plot(x="coupling",figsize=(10,6));
@@ -257,3 +253,26 @@ plt.ylabel("<N>");
 ```
 
 As we approach the anti-crossing it appears that the levels "exchange" quanta with each other, 13, 15, 17 etc.
+
+
+
+## Expectation values side by side
+
+
+Let's compare the expected values of phonon number, spin value and interaction energy side by side with energy of level 150 to see whether anything interesting strikes us.
+
+```python
+fig, axes = plt.subplots(nrows=4, ncols=1, figsize=(15,10))
+df[["coupling","level_150",]].plot(x="coupling",ax=axes[0]);
+df_num[["coupling","level_150"]].plot(x="coupling",ax=axes[1]);
+df_sz[["coupling","level_150"]].plot(x="coupling",ax=axes[2]);
+df_int[["coupling","level_150"]].plot(x="coupling",ax=axes[3]);
+axes[0].set_ylabel("Energy ($\hbar\omega$)")
+axes[1].set_ylabel("<N>")
+axes[2].set_ylabel("<$s_z$>");
+axes[3].set_ylabel("<int>");
+```
+
+```python
+
+```
