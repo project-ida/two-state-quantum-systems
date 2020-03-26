@@ -23,7 +23,7 @@ In this tutorial we are going to explore what happens when we connect a two stat
 1. Static perturbations
 2. Small, time-dependent perturbations
 
-A reminder that in QuTiP $\hbar=1$ and so frequency and energy are completely interchangable.
+A reminder that in QuTiP $\hbar=1$ and so frequency and energy are completely interchangeable.
 
 
 First, let's load the libraries and some custom code to make plotting easier later.
@@ -103,9 +103,9 @@ plus = basis(2, 0)
 minus = basis(2, 1)
 ```
 
-We'll use the same parameters as in the pervious tutorial, i.e. $E_0=1$, $A=0.1$, throughout this tutorial.
+We'll use the same parameters as in the previous tutorial, i.e. $E_0=1$, $A=0.1$, throughout this tutorial.
 
-We'll begin by taking the purturbation to be $\delta = 2A$ and initialising the system in the |+> state.
+We'll begin by taking the perturbation to be $\delta = 2A$ and initialising the system in the |+> state.
 
 ```python
 E0 = 1.0
@@ -130,11 +130,11 @@ df.plot(title="Real part of amplitudes Re($\psi$)     (Fig 1)", ax=axes[0]);
 Just as in the previous tutorial (see Figs 3 & 4), we see Rabi oscillations in the probability because |+> and |-> are not stationary states. The behaviour is again like $\cos^2(\Omega t/2)$, but somewhat modified by the perturbation.
 
 1. The period of oscillations has gone from 31 to about 14 (recall, we have kept A the same)
-2. Instead of a complete osciallation from 0 to 1 of both states, we see that we are more likely to find the state as |+>. 
+2. Instead of a complete oscillation from 0 to 1 of both states, we see that we are more likely to find the state as |+>. 
 
-We can understand 2 by recalling that the perturbation creates an energy difference between the |+> and |->.  We can think of the perturbation as a barrier between the two states - the larger the barrier the less effective the coupling between the states will be and the more likely you'll stay in the state you started in.
+We can understand 2 by recalling that the perturbation creates an energy difference between the |+> and |->. This gives rise to a frequency difference much like what we'd have in the classical coupled pendulum problem if the lengths of the pendulums were different. In that case the coupling is much less effective and most of the energy stays in pendulums of the same length as can be seen in this [simulation video](https://www.youtube.com/watch?v=Z5rKTagEsro)
 
-To understand 1 we recall that the Rabi frequency arrises as the beating between the different frequencies of the stationary states, i.e. $\Omega = \Delta E$. We therefore need to calculate the energy of the stationary states, i.e. we need to calculate the eigenvalues of the Hamiltonian.
+To understand 1 we recall that the Rabi frequency arises as the beating between the different frequencies of the stationary states, i.e. $\Omega = \Delta E$. We therefore need to calculate the energy of the stationary states, i.e. we need to calculate the eigenvalues of the Hamiltonian.
 
 Let's do this for a number of different perturbation strengths:
 
@@ -166,7 +166,7 @@ In the extreme, as $\delta\rightarrow \infty$, the energy asymptotically approac
 
 The form of the energy curve is actually a relatively simple formula $E_0 \pm \sqrt{A^2 + \delta^2}$ (we won't derive this result here, but instead link you to a [lecture from Richard Feynman](https://www.feynmanlectures.caltech.edu/III_09.html#Ch9-S2)). From this we can now calculate $\Omega = \Delta E = 2\sqrt{A^2 + \delta^2} = 2\sqrt{0.1^2 + 0.2^2} = 0.44$ giving a Rabi oscillation period of $2\pi/\Omega = 14$ that we saw graphically in Fig 2.
 
-For more of a deep dive into the depdence of energy on the various parts the hamiltonian, consult the intimately topic of [avoided crossings](https://en.wikipedia.org/wiki/Avoided_crossing).
+For more of a deep dive into the dependence of energy on the various parts the Hamiltonian, consult the intimately connected topic of [avoided crossings](https://en.wikipedia.org/wiki/Avoided_crossing).
 
 
 
@@ -203,7 +203,7 @@ We are now going to consider a time dependent perturbation of the form $\delta\s
 
 With QuTiP, we can add [time dependence in several ways](http://qutip.org/docs/latest/guide/dynamics/dynamics-time.html). We will use the [string based method](http://qutip.org/docs/latest/guide/dynamics/dynamics-time.html#string-format-method) because the code compiles into C and so it's faster (this means you need to have Cython installed on your computer).
 
-It works by specifying the hamiltonian as $H=H_0 + H_1C(t)$, where $C$ should be a function (or combinations) from the list below
+It works by specifying the Hamiltonian as $H=H_0 + H_1C(t)$, where $C$ should be a function (or combinations) from the list below
 
 ```
 'abs', 'acos', 'acosh', 'arg', 'asin', 'asinh', 'atan', 'atanh', 'conj',
@@ -336,4 +336,4 @@ We can see that the resonance is exquisitely sensitive. When the frequency is ju
 
 
 ## Next up...
-So far, we've developed an intuition for a simple two state system and how it behaves in a presence of an external perturbation. We've uncovered the physical basis for stimulated emission and absoption in atomic systems. You might be wondering, what about spontaneous emission? We cannot describe it using this model 😞. We must go a level deeper and cosider not only how the perturbation acts on the two state system, but how the two state system acts on the perturbation. Put another way, we need to consider the perturbation as a field that can itself be quantised 🤯.
+So far, we've developed an intuition for a simple two state system and how it behaves in a presence of an external perturbation. We've uncovered the physical basis for stimulated emission and absorption in atomic systems. You might be wondering, what about spontaneous emission? We cannot describe it using this model 😞. We must go a level deeper and consider not only how the perturbation acts on the two state system, but how the two state system acts on the perturbation. Put another way, we need to consider the perturbation as a field that can itself be quantised 🤯.
