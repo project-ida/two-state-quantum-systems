@@ -117,7 +117,7 @@ $$
 \underset{k}{\sum} a_k(t)e^{i(k\cdot r)}
 $$
 
-
+For more information, see [Classical Mechanics](https://en.wikipedia.org/wiki/Classical_Mechanics_(Goldstein_book)) (Section 13.6) by Goldstein and also [Student Friendly Quantum Field Theory](https://www.quantumfieldtheory.info/) (Section 3.2.3) by Kaluber
 
 
 ### 3.2.2 - Quantising the field
@@ -208,13 +208,13 @@ a = destroy(5)
 a_dag = create(5) # we could also use a.dag()
 ```
 
-Applying creation to our two state gives
+Applying creation to our *two* state gives
 
 ```python
 a_dag*two
 ```
 
-Once we normalise the state we can see immediately that $|2>$ has become state $|3>$ under the $a_k^{\dagger}$ operator
+Once we normalise this state we can see immediately that $|2>$ has become state $|3>$ under the $a_k^{\dagger}$ operator
 
 ```python
 (a_dag*two).unit()
@@ -255,15 +255,19 @@ H = E_boson*(a.dag()*a+0.5)
 H
 ```
 
-Because the Hamiltonian is diagonal there is no coupling between the different number states. Without doing any further calculation we can therefore say that if we start out with 3 bosons in the mode then we'll continue to have 3 bosons in the mode indefinitely. This is the same type of behaviour that we saw in the isolated two state system (see section 1.1).
+Because the Hamiltonian is diagonal there is no coupling between the different number states. Without doing any further calculation we can therefore say that if we start out with e.g. 3 bosons in the mode then we'll continue to have 3 bosons in the mode indefinitely. This is the same type of behaviour that we saw in the isolated two state system (see section 1.1).
 
-We do expect that bosons can get created and destroyed as a result of interaction with another system, e.g. an atom when it's electrons transition between different energy levels. Let's see how we can model that.
+We do expect that bosons can get created and destroyed as a result of interaction with another system, e.g. when the electrons in an transition between different energy levels. Let's see how we can model that.
 
 
 ## 3.4 - Coupling to a quantum field
 
 
-> TODO
+$$H =  E_0 I - A \sigma_x + \hbar\omega\left(a^{\dagger}a +\frac{1}{2}\right)$$
+
+
+
+> TODO: make some comments about guage symmetry as determining the interaction term.
 
 ```python
 
