@@ -97,7 +97,7 @@ $$
 When the perturbation $\delta$ was time dependent ($\sin{\omega t}$) we discovered a resonance effect. Even when the perturbation was small, the two level system could be made to oscillate (see [Rabi cycle](https://en.wikipedia.org/wiki/Rabi_cycle)) between the upper and lower energy state when i.e. $\omega = 2A$ - this is the physical basis for stimulated emission.
 
 
-## 3.2 - Quantum fields
+## 3.2 - What is a quantum field?
 
 
 So far we have considered the environment to be unaffected by the two-state system. This has been a convenient approximation but naturally leaves some bits of important physics out.
@@ -262,8 +262,13 @@ We do expect that bosons can get created and destroyed as a result of interactio
 
 ## 3.4 - Coupling to a quantum field
 
+<!-- #region -->
+In general, finding the coupling between two quantum things requires expressing everything as its own field (even the two state system!) and imposing a certain symmetry on the Lagrangian of those combined fields. The interaction term in the Lagrangian (and resulting Hamiltonian) appears as a consequence. This is known as [gauge theory](https://en.wikipedia.org/wiki/Gauge_theory) and is an even deeper rabbit hole than quantum field theory. Needless to say, we shall not be going deeper into that today either. If you are curious I recommend  chapter 10 of [Explorations in Mathematical Physics by Koks](https://www.bookdepository.com/Explorations-Mathematical-Physics-Don-Koks/9780387309439) for an intro.
 
-We can make a guess at the interaction term by recalling the Hamiltonian from [tutorial 02](https://github.com/project-ida/two-state-quantum-systems/blob/master/02-perturbing-a-two-state-system.ipynb)
+So, what can we say about the interaction of our two-state system with a quantised field without getting lost in rigor? *(not that rigor isn't important, but it will slow us down too much at the moment)*
+
+
+We can make a guess at the interaction term by recalling the Hamiltonian from [Tutorial 02](https://github.com/project-ida/two-state-quantum-systems/blob/master/02-perturbing-a-two-state-system.ipynb):
 
 $$
 H = \begin{bmatrix}
@@ -272,17 +277,21 @@ H = \begin{bmatrix}
 \end{bmatrix} = A\sigma_z +\delta \sigma_x
 $$
 
-We interpreted $\delta$ as being related to the strength of a perturbing field. Considering only a single mode of our now quantised field, its strength can be written as the operator $a^{\dagger} + a$ - this comes from the requirement that our field be real.
+We interpreted $\delta$ as being related to the strength of a perturbing field. Considering only a single mode of our now quantised field, its strength can be written as the operator $a^{\dagger} + a$ (coming from the requirement that our field be real) and we can then postulate the following interaction term:
 
-We that then postulate that the interaction term be written as $V\left( a^{\dagger} + a \right)\sigma_x$, where $V$ is a coupling constant that determines how strongly the two-state system interacts with the field.
+$$V\left( a^{\dagger} + a \right)\sigma_x$$
 
-In general, finding the coupling between two quantum things required the use of guage theory looking for symmetries etc etc.
+where $V$ is a coupling constant. What we've essentially created is an interaction term that closely resemble those of the [electric](https://en.wikipedia.org/wiki/Electric_dipole_transition) and [magnetic](https://en.wikipedia.org/wiki/Magnetic_dipole_transition) dipoles.
 
-The overall Hamiltonian is then:
 
+The overall Hamiltonian can then be written as:
 
 $$H =  A \sigma_z + \hbar\omega\left(a^{\dagger}a +\frac{1}{2}\right) + V\left( a^{\dagger} + a \right)\sigma_x$$
 
+The only remaining problem is figuring out how to make the field operators and two state operators compatible. As we've currently represented them in QuTip, two state operators are 2x2 matrices but the field operators are (n+1)x(n+1) matrices - we can't just multiply them together as it would appear from the above Hamiltonian.
+<!-- #endregion -->
+
+## 3.5 - Describing coupled systems in QuTiP
 
 ```python
 
