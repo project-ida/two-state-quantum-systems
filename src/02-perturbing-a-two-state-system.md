@@ -341,7 +341,7 @@ We can see that the resonance is exquisitely sensitive. When the frequency is ju
 
 We can be more quantitative with our assessment of the resonance effect by considering the time average probabilities like those seen in Fig 9.
 
-More specifically, in Fig 9, we begin our simulation in state |+> - |-> and we see that the probability to remain in that state (blue line) oscillates around about 0.9. If we image that we randomly observe our system at some point in time (and repeat this observation many times), then on average there is a probability of 0.9 that the system will still be in the state |+> - |->. Put another way, there is a probability of 0.1 that the system will have **transitioned** to the other state - in this case there is only one other, namely |+> + |-> .
+More specifically, in Fig 9, we begin our simulation in state |+> - |-> and we see that the probability to remain in that state (blue line) oscillates around about 0.9. If we imagine that we randomly observe our system at some point in time (and repeat this observation many times), then on average there is a probability of 0.9 that the system will still be in the state |+> - |->. Put another way, there is a probability of 0.1 that the system will have **transitioned** to another state - in this case there is only one other, namely |+> + |-> .
 
 We can therefore calculate a transition probability from our simulations as $T = 1-\text{mean}(P_{\psi_0})$, where $P_{\psi_0}$ is the probability for the system to be in the state that we stated with.
 
@@ -416,7 +416,7 @@ P_minus = ket([1])*bra([1])   # Or use projection(2,1,1)
 P_plus
 ```
 
-Let's calculate a transition probability for the simulation shown in Fig 9 as a sense check.
+Let's calculate the transition probability for the simulation shown in Fig 9 as a sense check.
 
 ```python
 delta = 0.001
@@ -436,9 +436,9 @@ T = 1 - result.expect[0].mean()
 T
 ```
 
-$T$ above is very close to the 0.1, great!
+$T$ is very close to 0.1, great!
 
-Now let's repeat this for many different values of $\omega$. We'll begin by scanning over the resonance region, i.e. near $\omega/\omega_0 = 1$
+Now let's repeat this for many different values of $\omega$. We'll scan over the resonance region, i.e. near $\omega/\omega_0 = 1$
 
 ```python
 omega = np.arange(0.9,1.1,0.005)
