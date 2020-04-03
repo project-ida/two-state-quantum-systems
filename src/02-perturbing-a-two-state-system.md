@@ -335,5 +335,151 @@ df_off_res_basis.plot(title="Real part of amplitudes Re($\psi$)     (Fig 8)", ax
 We can see that the resonance is exquisitely sensitive. When the frequency is just 1% off resonance, the amplitude of probability oscillation is reduced to 20% of it's previous value. The Rabi frequency has also changed. The modified value is often called the [generalised Rabi frequency](https://en.wikipedia.org/wiki/Rabi_frequency#Generalized_Rabi_frequency) and has the form $\bar\Omega = \sqrt{\Omega^2 + (\omega-\omega_0)^2} =  \sqrt{\delta^2 + (\omega-\omega_0)^2} = \sqrt{0.001^2 + 0.002^2} = 0.002$, giving the period $2\pi/\bar\Omega = 2\pi/0.002 \approx 3100$ that we can see in Fig 9.
 
 
+### Transition probability
+
+
+We can be more quantitative with our assessment of the resonance effect by considering the time average probabilities like those seen in Fig 9.
+
+More specifically, in Fig 9, we begin our simulation in state |+> + |-> and we see that the probability to remain in that state (blue line) oscillates around about 0.9. If we image that we randomly observe our system at some point in time (and repeat this observation many times), then on average there is a probability of 0.9 that the system will still be in the state |+> + |->. Put another way, there is a probability of 0.1 that the system will have **transitioned** to the other state - in this case there is only one other, namely |+> - |-> .
+
+We can therefore calculate a transition probability from our simulations as $T = 1-\text{mean}(P_{\psi_0})$, where $P_{\psi_0}$ is the probability for the system to be in the state that we stated with.
+
+
+We're going to calculate $T$ for many values of the perturbation frequency $\omega$ and so it's necessary that we make some optimisations so that the code doesn't take too long to run. We'll also introduce some simplifications that you'll often see in the literature.
+
+**Transform the Hamiltonian**
+
+We have already discovered that the natural basis to represent the perturbed system is using |+> + |-> and |+> - |->.  To avoid transforming the results of our simulation many times over, we will instead change the basis of our Hamiltonian (we'll only need to do this once). Let's compare the H's before and after transformation (ignore time dependence of the perturbation for a moment so we can get a feeling for things):
+
+```python
+# Before
+H0+H1
+```
+
+```python
+# After
+(H0+H1).transform([out_phase,in_phase])
+```
+
+<!-- #region -->
+We can see that H has changed from from 
+
+$$
+H = \begin{bmatrix}
+ E_0 + \delta  &  -A  \\
+ -A  &  E_0 - \delta  \\
+\end{bmatrix} = E_0 I - A \sigma_x + \delta\sigma_z
+$$
+
+
+to 
+
+$$
+H = \begin{bmatrix}
+ E_0 + A  &  \delta  \\
+ \delta  &  E_0 - A  \\
+\end{bmatrix} = E_0 I + A\sigma_z +\delta \sigma_x
+$$
+
+In this basis, we can see directly (from the difference in the diagonal elements) that the effect of the coupling ($A$) splits the energy of the unperturbed ($\delta=0$) stationary states by an amount $2A$. We can also see directly that the perturbation couples the two energy states, as we have seen in our last two simulations.
+<!-- #endregion -->
+
+**Shift all the energies**
+
+Because we can only measure differences in energy, we are free to set the "zero" value of energy to be wherever we like. In particular, we can set $E_0 = 0$. The Hamiltonian is then:
+
+$$
+H = \begin{bmatrix}
+ A  &  \delta  \\
+ \delta  &  -A  \\
+\end{bmatrix} = A\sigma_z +\delta \sigma_x
+$$
+
+When written in this form, it resembles the [Hamiltonian for spin 1/2 particle in a magnetic field](https://www.feynmanlectures.caltech.edu/III_10.html#Ch10-S6) with $B_z \propto A$ and $B_x\propto \delta$.
+
+
+**Calculate the transition probabilities**
+
+We note 2 things:
+
+1. In our new basis, the |+> and |-> states now represent the higher (|+> - |->) and lower (|+> + |->) energy states from our previous basis
+
+2. We previously calculated $\psi$ and then computed the probabilities from it. We can make the computation faster by computing the probabilities directly. This is done by calculating the expectation value of |+><+| to get $P_{|+>}$ and |-><-| to get $P_{|->}$. In QuTiP we can make these operators using the [`ket`](http://qutip.org/docs/latest/apidoc/functions.html?highlight=ket#qutip.states.ket) and [`bra`](http://qutip.org/docs/latest/apidoc/functions.html?highlight=bra#qutip.states.bra) functions (alternatively using [`projection`](http://qutip.org/docs/latest/apidoc/functions.html?highlight=projection#qutip.states.projection))
+
+```python
+P_plus = ket([0])*bra([0])    # Or use projection(2,0,0)
+P_minus = ket([1])*bra([1])   # Or use projection(2,1,1)
+```
+
+```python
+P_plus
+```
+
+Let's calculate a transition probability for the simulation shown in Fig 9 as a sense check.
+
+```python
+delta = 0.001
+A = 0.1
+
+H0 = A*sigmaz()
+
+H1 =  delta*sigmax()
+
+H = [H0,[H1,'cos(w*t)']]
+
+times = np.linspace(0.0, 15000.0, 1000) 
+
+# Passing the P_plus operator to sesolve gives us the expectation value directly.
+result = sesolve(H, plus, times,[P_plus], args={'w':(2*A)*1.01})
+T = 1 - result.expect[0].mean()
+T
+```
+
+$T$ above is very close to the 0.1, great!
+
+Now let's repeat this for many different values of $\omega$. We'll begin by scanning over the resonance region, i.e. near $\omega/\omega_0 = 1$
+
+```python
+omega = np.arange(0.9,1.1,0.005)
+```
+
+```python
+Ts = np.zeros(omega.size)
+```
+
+```python
+delta = 0.001
+A = 0.1
+
+H0 = A*sigmaz()
+
+H1 =  delta*sigmax()
+
+H = [H0,[H1,'cos(w*t)']]
+
+times = np.linspace(0.0, 15000.0, 1000)
+
+for i,w in enumerate(omega):
+    
+    result = sesolve(H, plus, times,[P_plus], args={'w':(2*A)*w})  # recall 2*A = omega_0
+    Ts[i] = 1 - result.expect[0].mean()
+
+```
+
+```python
+plt.figure(figsize=(7,6))
+plt.plot((omega-1),Ts)
+plt.xlabel("$(\omega-\omega_0)/\omega_0$")
+plt.ylabel("Probability")
+plt.title("Transition Probability     (Fig 10)");
+```
+
+We can now quantify the sensitivity of the resonance by calculating the [full width half max (FWHM)](https://en.wikipedia.org/wiki/Full_width_at_half_maximum) from the data.
+
+```python
+index_of_half_max = np.argmin(abs(Ts-max(Ts)/2))
+(omega[index_of_half_max]-1)*2
+```
+
 ## Next up...
 So far, we've developed an intuition for a simple two state system and how it behaves in a presence of an external perturbation. We've uncovered the physical basis for stimulated emission and absorption in atomic systems. You might be wondering, what about spontaneous emission? We cannot describe it using this model 😞. We must go a level deeper and consider not only how the perturbation acts on the two state system, but how the two state system acts on the perturbation. Put another way, we need to consider the perturbation as a field that can itself be quantised 🤯.
