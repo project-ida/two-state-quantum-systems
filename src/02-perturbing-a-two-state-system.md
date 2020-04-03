@@ -223,7 +223,7 @@ Because we are only perturbing the system slightly, we can expect that the energ
 
 Intuitively we do expect some kind of resonance phenomenon because we are matching the driving frequency to the "natural" frequency of the two state system - but how will this resonance manifest?
 
-Let's start things off in a stationary state of the unperturbed system, specifically, |+> + |->. Does the system stay close to this state as we might expect, given the smallness of the perturbation.
+Let's start things off in a stationary state of the unperturbed system, specifically the higher energy state |+> - |->. Does the system stay close to this state as we might expect, given the smallness of the perturbation.
 
 Let's see.
 
@@ -240,7 +240,7 @@ H = [H0,[H1,'cos(w*t)']]
 
 times = np.linspace(0.0, 15000.0, 1000) 
 
-result = sesolve(H, in_phase, times, args={'w':2*A})
+result = sesolve(H, out_phase, times, args={'w':2*A})
 df_res =  states_to_df(result.states, times)
 
 ```
@@ -274,7 +274,7 @@ def change_basis_to_df(states, times, new_basis, new_basis_labels):
 ```
 
 ```python
-df_res_basis = change_basis_to_df(result.states, times, [in_phase,out_phase], ["|x> + |->", "|x> - |->"])
+df_res_basis = change_basis_to_df(result.states, times, [out_phase,in_phase], ["|x> - |->", "|x> + |->"])
 ```
 
 ```python
@@ -314,13 +314,13 @@ H = [H0,[H1,'cos(w*t)']]
 
 times = np.linspace(0.0, 15000.0, 1000) 
 
-result = sesolve(H, in_phase, times, args={'w':(2*A)*1.01})
+result = sesolve(H, out_phase, times, args={'w':(2*A)*1.01})
 df_off_res =  states_to_df(result.states, times)
 
 ```
 
 ```python
-df_off_res_basis = change_basis_to_df(result.states, times, [in_phase,out_phase], ["|x> + |->", "|x> - |->"])
+df_off_res_basis = change_basis_to_df(result.states, times, [out_phase,in_phase], ["|x> - |->", "|x> + |->"])
 ```
 
 ```python
@@ -328,6 +328,7 @@ fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(15,6))
 df_off_res_basis.plot(title="Real part of amplitudes Re($\psi$)     (Fig 8)", ax=axes[0]);
 (df_off_res_basis.abs()**2).plot(title="Probabilities $|\psi|^2$     (Fig 9)", ax=axes[1]);
 ```
+
 
 
 
@@ -340,7 +341,7 @@ We can see that the resonance is exquisitely sensitive. When the frequency is ju
 
 We can be more quantitative with our assessment of the resonance effect by considering the time average probabilities like those seen in Fig 9.
 
-More specifically, in Fig 9, we begin our simulation in state |+> + |-> and we see that the probability to remain in that state (blue line) oscillates around about 0.9. If we image that we randomly observe our system at some point in time (and repeat this observation many times), then on average there is a probability of 0.9 that the system will still be in the state |+> + |->. Put another way, there is a probability of 0.1 that the system will have **transitioned** to the other state - in this case there is only one other, namely |+> - |-> .
+More specifically, in Fig 9, we begin our simulation in state |+> - |-> and we see that the probability to remain in that state (blue line) oscillates around about 0.9. If we image that we randomly observe our system at some point in time (and repeat this observation many times), then on average there is a probability of 0.9 that the system will still be in the state |+> - |->. Put another way, there is a probability of 0.1 that the system will have **transitioned** to the other state - in this case there is only one other, namely |+> + |-> .
 
 We can therefore calculate a transition probability from our simulations as $T = 1-\text{mean}(P_{\psi_0})$, where $P_{\psi_0}$ is the probability for the system to be in the state that we stated with.
 
