@@ -35,10 +35,16 @@ warnings.filterwarnings('ignore')
 ## 3.1 - Recap
 
 
-> TODO: NEED TO CHANGE THIS RECAP AS IT'S OLD AND DOESN'T MAKE SENSE NOW
+We have previously looked at a two state system whose states are allowed to couple to each other with strength $A$. This coupling resulted in a splitting of the states of constant energy. When we perturbed the energy of those states by an amount $\pm \delta$ we found that a natural way to represent the Hamiltonian is
 
+$$
+H = \begin{bmatrix}
+ A  &  \delta  \\
+ \delta  &  -A  \\
+\end{bmatrix} = A\sigma_z +\delta \sigma_x
+$$
 
-We have previously looked at a two state system whose base states **|+>** and **|->** were represented as
+The base states being used to represent this system are the stationary states of the unperturbed system ($\delta=0$) that we describe by:
 
 $$
 |+> = \begin{bmatrix}
@@ -51,59 +57,20 @@ $$
 \end{bmatrix}
 $$
 
+where |+>, |-> correspond to the higher and lower energy states respectively. 
 
 ```python
 plus = basis(2, 0)
 minus = basis(2, 1)
 ```
 
-and whose energies $E_0$ were identical. When we considered that coupling between the states could occur (with strength $A$), the hamiltonian for the system could then be represented as
-
-$$
-H = \begin{bmatrix}
- E_0  &  -A  \\
- -A  &  E_0  \\
-\end{bmatrix} = E_0 I - A \sigma_x
-$$
-
-
-Upon investigating the time evolution of states using the above Hamiltonian, we have seen that the stationary states of the system (those of constant energy) are not |+> and |->, but instead
-
-$\frac{|+> + \,\  |->}{\sqrt{2}}$ - in phase (a.k.a symmetric) - lower energy state
-
-$\frac{|+> - \,\  |->}{\sqrt{2}}$ - out of phase (a.k.a anti-symmetric) - higher energy state
-
-```python
-in_phase = (plus + minus).unit()
-out_phase = (plus - minus).unit()
-```
-
-and we have seen that the coupling effectively splits the energy of the two states.
-
-In quantum mechanics classes we often talk about transitions between energy levels - such as those in the two level system. Such transitions can only be accomplished by connecting the system to the "environment". 
-
-
-In the last tutorial we considered the environment to have a particular effect on our two state system, namely to directly perturb the energy of the states by an amount $\pm \delta$. Our modified Hamiltonian then took the form:
-
-
-
-$$
-H = \begin{bmatrix}
- E_0 + \delta  &  -A  \\
- -A  &  E_0 - \delta  \\
-\end{bmatrix} = E_0 I - A \sigma_x + \delta\sigma_z
-$$
-
-
-*nb. The physical system we imagined was that of a particle with a dipole moment exposed an electric field.*
-
-When the perturbation $\delta$ was time dependent ($\sin{\omega t}$) we discovered a resonance effect. Even when the perturbation was small, the two level system could be made to oscillate (see [Rabi cycle](https://en.wikipedia.org/wiki/Rabi_cycle)) between the upper and lower energy state when i.e. $\omega = 2A$ - this is the physical basis for stimulated emission.
+In the last tutorial, we made the perturbation $\delta$ time dependent ($\sin{\omega t}$) and discovered a resonance effect. Even when the perturbation was small, the two level system could be made to oscillate (see [Rabi cycle](https://en.wikipedia.org/wiki/Rabi_cycle)) between the upper and lower energy state when i.e. $\omega = 2A$ - this is the physical basis for stimulated emission.
 
 
 ## 3.2 - What is a quantum field?
 
 
-So far we have considered the environment to be unaffected by the two-state system. This has been a convenient approximation but naturally leaves some bits of important physics out.
+So far we have considered the environment to be unaffected by the two-state system. This has been a convenient approximation but naturally leaves some bits of important physics out e.g. spontaneous emission.
 
 To capture this missing physics we must think of the environment as a field (actually maybe many fields, but let's not over complicate things for now). For example the electric field $E$ - a continuous thing (a vector thing) that exists at all points in space and time i.e $E(r,t)$. To properly describe the interaction of our quantised two-state system with such a field, we are forced to quantise the field (in some sense) as well.
 
@@ -182,7 +149,7 @@ two = basis(5, 2)
 two
 ```
 
-It is now possible to identify the operator $a_k^{\dagger}a_k$ as having eigenvalues equal to the the number of bosons in mode k and having eigenvectors equal to the fock states, e.g.
+Using these fock states, we can identify the operator $a_k^{\dagger}a_k$ as having eigenvalues equal to the the number of bosons in mode k and having eigenvectors equal to the fock states, e.g.
 
 $$
 a_k^{\dagger}a_k |2> = 2 |2>
@@ -217,7 +184,7 @@ Applying creation to our *two* state gives
 a_dag*two
 ```
 
-Once we normalise this state we can see immediately that $|2>$ has become state $|3>$ under the $a_k^{\dagger}$ operator
+Once we normalise this state we can see immediately that $|2>$ has become state $|3>$ under the operation of $a_k^{\dagger}$
 
 ```python
 (a_dag*two).unit()
@@ -229,7 +196,7 @@ Similarly we can see that $|2>$ becomes $|1>$ under the $a_k$ operator
 (a*two).unit()
 ```
 
-Ok, let's take a look at our Hamiltonian
+Now we are ready to construct the Hamiltonian.
 
 
 ## 3.3 - The Hamiltonian for a quantum field
@@ -243,22 +210,22 @@ $$
 
 where the sum is over all the possible modes of the field and $a_k^{\dagger}$ and $a_k$ operators create and destroy phonons in the k'th mode.
 
-Let's continue to consider only a single mode and let's also continue to only consider a maximum of 4 bosons in that mode. For simplicity we'll set the energy of the mode $\hbar\omega$ = 1.
+Let's continue to consider only a single mode and let's also continue to only consider a maximum of 4 bosons in that mode. For simplicity we'll set the energy of the mode $\omega$ = 1 (recall $\hbar=1$ in QuTiP)
 
 ```python
-E_boson = 1
+omega = 1
 max_bosons = 4
 
 a = destroy(max_bosons+1)
 
-H = E_boson*(a.dag()*a+0.5)
+H = omega*(a.dag()*a+0.5)
 ```
 
 ```python
 H
 ```
 
-We'll see later on that as the Hamiltonian becomes more complicated it can be helpful to visualise it. QuTiP has a built in way to do this using a [`hinton` diagram](http://qutip.org/docs/latest/apidoc/functions.html#qutip.visualization.hinton)
+We'll see later on that, as the Hamiltonian becomes more complicated, it can be helpful to visualise it. QuTiP has a built in way to do this using a [`hinton` diagram](http://qutip.org/docs/latest/apidoc/functions.html#qutip.visualization.hinton)
 
 ```python
 f, ax = hinton(H)
@@ -268,13 +235,13 @@ ax.set_title("Matrix elements of H     (Fig 1)");
 
 Because the Hamiltonian is diagonal there is no coupling between the different number states. Without doing any further calculation we can therefore say that if we start out with e.g. 3 bosons in the mode then we'll continue to have 3 bosons in the mode indefinitely. This is the same type of behaviour that we saw in the isolated two state system (see section 1.1).
 
-We do expect that bosons can get created and destroyed as a result of interaction with another system, e.g. when the electrons in an transition between different energy levels. Let's see how we can model that.
+We do expect that bosons can get created and destroyed as a result of interaction with another system, e.g. when an electron makes a transition between different energy levels. Let's see how we can model that.
 
 
 ## 3.4 - Coupling to a quantum field
 
 <!-- #region -->
-In general, finding the coupling between two quantum things requires expressing everything as its own field (even the two state system!) and imposing a certain symmetry on the Lagrangian of those combined fields. The interaction term in the Lagrangian (and resulting Hamiltonian) appears as a consequence. This is known as [gauge theory](https://en.wikipedia.org/wiki/Gauge_theory) and is an even deeper rabbit hole than quantum field theory. Needless to say, we shall not be going deeper into that today either. If you are curious I recommend  chapter 10 of [Explorations in Mathematical Physics by Koks](https://www.bookdepository.com/Explorations-Mathematical-Physics-Don-Koks/9780387309439) for an intro.
+In general, finding the coupling between two quantum things requires expressing everything as its own field (even the two state system!) and imposing a certain symmetry on the Lagrangian of those combined fields. The interaction term in the Lagrangian (and resulting Hamiltonian) pops out as a consequence, how lovely! This is known as [gauge theory](https://en.wikipedia.org/wiki/Gauge_theory) and is an even deeper rabbit hole than quantum field theory. Needless to say, we shall not be going deeper into that today either. If you are curious I recommend  chapter 10 of [Explorations in Mathematical Physics by Koks](https://www.bookdepository.com/Explorations-Mathematical-Physics-Don-Koks/9780387309439) for an intro.
 
 So, what can we say about the interaction of our two-state system with a quantised field without getting lost in rigor? *(not that rigor isn't important, but it will slow us down too much at the moment)*
 
@@ -292,7 +259,7 @@ We interpreted $\delta$ as being related to the strength of a perturbing field. 
 
 $$V\left( a^{\dagger} + a \right)\sigma_x$$
 
-where $V$ is a coupling constant. What we've essentially created is an interaction term that closely resemble those of the [electric](https://en.wikipedia.org/wiki/Electric_dipole_transition) and [magnetic](https://en.wikipedia.org/wiki/Magnetic_dipole_transition) dipoles.
+where $V$ is a coupling constant. What we've essentially created is an interaction term that closely resembles that of an [electric](https://en.wikipedia.org/wiki/Electric_dipole_transition) and [magnetic](https://en.wikipedia.org/wiki/Magnetic_dipole_transition) dipole.
 
 
 The overall Hamiltonian can then be written as:
@@ -344,14 +311,14 @@ M = 4
 ```python
 a  = tensor(destroy(M+1), qeye(2))     # boson destruction operator
 sx = tensor(qeye(M+1), sigmax())             
-sz = tensor(qeye(M+1),sigmaz())              # z component of the "spin" of the two level system
+sz = tensor(qeye(M+1),sigmaz())              
 
 two_state     =  A*sz                         # two state system energy
-phonons       =  omega*(a.dag()*a+0.5)       # phonon field energy
-interaction   = (a.dag() + a) * sx               # interaction energy - needs to be multiplied by coupling constant in final H
+bosons       =  omega*(a.dag()*a+0.5)       # bosons field energy
+interaction   = (a.dag() + a) * sx           # interaction energy - needs to be multiplied by coupling constant in final H
 
 
-H = two_state + phonons + V*interaction
+H = two_state + bosons + V*interaction
 ```
 
 Now that we've created these tensor products, it can be hard to interpret the Hamiltonian just by looking at the matrix without some labels. This is when the Hinton diagram we introduced earlier is super helpful.
@@ -376,6 +343,7 @@ QuTiP is smart and knows how to label things in a nice way. **|n,m>** means the 
 >TODO: Intro chat
 
 ```python
+# helper function
 def states_to_df(states,times):
     
     data = {}
@@ -416,7 +384,10 @@ df_coupled.plot(title="Real part of amplitudes Re($\psi$)     (Fig 3)", ax=axes[
 (df_coupled.abs()**2).plot(title="Probabilities $|\psi|^2$     (Fig 4))", ax=axes[1]);
 ```
 
-We see above that even though we start with the field "empty" of bosons (blue line), after a while, the field is likely to have a single boson at the expense of the energy in the two state which transitions to the lower state (red line)
+We see above that even though we start with the field "empty" of bosons (blue line), after a while, the field is likely to have a single boson at the expense of the energy in the two state which transitions to the lower state (red line) - this is where spontaneous emission comes from.
+
+
+> TODO: Maybe calculate rates of emission / Einstein coefficients
 
 ```python
 
