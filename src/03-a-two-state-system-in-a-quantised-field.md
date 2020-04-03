@@ -263,11 +263,26 @@ We do expect that bosons can get created and destroyed as a result of interactio
 ## 3.4 - Coupling to a quantum field
 
 
-$$H =  E_0 I - A \sigma_x + \hbar\omega\left(a^{\dagger}a +\frac{1}{2}\right)$$
+We can make a guess at the interaction term by recalling the Hamiltonian from [tutorial 02](https://github.com/project-ida/two-state-quantum-systems/blob/master/02-perturbing-a-two-state-system.ipynb)
+
+$$
+H = \begin{bmatrix}
+ A  &  \delta  \\
+ \delta  &  -A  \\
+\end{bmatrix} = A\sigma_z +\delta \sigma_x
+$$
+
+We interpreted $\delta$ as being related to the strength of a perturbing field. Considering only a single mode of our now quantised field, its strength can be written as the operator $a^{\dagger} + a$ - this comes from the requirement that our field be real.
+
+We that then postulate that the interaction term be written as $V\left( a^{\dagger} + a \right)\sigma_x$, where $V$ is a coupling constant that determines how strongly the two-state system interacts with the field.
+
+In general, finding the coupling between two quantum things required the use of guage theory looking for symmetries etc etc.
+
+The overall Hamiltonian is then:
 
 
+$$H =  A \sigma_z + \hbar\omega\left(a^{\dagger}a +\frac{1}{2}\right) + V\left( a^{\dagger} + a \right)\sigma_x$$
 
-> TODO: make some comments about guage symmetry as determining the interaction term.
 
 ```python
 
