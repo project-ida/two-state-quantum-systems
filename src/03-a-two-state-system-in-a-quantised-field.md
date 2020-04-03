@@ -35,6 +35,9 @@ warnings.filterwarnings('ignore')
 ## 3.1 - Recap
 
 
+> TODO: NEED TO CHANGE THIS RECAP AS IT'S OLD AND DOESN'T MAKE SENSE NOW
+
+
 We have previously looked at a two state system whose base states **|+>** and **|->** were represented as
 
 $$
@@ -255,6 +258,14 @@ H = E_boson*(a.dag()*a+0.5)
 H
 ```
 
+We'll see later on that as the Hamiltonian becomes more complicated it can be helpful to visualise it. QuTiP has a built in way to do this using a [`hinton` diagram](http://qutip.org/docs/latest/apidoc/functions.html#qutip.visualization.hinton)
+
+```python
+f, ax = hinton(H)
+ax.tick_params(axis='x',labelrotation=90)
+ax.set_title("Matrix elements of H     (Fig 1)");
+```
+
 Because the Hamiltonian is diagonal there is no coupling between the different number states. Without doing any further calculation we can therefore say that if we start out with e.g. 3 bosons in the mode then we'll continue to have 3 bosons in the mode indefinitely. This is the same type of behaviour that we saw in the isolated two state system (see section 1.1).
 
 We do expect that bosons can get created and destroyed as a result of interaction with another system, e.g. when the electrons in an transition between different energy levels. Let's see how we can model that.
@@ -288,10 +299,124 @@ The overall Hamiltonian can then be written as:
 
 $$H =  A \sigma_z + \hbar\omega\left(a^{\dagger}a +\frac{1}{2}\right) + V\left( a^{\dagger} + a \right)\sigma_x$$
 
-The only remaining problem is figuring out how to make the field operators and two state operators compatible. As we've currently represented them in QuTip, two state operators are 2x2 matrices but the field operators are (n+1)x(n+1) matrices - we can't just multiply them together as it would appear from the above Hamiltonian.
+The only remaining problem is figuring out how to make the QuTiP representations for the field and the two-state system compatible. Right now, we represent the two state system by something like
+
+$$
+|+> = \begin{bmatrix}
+ 1   \\
+ 0   \\
+ \end{bmatrix}
+$$
+
+and the field is represented by something like
+
+$$
+|2> = \begin{bmatrix}
+ 0   \\
+ 0   \\
+ 1   \\
+ 0   \\
+ \end{bmatrix}
+$$
+
+They clearly don't have the same dimension. Luckily QuTiP will come to our rescue.
 <!-- #endregion -->
 
 ## 3.5 - Describing coupled systems in QuTiP
+> TODO: Tensor product description
+
+
+## 3.6 - Exploring the coupled two-state and field Hamiltonian
+
+
+> TODO: Need some chat here
+
+
+Let's now look at the resonant case when $2A = \omega$
+
+```python
+V = 0.1
+A = 0.1
+omega = 2*A
+M = 4
+```
+
+```python
+a  = tensor(destroy(M+1), qeye(2))     # boson destruction operator
+sx = tensor(qeye(M+1), sigmax())             
+sz = tensor(qeye(M+1),sigmaz())              # z component of the "spin" of the two level system
+
+two_state     =  A*sz                         # two state system energy
+phonons       =  omega*(a.dag()*a+0.5)       # phonon field energy
+interaction   = (a.dag() + a) * sx               # interaction energy - needs to be multiplied by coupling constant in final H
+
+
+H = two_state + phonons + V*interaction
+```
+
+Now that we've created these tensor products, it can be hard to interpret the Hamiltonian just by looking at the matrix without some labels. This is when the Hinton diagram we introduced earlier is super helpful.
+
+```python
+f, ax = hinton(H)
+ax.tick_params(axis='x',labelrotation=90)
+ax.set_title("Matrix elements of H     (Fig 2)");
+```
+
+QuTiP is smart and knows how to label things in a nice way. **|n,m>** means the following:
+- **n** is the number of bosons
+- **m** tells us what the state of the two state system is - 0 for higher energy state that we normally call |+> and 1 for the lower energy |-> state.
+
+
+>TODO: Maybe some more chat about the hinton diagram...maybe selection rules, aka partiy?
+
+
+## 3.7 - Spontaneous emission
+
+
+>TODO: Intro chat
+
+```python
+def states_to_df(states,times):
+    
+    data = {}
+    for i in range(0,states[0].shape[0]):
+        which_mode = divmod(i,2)
+        if which_mode[1] == 0:
+            two_state = "+"
+        elif which_mode[1] == 1:
+            two_state = "-"
+        data[str(which_mode[0])+" , "+two_state] = np.zeros(len(times),dtype="complex128")
+    
+    for i, state in enumerate(states):
+        for j, psi in enumerate(state):
+            which_mode = divmod(j,2)
+            if which_mode[1] == 0:
+                two_state = "+"
+            elif which_mode[1] == 1:
+                two_state = "-"
+            data[str(which_mode[0])+" , "+two_state][i] = psi[0][0]
+
+    return pd.DataFrame(data=data, index=times)
+```
+
+Start with no bosons and in the higher energy state of the two state system and see what happens
+
+```python
+psi0 = tensor(basis(M+1, 0), basis(2, 0))
+
+times = np.linspace(0.0, 70.0, 1000) # simulation time
+
+result = sesolve(H, psi0, times)
+df_coupled =  states_to_df(result.states, times)
+```
+
+```python
+fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(15,6))
+df_coupled.plot(title="Real part of amplitudes Re($\psi$)     (Fig 3)", ax=axes[0]);
+(df_coupled.abs()**2).plot(title="Probabilities $|\psi|^2$     (Fig 4))", ax=axes[1]);
+```
+
+We see above that even though we start with the field "empty" of bosons (blue line), after a while, the field is likely to have a single boson at the expense of the energy in the two state which transitions to the lower state (red line)
 
 ```python
 
