@@ -139,9 +139,9 @@ To understand 1 we recall that the Rabi frequency arises as the beating between 
 Let's do this for a number of different perturbation strengths:
 
 ```python
-n_deltas = 50
-smallest_delta = 0.01
-deltas = smallest_delta*np.array(range(0,n_deltas))
+n_deltas = 100
+max_delta = 0.5
+deltas =np.linspace(-max_delta,max_delta,n_deltas)
 upper = np.zeros(n_deltas)
 lower = np.zeros(n_deltas)
 
