@@ -19,7 +19,19 @@ jupyter:
 # 3 - A two state system in a quantised field
 
 
-> TODO: Intro
+This tutorial is all about going to the next level in thinking about how two state systems interact with their environment. In the last tutorial, we actually took a semi-classical view of the effect of a perturbation - now we must be go full quantum if we are to continue on our quantum quest!
+
+We are covering a lot here so we've chunked it up into sections:
+
+1. Recap
+2. What is a quantum field?
+3. The Hamiltonian for a quantum field
+4. Coupling to a quantum field
+5. Describing coupled systems in QuTiP
+6. Spontaneous emission
+
+You'll see that section 6 is what we promised you at the end of the last tutorial - it does take some work to get there, but we hope you'll find the experience valuable.
+
 
 ```python
 # Libraries
@@ -480,10 +492,12 @@ It's taken us a while but we eventually arrived, as promised. We see in Fig 2 th
 
 
 You might also notice some other features:
-1. The spontaneous emission doesn't appear to be irreversible (as we are normally taught)
-2. There is non-negligible chance to find the system in what appears to be a non-energy conserving state with 2 bosons and the two state system in the + state (purple line)
+1. There is non-negligible chance to find the system in what appears to be a non-energy conserving state with 2 bosons and the two state system in the + state (purple line)
+2. The spontaneous emission doesn't appear to be irreversible (as we are normally taught)
 
-On point 1, technically spontaneous emission isn't irreversible - if you wait long enough the system will return to it's original state. However, the mode modes you have, the more places there are for the energy to go. We know from statistical physics what that means - the system will most likely be found in a high entropy state, i.e. not in our special initial condition, but in one where the energy is in the field with its uncountably many modes.
+On point 1. To understand what's going on here, we need to take a deeper look into how the different bits of the Hamiltonian talk to each other and this will take us into the world of virtual states - it's a big enough topic to save for another tutorial.
+
+On point 2, technically spontaneous emission isn't irreversible - if you wait long enough the system will return to it's original state. However, the mode modes you have, the more places there are for the energy to go. We know from statistical physics what that means - the system will most likely be found in a high entropy state, i.e. not in our special initial condition, but in one where the energy is in the field with its uncountably many modes.
 
 We can start to get a glimpse of many mode physics by simply adding more terms to our tensor products. This gets a bit laborious so we'll make a function to do this for us:
 
@@ -584,87 +598,5 @@ Confirmed! More modes means faster rate of emission.
 ## Next up...
 
 
-```python
 
-```
-
-```python
-
-```
-
-```python
-
-```
-
- It took us a while, but now that we've done this ground work it'll be quicker to get started with more complicated systems in future tutorials.
-
-
-We'll see later on that, as the Hamiltonian becomes more complicated, it can be helpful to visualise it in colour rather than look at a block of numbers. QuTiP has a built in way to do this using a [`hinton` diagram](http://qutip.org/docs/latest/apidoc/functions.html#qutip.visualization.hinton)
-
-Now that we've created all these tensor products, it can be hard to interpret the Hamiltonian just by looking at the matrix without some labels. This is where the Hinton diagram we introduced earlier is super helpful.
-
-```python
-f, ax = hinton(H)
-ax.tick_params(axis='x',labelrotation=90)
-ax.set_title("Matrix elements of H     (Fig 2)");
-```
-
-QuTiP is smart and knows how to label things in a nice way. **|n,m>** means the following:
-- **n** is the number of bosons
-- **m** tells us what the state of the two state system is - 0 for higher energy state that we normally call |+> and 1 for the lower energy |-> state.
-
-```python
-def multi_modes(number_of_modes):
-
-    tensor_stuff = []
-    psi0_stuff = []
-
-    for i in range(0,number_of_modes):
-        tensor_stuff.append(qeye(max_bosons+1))
-        psi0_stuff.append(basis(max_bosons+1, 0))
-
-    sz = tensor(tensor_stuff+[sigmaz()]) 
-
-    sx = tensor(tensor_stuff+[sigmax()])
-
-    psi0 = tensor(psi0_stuff+[basis(2, 0)])
-
-    P_0_plus = psi0*psi0.dag()
-
-    H = A*sz
-
-    for j in range(0,number_of_modes):
-        field_tensor_stuff = []
-        for i in range(0,number_of_modes):
-            if (i==j):
-                field_tensor_stuff.append(destroy(max_bosons+1))
-            else:
-                field_tensor_stuff.append(qeye(max_bosons+1))
-
-        field_tensor_stuff.append(qeye(2))
-        a = tensor(field_tensor_stuff)
-        bosons =  omega*(a.dag()*a+0.5)
-        interaction   = V*(a.dag() + a) * sx 
-        H+=bosons+interaction
-
-    return H, psi0, P_0_plus
-```
-
-```python
-max_mode_number = 4
-P = []
-plt.figure(figsize=(15,6))
-for i in range(0,max_mode_number):
-    H, psi0, P_0_plus = multi_modes(i+1)
-    times = np.linspace(0.0, 150.0, 10000)      # simulation time
-    result = sesolve(H, psi0, times,[P_0_plus])
-    P.append(result.expect[0])
-    plt.plot(times, result.expect[0], label=f"{i+1} modes")
-plt.legend(loc="right")
-plt.show()
-
-```
-
-```python
-
-```
+We've covered a **LOT** today so well done for sticking with it. We've laid the foundations for more complicated problems so that next time we can get stuck into simulations almost immediately. In tutorial 4 we'll go deeper into the strange looking "virtual" states and understand the important role as mediators for non-resonant transitions.
