@@ -35,7 +35,7 @@ warnings.filterwarnings('ignore')
 ## 3.1 - Recap
 
 
-We have previously looked at a two state system whose states are allowed to couple to each other with strength $A$. This coupling resulted in a splitting of the states of constant energy. When we perturbed the energy of those states by an amount $\pm \delta$ we found that a natural way to represent the Hamiltonian is
+We have previously looked at a two state system whose states are allowed to couple to each other with strength $A$. This coupling resulted in a splitting of the states of constant energy. When we perturbed the energy of those states by an amount $\pm \delta$ we found (in [tutorial 02](https://github.com/project-ida/two-state-quantum-systems/blob/master/02-perturbing-a-two-state-system.ipynb)) that a natural way to represent the Hamiltonian is
 
 $$
 H = \begin{bmatrix}
@@ -64,7 +64,7 @@ plus = basis(2, 0)
 minus = basis(2, 1)
 ```
 
-In the last tutorial, we made the perturbation $\delta$ time dependent ($\sin{\omega t}$) and discovered a resonance effect. Even when the perturbation was small, the two level system could be made to oscillate (see [Rabi cycle](https://en.wikipedia.org/wiki/Rabi_cycle)) between the upper and lower energy state when i.e. $\omega = 2A$ - this is the physical basis for stimulated emission.
+In the [last tutorial](https://github.com/project-ida/two-state-quantum-systems/blob/master/02-perturbing-a-two-state-system.ipynb), we made the perturbation $\delta$ time dependent ($\sin{\omega t}$) and discovered a resonance effect. Even when the perturbation was small, the two level system could be made to oscillate (see [Rabi cycle](https://en.wikipedia.org/wiki/Rabi_cycle)) between the upper and lower energy state i.e. when $\omega = 2A$ - this is the physical basis for stimulated emission.
 
 
 ## 3.2 - What is a quantum field?
@@ -155,7 +155,7 @@ $$
 a_k^{\dagger}a_k |2> = 2 |2>
 $$
 
-We call $a_k^{\dagger}a_k$ the number operator.
+We therefore call $a_k^{\dagger}a_k$ the number operator.
 
 But what about the individual $a_k^{\dagger}$ and $a_k$ operators? How do we understand them? How can we construct them?
 
@@ -169,22 +169,19 @@ $$
 a_k^{\dagger}a_k (a_k^{\dagger}|2>) = a_k^{\dagger}a_k a_k^{\dagger} |2> \overset{[a_k a_k^{\dagger}]=1}{=} a_k^{\dagger}(a_k^{\dagger}a_k+1) |2> = a_k^{\dagger}(2+1) |2> = 3a_k^{\dagger}|2>
 $$
 
-So, the number of bosons in the state $a_k^{\dagger}|2>$ is 3. In effect the $a_k^{\dagger}$ operator has created a new boson so we call it a **creation** operator. We can perform a similar calculation with the $a_k$ operator to find it reduces the number of bosons and so we call it an **annihilation** or **destruction** operator.
+So, the number of bosons in the state $a_k^{\dagger}|2>$ is 3. In effect, the $a_k^{\dagger}$ operator has created a new boson so we call it a **creation** operator. We can perform a similar calculation with the $a_k$ operator to find it reduces the number of bosons and so we call it an **annihilation** or **destruction** operator.
 
 QuTiP allows us to construct the creation and destruction operators using the [`create` and `destroy` functions](http://qutip.org/docs/latest/apidoc/functions.html?highlight=create#qutip.operators.create)
 
 ```python
-a = destroy(5)
-a_dag = create(5) # we could also use a.dag()
+a = destroy(5)      # We choose 5 so that we can operate on states with up to a maximum of n=4 bosons
+a_dag = create(5)   # we could also use a.dag()
 ```
 
-Applying creation to our *two* state gives
+Let's apply these operators to our *two* state to confirm what we just discovered in algebra.
 
-```python
-a_dag*two
-```
 
-Once we normalise this state we can see immediately that $|2>$ has become state $|3>$ under the operation of $a_k^{\dagger}$
+After normalising the state we can see immediately that $|2>$ has indeed become state $|3>$ under the operation of $a_k^{\dagger}$
 
 ```python
 (a_dag*two).unit()
@@ -208,9 +205,13 @@ $$
 H = \underset{k}{\sum} \hbar\omega_k\left(a_k^{\dagger}a_k +\frac{1}{2}\right)
 $$
 
-where the sum is over all the possible modes of the field and $a_k^{\dagger}$ and $a_k$ operators create and destroy phonons in the k'th mode.
+where the sum is over all the possible modes of the field and $a_k^{\dagger}$ and $a_k$ operators create and destroy bosons in the k'th mode.
 
-Let's continue to consider only a single mode and let's also continue to only consider a maximum of 4 bosons in that mode. For simplicity we'll set the energy of the mode $\omega$ = 1 (recall $\hbar=1$ in QuTiP)
+Let's continue to consider
+- only a single mode
+- maximum of 4 bosons in that mode
+
+For simplicity we'll set the energy of the mode $\omega$ = 1 (recall $\hbar=1$ in QuTiP)
 
 ```python
 omega = 1
@@ -221,11 +222,13 @@ a = destroy(max_bosons+1)
 H = omega*(a.dag()*a+0.5)
 ```
 
+Let's have a look at H
+
 ```python
 H
 ```
 
-We'll see later on that, as the Hamiltonian becomes more complicated, it can be helpful to visualise it. QuTiP has a built in way to do this using a [`hinton` diagram](http://qutip.org/docs/latest/apidoc/functions.html#qutip.visualization.hinton)
+We'll see later on that, as the Hamiltonian becomes more complicated, it can be helpful to visualise it in colour rather than look at a block of numbers. QuTiP has a built in way to do this using a [`hinton` diagram](http://qutip.org/docs/latest/apidoc/functions.html#qutip.visualization.hinton)
 
 ```python
 f, ax = hinton(H)
@@ -233,15 +236,15 @@ ax.tick_params(axis='x',labelrotation=90)
 ax.set_title("Matrix elements of H     (Fig 1)");
 ```
 
-Because the Hamiltonian is diagonal there is no coupling between the different number states. Without doing any further calculation we can therefore say that if we start out with e.g. 3 bosons in the mode then we'll continue to have 3 bosons in the mode indefinitely. This is the same type of behaviour that we saw in the isolated two state system (see section 1.1).
+Because the Hamiltonian is diagonal there is no coupling between the different number states. Without doing any further calculation we can therefore say that if we start out with e.g. 3 bosons in our mode then we'll continue to have 3 bosons indefinitely. This is the same type of behaviour that we saw in the isolated two state system ([tutorial 01](https://github.com/project-ida/two-state-quantum-systems/blob/master/01-an-isolated-two-state-system.ipynb) section 1.1). - Not very exciting!
 
-We do expect that bosons can get created and destroyed as a result of interaction with another system, e.g. when an electron makes a transition between different energy levels. Let's see how we can model that.
+We do however expect that bosons will get created and destroyed as a result of interaction with another system, e.g. when an electron makes a transition between different energy levels. Let's see how we can model that - this will end up giving us the spontaneous emission physics that we so far been lacking.
 
 
 ## 3.4 - Coupling to a quantum field
 
 <!-- #region -->
-In general, finding the coupling between two quantum things requires expressing everything as its own field (even the two state system!) and imposing a certain symmetry on the Lagrangian of those combined fields. The interaction term in the Lagrangian (and resulting Hamiltonian) pops out as a consequence, how lovely! This is known as [gauge theory](https://en.wikipedia.org/wiki/Gauge_theory) and is an even deeper rabbit hole than quantum field theory. Needless to say, we shall not be going deeper into that today either. If you are curious I recommend  chapter 10 of [Explorations in Mathematical Physics by Koks](https://www.bookdepository.com/Explorations-Mathematical-Physics-Don-Koks/9780387309439) for an intro.
+Firstly, a few general words on interactions. Finding the coupling between two quantum things is actually quite tricky. It requires expressing everything as its own field (even the two state system!) and imposing a certain symmetry on the Lagrangian of those combined fields. The interaction term in the Lagrangian (and resulting Hamiltonian) pops out as a consequence, how lovely! This is known as [gauge theory](https://en.wikipedia.org/wiki/Gauge_theory) and is an even deeper rabbit hole than quantum field theory. Needless to say, we shall not be going deeper into that today either. If you are curious I recommend  chapter 10 of [Explorations in Mathematical Physics by Koks](https://www.bookdepository.com/Explorations-Mathematical-Physics-Don-Koks/9780387309439) for an intro.
 
 So, what can we say about the interaction of our two-state system with a quantised field without getting lost in rigor? *(not that rigor isn't important, but it will slow us down too much at the moment)*
 
@@ -255,7 +258,7 @@ H = \begin{bmatrix}
 \end{bmatrix} = A\sigma_z +\delta \sigma_x
 $$
 
-We interpreted $\delta$ as being related to the strength of a perturbing field. Considering only a single mode of our now quantised field, its strength can be written as the operator $a^{\dagger} + a$ (coming from the requirement that our field be real) and we can then postulate the following interaction term:
+We interpreted $\delta$ as being related to the strength of a perturbing field and $A$ as a coupling between the two states of our system. Considering only a single mode of our now quantised field, its strength can be written as the operator $a^{\dagger} + a$ (coming from the requirement that our field be real) and we can then postulate the following interaction term:
 
 $$V\left( a^{\dagger} + a \right)\sigma_x$$
 
@@ -266,7 +269,12 @@ The overall Hamiltonian can then be written as:
 
 $$H =  A \sigma_z + \hbar\omega\left(a^{\dagger}a +\frac{1}{2}\right) + V\left( a^{\dagger} + a \right)\sigma_x$$
 
-The only remaining problem is figuring out how to make the QuTiP representations for the field and the two-state system compatible. Right now, we represent the two state system by something like
+The only remaining problem is figuring out how to make the QuTiP representations for the field and the two-state system compatible. Luckily QuTiP will come to our rescue.
+<!-- #endregion -->
+
+## 3.5 - Describing coupled systems in QuTiP
+
+Right now, we represent the two state system by something like
 
 $$
 |+> = \begin{bmatrix}
@@ -286,11 +294,112 @@ $$
  \end{bmatrix}
 $$
 
-They clearly don't have the same dimension. Luckily QuTiP will come to our rescue.
+These states clearly have different dimensions and so too do the operators in H above - we cannot simply multiply together them as our Hamiltonian would suggest. We need a new basis that is somehow a combination of the existing ones.
+
+
+
+<!-- #region -->
+One way to build a new basis is to enumerate the many different configurations for the combined system, e.g.
+- 2 bosons for the field and + for the two-state system, i.e. |2, ->
+- 0 bosons for the field and - for the two-state system, i.e |0, +>
+- etc.
+
+There are `(max_bosons+1) x 2` different states and we can write the probability for the system to be in those states as entries in a vector like below.
+
+$$ |n,\pm>  = 
+\begin{bmatrix}
+ 0,+    \\
+ 0,-   \\
+ 1,+    \\
+ 1,-   \\
+ 2,+    \\
+ 2,-   \\
+ 3,+    \\
+ 3,-   \\
+ 4,+    \\
+ 4,-   \\
+  \vdots 
+\end{bmatrix} \ , \ \ \ \  \ \ \  \ \ 
+|2, ->  = 
+\begin{bmatrix}
+ 0    \\
+ 0   \\
+ 0    \\
+ 0   \\
+ 0    \\
+ 1   \\
+ 0    \\
+ 0   \\
+ 0    \\
+ 0   \\
+  \vdots 
+\end{bmatrix}
+$$
+
+
+QuTiP automates the process of creating these states using [tensor products](http://qutip.org/docs/latest/guide/guide-tensor.html#using-tensor-products-and-partial-traces)
 <!-- #endregion -->
 
-## 3.5 - Describing coupled systems in QuTiP
-> TODO: Tensor product description
+```python
+two_minus = tensor(two, minus) # The order here doesn't matter, but you need to be consistent throughout
+two_minus
+```
+
+> As an aside (feel free to skip this paragraph), for those who are know a bit more about the formal mathematics of the [tensor product](https://en.wikipedia.org/wiki/Tensor_product) (see also [outer product](https://en.wikipedia.org/wiki/Outer_product) ), you might be surprised that the result of `tensor(two, plus)` is a vector and not a matrix. Technically what is being done here is the [Kronecker product](https://en.wikipedia.org/wiki/Kronecker_product) and to see the explicit connection between the matrix an vector form  see [here](https://en.wikipedia.org/wiki/Outer_product#Connection_with_the_Kronecker_product).
+
+
+The same tensor products can be done for [operators](https://en.wikipedia.org/wiki/Tensor_product#Tensor_product_of_linear_maps), creating block matrices e.g.
+
+$$
+I(5) \otimes \sigma_z =
+\begin{bmatrix}
+ 1 & 0 & 0 & 0 & 0   \\
+ 0 & 1 & 0 & 0 & 0   \\
+ 0 & 0 & 1 & 0 & 0   \\
+ 0 & 0 & 0 & 1 & 0   \\
+ 0 & 0 & 0 & 0 & 1   \\
+ \end{bmatrix} \otimes
+ \begin{bmatrix}
+ 1 & 0   \\
+ 0 & -1  \\
+\end{bmatrix} = 
+ \begin{bmatrix}
+ 1\times\sigma_z & 0\times\sigma_z & 0\times\sigma_z & 0\times\sigma_z & 0\times\sigma_z   \\
+ 0\times\sigma_z & 1\times\sigma_z & 0\times\sigma_z & 0\times\sigma_z & 0\times\sigma_z   \\
+ 0\times\sigma_z & 0\times\sigma_z & 1\times\sigma_z & 0\times\sigma_z & 0\times\sigma_z   \\
+ 0\times\sigma_z & 0\times\sigma_z & 0\times\sigma_z & 1\times\sigma_z & 0\times\sigma_z   \\
+ 0\times\sigma_z & 0\times\sigma_z & 0\times\sigma_z & 0\times\sigma_z & 1\times\sigma_z   \\
+\end{bmatrix}
+$$ 
+
+```python
+eye_sigmaz = tensor(qeye(5), sigmaz())
+eye_sigmaz
+```
+
+What's useful about this unwieldy tensorised $\sigma_z$ operator is that it only acts on the two-state part and leaves the field part unchanged
+
+```python
+eye_sigmaz * two_minus
+```
+
+We see above that we still have the 2 bosons we started with.
+
+What will happen if we put the identity second and the a operator first, i.e.
+
+$$a^{\dagger}a \otimes I(2)$$
+
+and then apply it to the state |2,->?
+
+```python
+a_eye = tensor(a, qeye(2))
+```
+
+```python
+(a_eye * two_minus).unit()
+```
+
+The boson number has gone down by one, but the two state system is still in the lower - state.
 
 
 ## 3.6 - Exploring the coupled two-state and field Hamiltonian
