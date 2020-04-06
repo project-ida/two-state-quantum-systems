@@ -228,14 +228,6 @@ Let's have a look at H
 H
 ```
 
-We'll see later on that, as the Hamiltonian becomes more complicated, it can be helpful to visualise it in colour rather than look at a block of numbers. QuTiP has a built in way to do this using a [`hinton` diagram](http://qutip.org/docs/latest/apidoc/functions.html#qutip.visualization.hinton)
-
-```python
-f, ax = hinton(H)
-ax.tick_params(axis='x',labelrotation=90)
-ax.set_title("Matrix elements of H     (Fig 1)");
-```
-
 Because the Hamiltonian is diagonal there is no coupling between the different number states. Without doing any further calculation we can therefore say that if we start out with e.g. 3 bosons in our mode then we'll continue to have 3 bosons indefinitely. This is the same type of behaviour that we saw in the isolated two state system ([tutorial 01](https://github.com/project-ida/two-state-quantum-systems/blob/master/01-an-isolated-two-state-system.ipynb) section 1.1). - Not very exciting!
 
 We do however expect that bosons will get created and destroyed as a result of interaction with another system, e.g. when an electron makes a transition between different energy levels. Let's see how we can model that - this will end up giving us the spontaneous emission physics that we so far been lacking.
@@ -337,7 +329,11 @@ $$ |n,\pm>  =
 $$
 
 
-QuTiP automates the process of creating these states using [tensor products](http://qutip.org/docs/latest/guide/guide-tensor.html#using-tensor-products-and-partial-traces)
+QuTiP automates the process of creating these states using [tensor products](http://qutip.org/docs/latest/guide/guide-tensor.html#using-tensor-products-and-partial-traces), which calculates, e.g.
+
+$$
+|2,-> = |2> \otimes |->
+$$
 <!-- #endregion -->
 
 ```python
@@ -348,7 +344,7 @@ two_minus
 > As an aside (feel free to skip this paragraph), for those who are know a bit more about the formal mathematics of the [tensor product](https://en.wikipedia.org/wiki/Tensor_product) (see also [outer product](https://en.wikipedia.org/wiki/Outer_product) ), you might be surprised that the result of `tensor(two, plus)` is a vector and not a matrix. Technically what is being done here is the [Kronecker product](https://en.wikipedia.org/wiki/Kronecker_product) and to see the explicit connection between the matrix an vector form  see [here](https://en.wikipedia.org/wiki/Outer_product#Connection_with_the_Kronecker_product).
 
 
-The same tensor products can be done for [operators](https://en.wikipedia.org/wiki/Tensor_product#Tensor_product_of_linear_maps), creating block matrices e.g.
+The same tensor products can be done for [operators, creating block matrices](https://en.wikipedia.org/wiki/Tensor_product#Tensor_product_of_linear_maps) e.g.
 
 $$
 I(5) \otimes \sigma_z =
@@ -377,7 +373,7 @@ eye_sigmaz = tensor(qeye(5), sigmaz())
 eye_sigmaz
 ```
 
-What's useful about this unwieldy tensorised $\sigma_z$ operator is that it only acts on the two-state part and leaves the field part unchanged
+What's useful about this unwieldy tensorised $\sigma_z$ operator is that it only acts on the two-state part and leaves the field part unchanged - this is because we put the identity operator first.
 
 ```python
 eye_sigmaz * two_minus
@@ -385,9 +381,9 @@ eye_sigmaz * two_minus
 
 We see above that we still have the 2 bosons we started with.
 
-What will happen if we put the identity second and the a operator first, i.e.
+What will happen if we put the identity operator second and put the field operator $a$ first, i.e.
 
-$$a^{\dagger}a \otimes I(2)$$
+$$a \otimes I(2)$$
 
 and then apply it to the state |2,->?
 
@@ -399,62 +395,47 @@ a_eye = tensor(a, qeye(2))
 (a_eye * two_minus).unit()
 ```
 
-The boson number has gone down by one, but the two state system is still in the lower - state.
+The boson number has gone down by one, but the two state system is still in the lower "-" state.
+
+We've finally got everything we need to explore what the title of this tutorial promised, namely explore **"A two state system in a quantised field"**.
 
 
-## 3.6 - Exploring the coupled two-state and field Hamiltonian
+## 3.6 - Spontaneous emission
 
 
-> TODO: Need some chat here
+Let's remind ourselves of the Hamiltonian that we're working with:
 
+$$H =  A \sigma_z + \hbar\omega\left(a^{\dagger}a +\frac{1}{2}\right) + V\left( a^{\dagger} + a \right)\sigma_x$$
 
-Let's now look at the resonant case when $2A = \omega$
+Just like in our last couple of tutorials we'll use $A=0.1$. 
+
+Let's also assume the field couples to the two state system effectively so that $V = A$.
+
+How does the resonance that we discovered last time i.e. when $\omega = \omega_0 \equiv 2A$ change now that the field is quantised.
 
 ```python
 V = 0.1
 A = 0.1
 omega = 2*A
-M = 4
+max_bosons = 4 # The bigger this number the more accuracte your simualations will be. I tried 20 and it was almost the same as 4
 ```
 
 ```python
-a  = tensor(destroy(M+1), qeye(2))     # boson destruction operator
-sx = tensor(qeye(M+1), sigmax())             
-sz = tensor(qeye(M+1),sigmaz())              
+a  = tensor(destroy(max_bosons+1), qeye(2))     # tensorised boson destruction operator
+sx = tensor(qeye(max_bosons+1), sigmax())       # tensorised sigma_x operator
+sz = tensor(qeye(max_bosons+1),sigmaz())        # tensorised sigma_z operator
 
-two_state     =  A*sz                         # two state system energy
-bosons       =  omega*(a.dag()*a+0.5)       # bosons field energy
-interaction   = (a.dag() + a) * sx           # interaction energy - needs to be multiplied by coupling constant in final H
+two_state     =  A*sz                      # two state system energy
+bosons       =  omega*(a.dag()*a+0.5)      # bosons field energy
+interaction   = V*(a.dag() + a) * sx       # interaction energy
 
-
-H = two_state + bosons + V*interaction
+H = two_state + bosons + interaction
 ```
 
-Now that we've created these tensor products, it can be hard to interpret the Hamiltonian just by looking at the matrix without some labels. This is when the Hinton diagram we introduced earlier is super helpful.
+Because we've got 10 possible states, the probability plots that we normally create are going to get a bit crowded. To make plots easier to understand, we'll create a function to label the simulation data according to $\pm$ notation that we've been using up to this point to describe the two state system.
 
 ```python
-f, ax = hinton(H)
-ax.tick_params(axis='x',labelrotation=90)
-ax.set_title("Matrix elements of H     (Fig 2)");
-```
-
-QuTiP is smart and knows how to label things in a nice way. **|n,m>** means the following:
-- **n** is the number of bosons
-- **m** tells us what the state of the two state system is - 0 for higher energy state that we normally call |+> and 1 for the lower energy |-> state.
-
-
->TODO: Maybe some more chat about the hinton diagram...maybe selection rules, aka partiy?
-
-
-## 3.7 - Spontaneous emission
-
-
->TODO: Intro chat
-
-```python
-# helper function
 def states_to_df(states,times):
-    
     data = {}
     for i in range(0,states[0].shape[0]):
         which_mode = divmod(i,2)
@@ -476,12 +457,14 @@ def states_to_df(states,times):
     return pd.DataFrame(data=data, index=times)
 ```
 
-Start with no bosons and in the higher energy state of the two state system and see what happens
+The quintessential set-up for spontaneous emission is to have the field empty, i.e. no bosons $n=0$, and the two state system in it's "excited" (aka higher energy "+") state.
+
+Let's see what happens.
 
 ```python
-psi0 = tensor(basis(M+1, 0), basis(2, 0))
+psi0 = tensor(basis(max_bosons+1, 0), basis(2, 0))  # No bosons and two-state system is in the higher energy + state
 
-times = np.linspace(0.0, 70.0, 1000) # simulation time
+times = np.linspace(0.0, 70.0, 1000)      # simulation time
 
 result = sesolve(H, psi0, times)
 df_coupled =  states_to_df(result.states, times)
@@ -489,14 +472,198 @@ df_coupled =  states_to_df(result.states, times)
 
 ```python
 fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(15,6))
-df_coupled.plot(title="Real part of amplitudes Re($\psi$)     (Fig 3)", ax=axes[0]);
-(df_coupled.abs()**2).plot(title="Probabilities $|\psi|^2$     (Fig 4))", ax=axes[1]);
+df_coupled.plot(title="Real part of amplitudes Re($\psi$)     (Fig 1)", ax=axes[0]);
+(df_coupled.abs()**2).plot(title="Probabilities $|\psi|^2$     (Fig 2))", ax=axes[1]);
 ```
 
-We see above that even though we start with the field "empty" of bosons (blue line), after a while, the field is likely to have a single boson at the expense of the energy in the two state which transitions to the lower state (red line) - this is where spontaneous emission comes from.
+It's taken us a while but we eventually arrived, as promised. We see in Fig 2 that even though we start with the field "empty" of bosons (blue line), after a while, the field is likely to have a single boson at the expense of the energy in the two state system which transitions to the lower state (red line) - the atom "spontaneously" "emits" a boson.
 
 
-> TODO: Maybe calculate rates of emission / Einstein coefficients
+You might also notice some other features:
+1. The spontaneous emission doesn't appear to be irreversible (as we are normally taught)
+2. There is non-negligible chance to find the system in what appears to be a non-energy conserving state with 2 bosons and the two state system in the + state (purple line)
+
+On point 1, technically spontaneous emission isn't irreversible - if you wait long enough the system will return to it's original state. However, the mode modes you have, the more places there are for the energy to go. We know from statistical physics what that means - the system will most likely be found in a high entropy state, i.e. not in our special initial condition, but in one where the energy is in the field with its uncountably many modes.
+
+We can start to get a glimpse of many mode physics by simply adding more terms to our tensor products. This gets a bit laborious so we'll make a function to do this for us:
+
+```python
+def multi_modes(number_of_modes):
+
+    tensor_list = []
+    psi0_list = []
+
+    for i in range(0,number_of_modes):
+        tensor_list.append(qeye(max_bosons+1))
+        psi0_list.append(basis(max_bosons+1, 0))
+
+    sz = tensor(tensor_list+[sigmaz()]) 
+
+    sx = tensor(tensor_list+[sigmax()])
+
+    # We start with no bosons in any mode and are in the + state
+    psi0 = tensor(psi0_list+[basis(2, 0)])  
+
+    # Like the last tutorial, this will give us an operator to plug into the sesolve
+    # to directly calculate the probability for the system to remain in it's initial state
+    P_0_plus = psi0*psi0.dag() 
+
+    H = A*sz
+
+    for j in range(0,number_of_modes):
+        field_tensor_list = []
+        for i in range(0,number_of_modes):
+            if (i==j):
+                field_tensor_list.append(destroy(max_bosons+1))
+            else:
+                field_tensor_list.append(qeye(max_bosons+1))
+
+        field_tensor_list.append(qeye(2))
+        a = tensor(field_tensor_list)
+        bosons =  omega*(a.dag()*a+0.5)
+        interaction   = V*(a.dag() + a) * sx 
+        H+=bosons+interaction
+
+    return H, psi0, P_0_plus
+```
+
+Now, just like in the last tutorial, we are going to use QuTiP's `sesolve` to directly calculate the probability for the system to remain in the initial condition $\psi_0$.
+
+```python
+max_mode_number = 4        # Be careful not to make this too big, the simulation time get long FAST
+Ps = []                    # store the simulation data for plotting
+
+times = np.linspace(0.0, 150.0, 10000)
+
+for i in range(0,max_mode_number):
+    H, psi0, P_0_plus = multi_modes(i+1)    # each time we change the number of modes the Hamiltonian changes
+    result = sesolve(H, psi0, times,[P_0_plus])
+    Ps.append(result.expect[0])
+
+```
+
+```python
+plt.figure(figsize=(15,6))
+
+for i in range(0,max_mode_number):
+    plt.plot(times, Ps[i], label=f"{i+1} modes")
+    
+plt.xlabel("$(\omega-\omega_0)/\omega_0$")
+plt.ylabel("Probability")
+plt.title("Probability to remain in initial |0,+> state     (Fig 3)")
+plt.legend(loc="right")
+plt.show();
+```
+
+We can see by eye in Fig 3 that the effect of more modes is to:
+- Make initial drop in probability faster
+- Reduce the subsequent probability peaks
+
+These give us a qualitative sense that the higher the number of modes the faster the spontaneous emission will be and the more irreversible it is.
+
+
+We can be more quantitative by using a technique from the last tutorial - we can calculate a transition probability away from the initial state as $T = 1-\text{mean}(P_{\psi_0})$
+
+```python
+Ts = []
+for i in range(0,max_mode_number):
+    Ts.append(1 - Ps[i].mean())
+```
+
+```python
+plt.figure(figsize=(7,6))
+plt.plot(range(1,max_mode_number+1), Ts)
+plt.xlabel("Number of modes")
+plt.ylabel("Probability")
+plt.title("Transition Probability     (Fig 4)");
+```
+
+Confirmed! More modes means faster rate of emission.
+
+
+## Next up...
+
+
+```python
+
+```
+
+```python
+
+```
+
+```python
+
+```
+
+ It took us a while, but now that we've done this ground work it'll be quicker to get started with more complicated systems in future tutorials.
+
+
+We'll see later on that, as the Hamiltonian becomes more complicated, it can be helpful to visualise it in colour rather than look at a block of numbers. QuTiP has a built in way to do this using a [`hinton` diagram](http://qutip.org/docs/latest/apidoc/functions.html#qutip.visualization.hinton)
+
+Now that we've created all these tensor products, it can be hard to interpret the Hamiltonian just by looking at the matrix without some labels. This is where the Hinton diagram we introduced earlier is super helpful.
+
+```python
+f, ax = hinton(H)
+ax.tick_params(axis='x',labelrotation=90)
+ax.set_title("Matrix elements of H     (Fig 2)");
+```
+
+QuTiP is smart and knows how to label things in a nice way. **|n,m>** means the following:
+- **n** is the number of bosons
+- **m** tells us what the state of the two state system is - 0 for higher energy state that we normally call |+> and 1 for the lower energy |-> state.
+
+```python
+def multi_modes(number_of_modes):
+
+    tensor_stuff = []
+    psi0_stuff = []
+
+    for i in range(0,number_of_modes):
+        tensor_stuff.append(qeye(max_bosons+1))
+        psi0_stuff.append(basis(max_bosons+1, 0))
+
+    sz = tensor(tensor_stuff+[sigmaz()]) 
+
+    sx = tensor(tensor_stuff+[sigmax()])
+
+    psi0 = tensor(psi0_stuff+[basis(2, 0)])
+
+    P_0_plus = psi0*psi0.dag()
+
+    H = A*sz
+
+    for j in range(0,number_of_modes):
+        field_tensor_stuff = []
+        for i in range(0,number_of_modes):
+            if (i==j):
+                field_tensor_stuff.append(destroy(max_bosons+1))
+            else:
+                field_tensor_stuff.append(qeye(max_bosons+1))
+
+        field_tensor_stuff.append(qeye(2))
+        a = tensor(field_tensor_stuff)
+        bosons =  omega*(a.dag()*a+0.5)
+        interaction   = V*(a.dag() + a) * sx 
+        H+=bosons+interaction
+
+    return H, psi0, P_0_plus
+```
+
+```python
+max_mode_number = 4
+P = []
+plt.figure(figsize=(15,6))
+for i in range(0,max_mode_number):
+    H, psi0, P_0_plus = multi_modes(i+1)
+    times = np.linspace(0.0, 150.0, 10000)      # simulation time
+    result = sesolve(H, psi0, times,[P_0_plus])
+    P.append(result.expect[0])
+    plt.plot(times, result.expect[0], label=f"{i+1} modes")
+plt.legend(loc="right")
+plt.show()
+
+```
 
 ```python
 
