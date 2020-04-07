@@ -499,7 +499,17 @@ On point 1. To understand what's going on here, we need to take a deeper look in
 
 On point 2, technically spontaneous emission isn't irreversible - if you wait long enough the system will return to it's original state. However, the mode modes you have, the more places there are for the energy to go. We know from statistical physics what that means - the system will most likely be found in a high entropy state, i.e. not in our special initial condition, but in one where the energy is in the field with its uncountably many modes.
 
-We can start to get a glimpse of many mode physics by simply adding more terms to our tensor products. This gets a bit laborious so we'll make a function to do this for us:
+We can start to get a glimpse of many mode physics by simply adding more terms to our Hamiltonian like this:
+
+
+$$
+H = A \sigma_z  + \underset{k}{\sum} \hbar\omega_k\left(a_k^{\dagger}a_k +\frac{1}{2}\right) + \underset{k}{\sum} V\left( a_k^{\dagger} + a_k \right)\sigma_x
+$$
+
+
+We'll assume that all modes have the same frequency. Conceptually we can imagine these modes as just having a different propagation direction.
+
+Constructing this Hamiltonian means adding more terms to the QuTiP `tensor` function. This gets a bit laborious so we'll make a function to do this for us:
 
 ```python
 def multi_modes(number_of_modes):
