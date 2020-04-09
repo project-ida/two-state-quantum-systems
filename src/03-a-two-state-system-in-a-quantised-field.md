@@ -91,7 +91,7 @@ But what does quantising a field mean? Answering this question in a completely s
 
 ### 3.2.1 - Fields as harmonic oscillators
 
-The Lagrangian for a field (and resulting Hamiltonian that's of direct interest to us) can represented in a way that's mathematically equivalent to a set of independent harmonic oscillators. This is actually a classical result that comes from:
+The Lagrangian for a field (and resulting Hamiltonian that's of direct interest to us) can be represented in a way that's mathematically equivalent to a set of independent harmonic oscillators. This is actually a classical result that comes from:
 - The requirements of relativity and that the field equations (like Maxwell's equations) are linear
 - The field being represented as a sum of plane waves like:
   
@@ -99,7 +99,7 @@ $$
 \underset{k}{\sum} a_k(t)e^{i(k\cdot r)}
 $$
 
-For more information, see [Classical Mechanics](https://en.wikipedia.org/wiki/Classical_Mechanics_(Goldstein_book)) (Section 13.6) by Goldstein and also [Student Friendly Quantum Field Theory](https://www.quantumfieldtheory.info/) (Section 3.2.3) by Kaluber
+For more information, see [Classical Mechanics](https://en.wikipedia.org/wiki/Classical_Mechanics_(Goldstein_book%29) (Section 13.6) by Goldstein and also [Student Friendly Quantum Field Theory](https://www.quantumfieldtheory.info/) (Section 3.2.3) by Kaluber
 
 
 ### 3.2.2 - Quantising the field
@@ -109,11 +109,11 @@ $$
 E_{k,n} = \left(n + \frac{1}{2} \right)\hbar \omega_k
 $$
 
-where $k=0,1,2,3 ...$ and $\omega \propto k$. This quantisation is technically accomplished by:
+where $n=0,1,2,3 ...$ and $\omega \propto k$. This quantisation is technically accomplished by:
 - Treating the amplitudes of the field $a_k$ as operators and not simply complex numbers
 - Applying a form of Heisenberg's uncertainty principle ([Canonical commutation relation](https://en.wikipedia.org/wiki/Canonical_commutation_relation))to the $a_k$'s, i.e.
 $$
-[a_k a_k^{\dagger}] \equiv a_k a_k^{\dagger} - a_k^{\dagger}a_k = 1
+[a_k, a_k^{\dagger}] \equiv a_k a_k^{\dagger} - a_k^{\dagger}a_k = 1
 $$
 
 The Hamiltonian for the quantised field then looks like
@@ -154,7 +154,7 @@ $$
 \end{bmatrix}
 $$
 
-In QuTiP, we can create Fock states using the same `basis` function that we used previously to represent our two-states system. For example, to represent a field with a single mode, with a maximum capacity of 4 bosons, that currently occupied by only 2 bosons, we can write:
+In QuTiP, we can create Fock states using the same `basis` function that we used previously to represent our two-states system. For example, to represent a field with a single mode, with a maximum capacity of 4 bosons, that is currently occupied by only 2 bosons, we can write:
 
 ```python
 two = basis(5, 2)
@@ -178,7 +178,7 @@ Once we understand $a_k^{\dagger}$ and $a_k$ we are in a position to build the H
 Let's apply the number operator to a state that is not obviously one of its eigenstates. e.g. $a_k^{\dagger}|2>$
 
 $$
-a_k^{\dagger}a_k (a_k^{\dagger}|2>) = a_k^{\dagger}a_k a_k^{\dagger} |2> \overset{[a_k a_k^{\dagger}]=1}{=} a_k^{\dagger}(a_k^{\dagger}a_k+1) |2> = a_k^{\dagger}(2+1) |2> = 3a_k^{\dagger}|2>
+a_k^{\dagger}a_k (a_k^{\dagger}|2>) = a_k^{\dagger}a_k a_k^{\dagger} |2> \overset{[a_k, a_k^{\dagger}]=1}{=} a_k^{\dagger}(a_k^{\dagger}a_k+1) |2> = a_k^{\dagger}(2+1) |2> = 3a_k^{\dagger}|2>
 $$
 
 So, the number of bosons in the state $a_k^{\dagger}|2>$ is 3. In effect, the $a_k^{\dagger}$ operator has created a new boson so we call it a **creation** operator. We can perform a similar calculation with the $a_k$ operator to find it reduces the number of bosons and so we call it an **annihilation** or **destruction** operator.
@@ -485,7 +485,7 @@ df_coupled =  states_to_df(result.states, times)
 ```python
 fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(15,6))
 df_coupled.plot(title="Real part of amplitudes Re($\psi$)     (Fig 1)", ax=axes[0]);
-(df_coupled.abs()**2).plot(title="Probabilities $|\psi|^2$     (Fig 2))", ax=axes[1]);
+(df_coupled.abs()**2).plot(title="Probabilities $|\psi|^2$     (Fig 2)", ax=axes[1]);
 ```
 
 It's taken us a while but we eventually arrived, as promised. We see in Fig 2 that even though we start with the field "empty" of bosons (blue line), after a while, the field is likely to have a single boson at the expense of the energy in the two state system which transitions to the lower state (red line) - the atom "spontaneously" "emits" a boson.
