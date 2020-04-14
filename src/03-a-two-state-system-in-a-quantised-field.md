@@ -40,6 +40,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from qutip import *
+from scipy.signal import argrelextrema
 import warnings
 warnings.filterwarnings('ignore')
 ```
@@ -488,31 +489,26 @@ df_coupled.plot(title="Real part of amplitudes Re($\psi$)     (Fig 1)", ax=axes[
 (df_coupled.abs()**2).plot(title="Probabilities $|\psi|^2$     (Fig 2)", ax=axes[1]);
 ```
 
-It's taken us a while but we eventually arrived, as promised. We see in Fig 2 that even though we start with the field "empty" of bosons (blue line), after a while, the field is likely to have a single boson at the expense of the energy in the two state system which transitions to the lower state (red line) - the atom "spontaneously" "emits" a boson.
+It's taken us a while but we eventually arrived, as promised. We see in Fig 2 that even though we start with the field "empty" of bosons (blue line), after a while, the field will have a single boson at the expense of the energy in the two state system which transitions to the lower state (red line) - the atom "spontaneously" "emits" a boson. 
 
+Much like the previous two tutorials, we are continuing to see that the evolution of our systems are not irreversible but instead undergo oscillations. The particular oscillation we are seeing in Fig 2 are referred to as [vacuum Rabi oscillations](https://en.wikipedia.org/wiki/Jaynes%E2%80%93Cummings_model#Vacuum_Rabi_Oscillations). This reversibility might seem at odds with what we are taught in introductory quantum classes, particular in the context of spontaneous emission.
 
-You might also notice some other features:
-1. There is non-negligible chance to find the system in what appears to be a non-energy conserving state with 2 bosons and the two state system in the + state (purple line)
-2. The spontaneous emission doesn't appear to be irreversible (as we are normally taught)
+Technically, spontaneous emission isn't actually irreversible - if you wait long enough the system will return to its original state. However, the mode modes you have (we only have 1), the more places there are for the energy to go. We know from statistical physics what that means - the system will most likely be found in a high entropy state, i.e. not in our special initial condition, but in one where the energy is in the field with its uncountably many modes. 
 
-On point 1. To understand what's going on here, we need to take a deeper look into how the different bits of the Hamiltonian talk to each other and this will take us into the world of virtual states - it's a big enough topic to save for another tutorial.
-
-On point 2, technically spontaneous emission isn't irreversible - if you wait long enough the system will return to it's original state. However, the mode modes you have, the more places there are for the energy to go. We know from statistical physics what that means - the system will most likely be found in a high entropy state, i.e. not in our special initial condition, but in one where the energy is in the field with its uncountably many modes.
-
-We can start to get a glimpse of many mode physics by simply adding more terms to our Hamiltonian like this:
+So, even more exciting stuff can apparently be found by looking at many mode physics. We can start to get a glimpse of many mode physics by simply adding more terms to our Hamiltonian like this:
 
 
 $$
-H = A \sigma_z  + \underset{k}{\sum} \hbar\omega_k\left(a_k^{\dagger}a_k +\frac{1}{2}\right) + \underset{k}{\sum} V\left( a_k^{\dagger} + a_k \right)\sigma_x
+H = A \sigma_z  + \underset{k}{\sum} \hbar\omega_k\left(a_k^{\dagger}a_k +\frac{1}{2}\right) + \underset{k}{\sum} \frac{\delta}{2}\left( a_k^{\dagger} + a_k \right)\sigma_x
 $$
 
 
-We'll assume that all modes have the same frequency. Conceptually we can imagine these modes as just having a different propagation direction.
+We'll assume that the coupling constants for all the modes are the same.
 
 Constructing this Hamiltonian means adding more terms to the QuTiP `tensor` function. This gets a bit laborious so we'll make a function to do this for us:
 
 ```python
-def multi_modes(number_of_modes):
+def multi_modes(number_of_modes, omegas):
 
     tensor_list = []
     psi0_list = []
@@ -544,69 +540,94 @@ def multi_modes(number_of_modes):
 
         field_tensor_list.append(qeye(2))
         a = tensor(field_tensor_list)
-        bosons =  omega*(a.dag()*a+0.5)
-        interaction   = V*(a.dag() + a) * sx 
+        bosons =  omegas[j]*(a.dag()*a+0.5)
+        interaction   = delta/2*(a.dag() + a) * sx
         H+=bosons+interaction
 
     return H, psi0, P_0_plus
 ```
 
-Now, just like in the last tutorial, we are going to use QuTiP's `sesolve` to directly calculate the probability for the system to remain in the initial condition $\psi_0$.
+Just like in the last tutorial, we are going to use QuTiP's `sesolve` to directly calculate the probability for the system to remain in the initial condition $\psi_0$.
+
+We can speed up the computations by observing (from Fig 2) that states with more than 1 boson are essentually never occupied. We can therefore set `max_bosons = 1`.
+
+Let's start by assuming that the modes all have the same frequency and see what we get.
 
 ```python
-max_mode_number = 4        # Be careful not to make this too big, the simulation time get long FAST
+max_bosons = 1
+max_mode_number = 10       # Be careful not to make this too big, the simulation time get long FAST (10 should take 2 min)
 Ps = []                    # store the simulation data for plotting
 
-times = np.linspace(0.0, 150.0, 10000)
+times = np.linspace(0.0, 15000.0, 1000)
+
+omegas = np.ones(i+1)*2*A
 
 for i in range(0,max_mode_number):
-    H, psi0, P_0_plus = multi_modes(i+1)    # each time we change the number of modes the Hamiltonian changes
+    H, psi0, P_0_plus = multi_modes(i+1, omegas)   # each time we change the number of modes the Hamiltonian changes
     result = sesolve(H, psi0, times,[P_0_plus])
     Ps.append(result.expect[0])
 
 ```
 
+We'll only plot up to 5 modes so that the graph doesn't become incomprehensible.
+
 ```python
 plt.figure(figsize=(15,6))
 
-for i in range(0,max_mode_number):
+for i in range(0,5):
     plt.plot(times, Ps[i], label=f"{i+1} modes")
     
-plt.xlabel("$(\omega-\omega_0)/\omega_0$")
 plt.ylabel("Probability")
 plt.title("Probability to remain in initial |0,+> state     (Fig 3)")
 plt.legend(loc="right")
 plt.show();
 ```
 
-We can see by eye in Fig 3 that the effect of more modes is to:
-- Make initial drop in probability faster
-- Reduce the subsequent probability peaks
-
-These give us a qualitative sense that the higher the number of modes the faster the spontaneous emission will be and the more irreversible it is.
-
-
-We can be more quantitative by using a technique from the last tutorial - we can calculate a transition probability away from the initial state as $T = 1-\text{mean}(P_{\psi_0})$
+You'll notice from Fig 3 that the more modes we have, the quicker the system "emits" a boson. We can quantify this by plotting the time at which the initial minimum in probability occurs. We will use a function from SciPy called [`argrelextrema`](https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.argrelextrema.html)for this.
 
 ```python
 Ts = []
 for i in range(0,max_mode_number):
-    Ts.append(1 - Ps[i].mean())
+    first_min = argrelextrema(Ps[i], np.less)[0][0]
+    Ts.append(times[first_min])
 ```
 
 ```python
 plt.figure(figsize=(7,6))
-plt.plot(range(1,max_mode_number+1), Ts)
+
+for i in range(0,max_mode_number):
+    plt.plot(range(1,max_mode_number+1), Ts)
+    
 plt.xlabel("Number of modes")
-plt.ylabel("Probability")
-plt.title("Transition Probability     (Fig 4)");
+plt.ylabel("Time")
+plt.title("Time to reach min probability of initial |0,+> state     (Fig 4)");
 ```
 
-Confirmed! More modes means faster rate of emission.
+You'll also notice that it doesn't seem to matter how many modes we have, the system still appears reversible! Why?
+
+So far we have assumed the modes all have the same frequency. What if we choose the frequencies to be normally distributed about $\omega = \omega_0 \equiv 2A$ with a standard deviation of `0.01`.
+
+```python
+num_modes = 10
+
+omegas  = (np.random.standard_normal(num_modes)*0.01+1)*(2*A)
+
+H, psi0, P_0_plus = multi_modes(num_modes, omegas)
+result = sesolve(H, psi0, times,[P_0_plus])
+```
+
+```python
+plt.figure(figsize=(7,6))
+plt.plot(times,result.expect[0])
+plt.ylabel("Probability")
+plt.title("Probability to remain in initial |0,+> state  (10 modes)     (Fig 5)");
+```
+
+Fig 5 shows a far less regular pattern - much more in line with a path towards irreversibility. We can therefore say that the irreversible nature of spontaneous emission depends critically on there being a not just many modes, but many modes with a spectrum of frequencies. You can see how this plays out in more detail with 20,000 modes in a paper on [Controlled Spontaneous Emission by Lee](https://iopscience.iop.org/article/10.1088/0953-4075/41/4/045504).
 
 
 ## Next up...
 
 
 
-We've covered a **LOT** today so well done for sticking with it. We've laid the foundations for more complicated problems so that next time we can get stuck into simulations almost immediately. In tutorial 4 we'll go deeper into the strange looking "virtual" states and understand their important role as mediators for non-resonant transitions.
+We've covered a **LOT** today so well done for sticking with it. We've laid the foundations for more complicated problems so that next time we can get stuck into simulations almost immediately. In tutorial 4 we'll see how our combined two state system and quantised field can extend our ideas of resonance beyond simply $\omega=\omega_0$. To do this we'll need to demystify what are often referred to as virtual transitions. See you next time!
