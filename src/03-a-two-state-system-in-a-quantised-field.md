@@ -253,25 +253,25 @@ Firstly, a few general words on interactions. Finding the coupling between two q
 So, what can we say about the interaction of our two-state system with a quantised field without getting lost in rigor? *(not that rigor isn't important, but it will slow us down too much at the moment)*
 
 
-We can make a guess at the interaction term by recalling the Hamiltonian from [Tutorial 02](https://github.com/project-ida/two-state-quantum-systems/blob/master/02-perturbing-a-two-state-system.ipynb):
+We can make a guess at the interaction term by recalling the time dependent Hamiltonian from [Tutorial 02](https://github.com/project-ida/two-state-quantum-systems/blob/master/02-perturbing-a-two-state-system.ipynb):
 
 $$
 H = \begin{bmatrix}
- A  &  \delta  \\
- \delta  &  -A  \\
-\end{bmatrix} = A\sigma_z +\delta \sigma_x
+ A  &  \delta\cos{\omega t}  \\
+ \delta\cos{\omega t}  &  -A  \\
+\end{bmatrix} = A\sigma_z +\delta\cos{\omega t} \sigma_x
 $$
 
-We interpreted $\delta$ as being related to the strength of a perturbing field and $A$ as a coupling between the two states of our system. Considering only a single mode of our now quantised field, its strength can be written as the operator $a^{\dagger} + a$ (coming from the requirement that our field be real) and we can then postulate the following interaction term:
+We interpreted $\delta$ as being related to the strength of a perturbing field and $A$ as a coupling between the two states of our system. In our now quantised field, the equivalent interaction term comes from a single mode and can be written as:
 
-$$V\left( a^{\dagger} + a \right)\sigma_x$$
+$$\frac{\delta}{2}\left( a^{\dagger} + a \right)\sigma_x$$
 
-where $V$ is a coupling constant. What we've essentially created is an interaction term that closely resembles that of an [electric](https://en.wikipedia.org/wiki/Electric_dipole_transition) and [magnetic](https://en.wikipedia.org/wiki/Magnetic_dipole_transition) dipole.
+where $\delta$ is the coupling constant. What we've essentially created is an interaction term that closely resembles that of an [electric](https://en.wikipedia.org/wiki/Electric_dipole_transition) and [magnetic](https://en.wikipedia.org/wiki/Magnetic_dipole_transition) dipole.
 
 
 The overall Hamiltonian can then be written as:
 
-$$H =  A \sigma_z + \hbar\omega\left(a^{\dagger}a +\frac{1}{2}\right) + V\left( a^{\dagger} + a \right)\sigma_x$$
+$$H =  A \sigma_z + \hbar\omega\left(a^{\dagger}a +\frac{1}{2}\right) + \frac{\delta}{2}\left( a^{\dagger} + a \right)\sigma_x$$
 
 The only remaining problem is figuring out how to make the QuTiP representations for the field and the two-state system compatible. Luckily QuTiP will come to our rescue.
 <!-- #endregion -->
@@ -417,16 +417,16 @@ We've finally got everything we need to explore what the title of this tutorial 
 
 Let's remind ourselves of the Hamiltonian that we're working with:
 
-$$H =  A \sigma_z + \hbar\omega\left(a^{\dagger}a +\frac{1}{2}\right) + V\left( a^{\dagger} + a \right)\sigma_x$$
+$$H =  A \sigma_z + \hbar\omega\left(a^{\dagger}a +\frac{1}{2}\right) + \frac{\delta}{2}\left( a^{\dagger} + a \right)\sigma_x$$
 
 Just like in our last couple of tutorials we'll use $A=0.1$. 
 
-Let's also assume the field couples to the two state system effectively so that $V = A$.
+We'll again only perturb the two state system by making the coupling small  i.e. $\delta/A = 0.01 \ll 1$. 
 
 How does the resonance that we discovered last time i.e. when $\omega = \omega_0 \equiv 2A$ change now that the field is quantised.
 
 ```python
-V = 0.1
+delta = 0.001
 A = 0.1
 omega = 2*A
 max_bosons = 4 # The bigger this number the more accuracte your simualations will be. I tried 20 and it was almost the same as 4
@@ -437,9 +437,9 @@ a  = tensor(destroy(max_bosons+1), qeye(2))     # tensorised boson destruction o
 sx = tensor(qeye(max_bosons+1), sigmax())       # tensorised sigma_x operator
 sz = tensor(qeye(max_bosons+1),sigmaz())        # tensorised sigma_z operator
 
-two_state     =  A*sz                      # two state system energy
-bosons       =  omega*(a.dag()*a+0.5)      # bosons field energy
-interaction   = V*(a.dag() + a) * sx       # interaction energy
+two_state     =  A*sz                          # two state system energy
+bosons       =  omega*(a.dag()*a+0.5)          # bosons field energy
+interaction   = delta/2*(a.dag() + a) * sx     # interaction energy
 
 H = two_state + bosons + interaction
 ```
@@ -476,7 +476,7 @@ Let's see what happens.
 ```python
 psi0 = tensor(basis(max_bosons+1, 0), basis(2, 0))  # No bosons and two-state system is in the higher energy + state
 
-times = np.linspace(0.0, 70.0, 1000)      # simulation time
+times = np.linspace(0.0, 15000.0, 1000)      # simulation time
 
 result = sesolve(H, psi0, times)
 df_coupled =  states_to_df(result.states, times)
