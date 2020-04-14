@@ -13,7 +13,7 @@ jupyter:
     name: python3
 ---
 
-<a href="https://colab.research.google.com/github/project-ida/two-state-quantum-systems/blob/matt-sandbox/03-a-two-state-system-in-a-quantised-field.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <a href="https://nbviewer.jupyter.org/github/project-ida/two-state-quantum-systems/blob/matt-sandbox/03-a-two-state-system-in-a-quantised-field.ipynb" target="_parent"><img src="https://nbviewer.jupyter.org/static/img/nav_logo.svg" alt="Open In nbviewer" width="100"/></a>
+<a href="https://colab.research.google.com/github/project-ida/two-state-quantum-systems/blob/master/03-a-two-state-system-in-a-quantised-field.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <a href="https://nbviewer.jupyter.org/github/project-ida/two-state-quantum-systems/blob/master/03-a-two-state-system-in-a-quantised-field.ipynb" target="_parent"><img src="https://nbviewer.jupyter.org/static/img/nav_logo.svg" alt="Open In nbviewer" width="100"/></a>
 
 
 # 3 - A two state system in a quantised field
@@ -40,6 +40,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from qutip import *
+from scipy.signal import argrelextrema
 import warnings
 warnings.filterwarnings('ignore')
 ```
@@ -91,7 +92,7 @@ But what does quantising a field mean? Answering this question in a completely s
 
 ### 3.2.1 - Fields as harmonic oscillators
 
-The Lagrangian for a field (and resulting Hamiltonian that's of direct interest to us) can represented in a way that's mathematically equivalent to a set of independent harmonic oscillators. This is actually a classical result that comes from:
+The Lagrangian for a field (and resulting Hamiltonian that's of direct interest to us) can be represented in a way that's mathematically equivalent to a set of independent harmonic oscillators. This is actually a classical result that comes from:
 - The requirements of relativity and that the field equations (like Maxwell's equations) are linear
 - The field being represented as a sum of plane waves like:
   
@@ -99,7 +100,7 @@ $$
 \underset{k}{\sum} a_k(t)e^{i(k\cdot r)}
 $$
 
-For more information, see [Classical Mechanics](https://en.wikipedia.org/wiki/Classical_Mechanics_(Goldstein_book)) (Section 13.6) by Goldstein and also [Student Friendly Quantum Field Theory](https://www.quantumfieldtheory.info/) (Section 3.2.3) by Kaluber
+For more information, see [Classical Mechanics](https://en.wikipedia.org/wiki/Classical_Mechanics_(Goldstein_book%29) (Section 13.6) by Goldstein and also [Student Friendly Quantum Field Theory](https://www.quantumfieldtheory.info/) (Section 3.2.3) by Kaluber
 
 
 ### 3.2.2 - Quantising the field
@@ -109,11 +110,11 @@ $$
 E_{k,n} = \left(n + \frac{1}{2} \right)\hbar \omega_k
 $$
 
-where $k=0,1,2,3 ...$ and $\omega \propto k$. This quantisation is technically accomplished by:
+where $n=0,1,2,3 ...$ and $\omega \propto k$. This quantisation is technically accomplished by:
 - Treating the amplitudes of the field $a_k$ as operators and not simply complex numbers
 - Applying a form of Heisenberg's uncertainty principle ([Canonical commutation relation](https://en.wikipedia.org/wiki/Canonical_commutation_relation))to the $a_k$'s, i.e.
 $$
-[a_k a_k^{\dagger}] \equiv a_k a_k^{\dagger} - a_k^{\dagger}a_k = 1
+[a_k, a_k^{\dagger}] \equiv a_k a_k^{\dagger} - a_k^{\dagger}a_k = 1
 $$
 
 The Hamiltonian for the quantised field then looks like
@@ -154,7 +155,7 @@ $$
 \end{bmatrix}
 $$
 
-In QuTiP, we can create Fock states using the same `basis` function that we used previously to represent our two-states system. For example, to represent a field with a single mode, with a maximum capacity of 4 bosons, that currently occupied by only 2 bosons, we can write:
+In QuTiP, we can create Fock states using the same `basis` function that we used previously to represent our two-states system. For example, to represent a field with a single mode, with a maximum capacity of 4 bosons, that is currently occupied by only 2 bosons, we can write:
 
 ```python
 two = basis(5, 2)
@@ -178,7 +179,7 @@ Once we understand $a_k^{\dagger}$ and $a_k$ we are in a position to build the H
 Let's apply the number operator to a state that is not obviously one of its eigenstates. e.g. $a_k^{\dagger}|2>$
 
 $$
-a_k^{\dagger}a_k (a_k^{\dagger}|2>) = a_k^{\dagger}a_k a_k^{\dagger} |2> \overset{[a_k a_k^{\dagger}]=1}{=} a_k^{\dagger}(a_k^{\dagger}a_k+1) |2> = a_k^{\dagger}(2+1) |2> = 3a_k^{\dagger}|2>
+a_k^{\dagger}a_k (a_k^{\dagger}|2>) = a_k^{\dagger}a_k a_k^{\dagger} |2> \overset{[a_k, a_k^{\dagger}]=1}{=} a_k^{\dagger}(a_k^{\dagger}a_k+1) |2> = a_k^{\dagger}(2+1) |2> = 3a_k^{\dagger}|2>
 $$
 
 So, the number of bosons in the state $a_k^{\dagger}|2>$ is 3. In effect, the $a_k^{\dagger}$ operator has created a new boson so we call it a **creation** operator. We can perform a similar calculation with the $a_k$ operator to find it reduces the number of bosons and so we call it an **annihilation** or **destruction** operator.
@@ -253,25 +254,25 @@ Firstly, a few general words on interactions. Finding the coupling between two q
 So, what can we say about the interaction of our two-state system with a quantised field without getting lost in rigor? *(not that rigor isn't important, but it will slow us down too much at the moment)*
 
 
-We can make a guess at the interaction term by recalling the Hamiltonian from [Tutorial 02](https://github.com/project-ida/two-state-quantum-systems/blob/master/02-perturbing-a-two-state-system.ipynb):
+We can make a guess at the interaction term by recalling the time dependent Hamiltonian from [Tutorial 02](https://github.com/project-ida/two-state-quantum-systems/blob/master/02-perturbing-a-two-state-system.ipynb):
 
 $$
 H = \begin{bmatrix}
- A  &  \delta  \\
- \delta  &  -A  \\
-\end{bmatrix} = A\sigma_z +\delta \sigma_x
+ A  &  \delta\cos{\omega t}  \\
+ \delta\cos{\omega t}  &  -A  \\
+\end{bmatrix} = A\sigma_z +\delta\cos{\omega t} \sigma_x
 $$
 
-We interpreted $\delta$ as being related to the strength of a perturbing field and $A$ as a coupling between the two states of our system. Considering only a single mode of our now quantised field, its strength can be written as the operator $a^{\dagger} + a$ (coming from the requirement that our field be real) and we can then postulate the following interaction term:
+We interpreted $\delta$ as being related to the strength of a perturbing field and $A$ as a coupling between the two states of our system. In our now quantised field, the equivalent interaction term comes from a single mode and can be written as:
 
-$$V\left( a^{\dagger} + a \right)\sigma_x$$
+$$\frac{\delta}{2}\left( a^{\dagger} + a \right)\sigma_x$$
 
-where $V$ is a coupling constant. What we've essentially created is an interaction term that closely resembles that of an [electric](https://en.wikipedia.org/wiki/Electric_dipole_transition) and [magnetic](https://en.wikipedia.org/wiki/Magnetic_dipole_transition) dipole.
+where $\delta$ is the coupling constant. What we've essentially created is an interaction term that closely resembles that of an [electric](https://en.wikipedia.org/wiki/Electric_dipole_transition) and [magnetic](https://en.wikipedia.org/wiki/Magnetic_dipole_transition) dipole.
 
 
 The overall Hamiltonian can then be written as:
 
-$$H =  A \sigma_z + \hbar\omega\left(a^{\dagger}a +\frac{1}{2}\right) + V\left( a^{\dagger} + a \right)\sigma_x$$
+$$H =  A \sigma_z + \hbar\omega\left(a^{\dagger}a +\frac{1}{2}\right) + \frac{\delta}{2}\left( a^{\dagger} + a \right)\sigma_x$$
 
 The only remaining problem is figuring out how to make the QuTiP representations for the field and the two-state system compatible. Luckily QuTiP will come to our rescue.
 <!-- #endregion -->
@@ -417,16 +418,16 @@ We've finally got everything we need to explore what the title of this tutorial 
 
 Let's remind ourselves of the Hamiltonian that we're working with:
 
-$$H =  A \sigma_z + \hbar\omega\left(a^{\dagger}a +\frac{1}{2}\right) + V\left( a^{\dagger} + a \right)\sigma_x$$
+$$H =  A \sigma_z + \hbar\omega\left(a^{\dagger}a +\frac{1}{2}\right) + \frac{\delta}{2}\left( a^{\dagger} + a \right)\sigma_x$$
 
 Just like in our last couple of tutorials we'll use $A=0.1$. 
 
-Let's also assume the field couples to the two state system effectively so that $V = A$.
+We'll again only perturb the two state system by making the coupling small  i.e. $\delta/A = 0.01 \ll 1$. 
 
 How does the resonance that we discovered last time i.e. when $\omega = \omega_0 \equiv 2A$ change now that the field is quantised.
 
 ```python
-V = 0.1
+delta = 0.001
 A = 0.1
 omega = 2*A
 max_bosons = 4 # The bigger this number the more accuracte your simualations will be. I tried 20 and it was almost the same as 4
@@ -437,9 +438,9 @@ a  = tensor(destroy(max_bosons+1), qeye(2))     # tensorised boson destruction o
 sx = tensor(qeye(max_bosons+1), sigmax())       # tensorised sigma_x operator
 sz = tensor(qeye(max_bosons+1),sigmaz())        # tensorised sigma_z operator
 
-two_state     =  A*sz                      # two state system energy
-bosons       =  omega*(a.dag()*a+0.5)      # bosons field energy
-interaction   = V*(a.dag() + a) * sx       # interaction energy
+two_state     =  A*sz                          # two state system energy
+bosons       =  omega*(a.dag()*a+0.5)          # bosons field energy
+interaction   = delta/2*(a.dag() + a) * sx     # interaction energy
 
 H = two_state + bosons + interaction
 ```
@@ -476,7 +477,7 @@ Let's see what happens.
 ```python
 psi0 = tensor(basis(max_bosons+1, 0), basis(2, 0))  # No bosons and two-state system is in the higher energy + state
 
-times = np.linspace(0.0, 70.0, 1000)      # simulation time
+times = np.linspace(0.0, 15000.0, 1000)      # simulation time
 
 result = sesolve(H, psi0, times)
 df_coupled =  states_to_df(result.states, times)
@@ -485,24 +486,29 @@ df_coupled =  states_to_df(result.states, times)
 ```python
 fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(15,6))
 df_coupled.plot(title="Real part of amplitudes Re($\psi$)     (Fig 1)", ax=axes[0]);
-(df_coupled.abs()**2).plot(title="Probabilities $|\psi|^2$     (Fig 2))", ax=axes[1]);
+(df_coupled.abs()**2).plot(title="Probabilities $|\psi|^2$     (Fig 2)", ax=axes[1]);
 ```
 
-It's taken us a while but we eventually arrived, as promised. We see in Fig 2 that even though we start with the field "empty" of bosons (blue line), after a while, the field is likely to have a single boson at the expense of the energy in the two state system which transitions to the lower state (red line) - the atom "spontaneously" "emits" a boson.
+It's taken us a while but we eventually arrived, as promised. We see in Fig 2 that even though we start with the field "empty" of bosons (blue line), after a while, the field will have a single boson at the expense of the energy in the two state system which transitions to the lower state (red line) - the atom "spontaneously" "emits" a boson. 
+
+Much like the previous two tutorials, we are continuing to see that the evolution of our systems are not irreversible but instead undergo oscillations. The particular oscillation we are seeing in Fig 2 are referred to as [vacuum Rabi oscillations](https://en.wikipedia.org/wiki/Jaynes%E2%80%93Cummings_model#Vacuum_Rabi_Oscillations). This reversibility might seem at odds with what we are taught in introductory quantum classes, particular in the context of spontaneous emission.
+
+Technically, spontaneous emission isn't actually irreversible - if you wait long enough the system will return to its original state. However, the mode modes you have (we only have 1), the more places there are for the energy to go. We know from statistical physics what that means - the system will most likely be found in a high entropy state, i.e. not in our special initial condition, but in one where the energy is in the field with its uncountably many modes. 
+
+So, even more exciting stuff can apparently be found by looking at many mode physics. We can start to get a glimpse of many mode physics by simply adding more terms to our Hamiltonian like this:
 
 
-You might also notice some other features:
-1. There is non-negligible chance to find the system in what appears to be a non-energy conserving state with 2 bosons and the two state system in the + state (purple line)
-2. The spontaneous emission doesn't appear to be irreversible (as we are normally taught)
+$$
+H = A \sigma_z  + \underset{k}{\sum} \hbar\omega_k\left(a_k^{\dagger}a_k +\frac{1}{2}\right) + \underset{k}{\sum} \frac{\delta}{2}\left( a_k^{\dagger} + a_k \right)\sigma_x
+$$
 
-On point 1. To understand what's going on here, we need to take a deeper look into how the different bits of the Hamiltonian talk to each other and this will take us into the world of virtual states - it's a big enough topic to save for another tutorial.
 
-On point 2, technically spontaneous emission isn't irreversible - if you wait long enough the system will return to it's original state. However, the mode modes you have, the more places there are for the energy to go. We know from statistical physics what that means - the system will most likely be found in a high entropy state, i.e. not in our special initial condition, but in one where the energy is in the field with its uncountably many modes.
+We'll assume that the coupling constants for all the modes are the same.
 
-We can start to get a glimpse of many mode physics by simply adding more terms to our tensor products. This gets a bit laborious so we'll make a function to do this for us:
+Constructing this Hamiltonian means adding more terms to the QuTiP `tensor` function. This gets a bit laborious so we'll make a function to do this for us:
 
 ```python
-def multi_modes(number_of_modes):
+def multi_modes(number_of_modes, omegas):
 
     tensor_list = []
     psi0_list = []
@@ -534,69 +540,94 @@ def multi_modes(number_of_modes):
 
         field_tensor_list.append(qeye(2))
         a = tensor(field_tensor_list)
-        bosons =  omega*(a.dag()*a+0.5)
-        interaction   = V*(a.dag() + a) * sx 
+        bosons =  omegas[j]*(a.dag()*a+0.5)
+        interaction   = delta/2*(a.dag() + a) * sx
         H+=bosons+interaction
 
     return H, psi0, P_0_plus
 ```
 
-Now, just like in the last tutorial, we are going to use QuTiP's `sesolve` to directly calculate the probability for the system to remain in the initial condition $\psi_0$.
+Just like in the last tutorial, we are going to use QuTiP's `sesolve` to directly calculate the probability for the system to remain in the initial condition $\psi_0$.
+
+We can speed up the computations by observing (from Fig 2) that states with more than 1 boson are essentually never occupied. We can therefore set `max_bosons = 1`.
+
+Let's start by assuming that the modes all have the same frequency and see what we get.
 
 ```python
-max_mode_number = 4        # Be careful not to make this too big, the simulation time get long FAST
+max_bosons = 1
+max_mode_number = 10       # Be careful not to make this too big, the simulation time get long FAST (10 should take 2 min)
 Ps = []                    # store the simulation data for plotting
 
-times = np.linspace(0.0, 150.0, 10000)
+times = np.linspace(0.0, 15000.0, 1000)
+
+omegas = np.ones(i+1)*2*A
 
 for i in range(0,max_mode_number):
-    H, psi0, P_0_plus = multi_modes(i+1)    # each time we change the number of modes the Hamiltonian changes
+    H, psi0, P_0_plus = multi_modes(i+1, omegas)   # each time we change the number of modes the Hamiltonian changes
     result = sesolve(H, psi0, times,[P_0_plus])
     Ps.append(result.expect[0])
 
 ```
 
+We'll only plot up to 5 modes so that the graph doesn't become incomprehensible.
+
 ```python
 plt.figure(figsize=(15,6))
 
-for i in range(0,max_mode_number):
+for i in range(0,5):
     plt.plot(times, Ps[i], label=f"{i+1} modes")
     
-plt.xlabel("$(\omega-\omega_0)/\omega_0$")
 plt.ylabel("Probability")
 plt.title("Probability to remain in initial |0,+> state     (Fig 3)")
 plt.legend(loc="right")
 plt.show();
 ```
 
-We can see by eye in Fig 3 that the effect of more modes is to:
-- Make initial drop in probability faster
-- Reduce the subsequent probability peaks
-
-These give us a qualitative sense that the higher the number of modes the faster the spontaneous emission will be and the more irreversible it is.
-
-
-We can be more quantitative by using a technique from the last tutorial - we can calculate a transition probability away from the initial state as $T = 1-\text{mean}(P_{\psi_0})$
+You'll notice from Fig 3 that the more modes we have, the quicker the system "emits" a boson. We can quantify this by plotting the time at which the initial minimum in probability occurs. We will use a function from SciPy called [`argrelextrema`](https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.argrelextrema.html)for this.
 
 ```python
 Ts = []
 for i in range(0,max_mode_number):
-    Ts.append(1 - Ps[i].mean())
+    first_min = argrelextrema(Ps[i], np.less)[0][0]
+    Ts.append(times[first_min])
 ```
 
 ```python
 plt.figure(figsize=(7,6))
-plt.plot(range(1,max_mode_number+1), Ts)
+
+for i in range(0,max_mode_number):
+    plt.plot(range(1,max_mode_number+1), Ts)
+    
 plt.xlabel("Number of modes")
-plt.ylabel("Probability")
-plt.title("Transition Probability     (Fig 4)");
+plt.ylabel("Time")
+plt.title("Time to reach min probability of initial |0,+> state     (Fig 4)");
 ```
 
-Confirmed! More modes means faster rate of emission.
+You'll also notice that it doesn't seem to matter how many modes we have, the system still appears reversible! Why?
+
+So far we have assumed the modes all have the same frequency. What if we choose the frequencies to be normally distributed about $\omega = \omega_0 \equiv 2A$ with a standard deviation of `0.01`.
+
+```python
+num_modes = 10
+
+omegas  = (np.random.standard_normal(num_modes)*0.01+1)*(2*A)
+
+H, psi0, P_0_plus = multi_modes(num_modes, omegas)
+result = sesolve(H, psi0, times,[P_0_plus])
+```
+
+```python
+plt.figure(figsize=(7,6))
+plt.plot(times,result.expect[0])
+plt.ylabel("Probability")
+plt.title("Probability to remain in initial |0,+> state  (10 modes)     (Fig 5)");
+```
+
+Fig 5 shows a far less regular pattern - much more in line with a path towards irreversibility. We can therefore say that the irreversible nature of spontaneous emission depends critically on there being a not just many modes, but many modes with a spectrum of frequencies. You can see how this plays out in more detail with 20,000 modes in a paper on [Controlled Spontaneous Emission by Lee](https://iopscience.iop.org/article/10.1088/0953-4075/41/4/045504).
 
 
 ## Next up...
 
 
 
-We've covered a **LOT** today so well done for sticking with it. We've laid the foundations for more complicated problems so that next time we can get stuck into simulations almost immediately. In tutorial 4 we'll go deeper into the strange looking "virtual" states and understand the important role as mediators for non-resonant transitions.
+We've covered a **LOT** today so well done for sticking with it. We've laid the foundations for more complicated problems so that next time we can get stuck into simulations almost immediately. In tutorial 4 we'll see how our combined two state system and quantised field can extend our ideas of resonance beyond simply $\omega=\omega_0$. To do this we'll need to demystify what are often referred to as virtual transitions. See you next time!
