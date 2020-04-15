@@ -274,5 +274,122 @@ axes[3].set_ylabel("<int>");
 ```
 
 ```python
+fig, axes = plt.subplots(nrows=4, ncols=1, figsize=(15,10))
+df[["coupling","level_149",]].plot(x="coupling",ax=axes[0]);
+df_num[["coupling","level_149"]].plot(x="coupling",ax=axes[1]);
+df_sz[["coupling","level_149"]].plot(x="coupling",ax=axes[2]);
+df_int[["coupling","level_149"]].plot(x="coupling",ax=axes[3]);
+axes[0].set_ylabel("Energy ($\hbar\omega$)")
+axes[1].set_ylabel("<N>")
+axes[2].set_ylabel("<$s_z$>");
+axes[3].set_ylabel("<int>");
+```
+
+## Simulating up/down conversation
+
+```python
+anti_crossing
+```
+
+```python
+H = two_state + phonons + anti_crossing.loc[0].coupling*interaction
+```
+
+```python
+evals, ekets = H.eigenstates()
+
+fig, axes = plt.subplots(1, 2, figsize=(12,5))
+plot_fock_distribution(ekets[150], title="150th Eigenstate", ax=axes[0])
+plot_fock_distribution(ekets[149],title="149th Eigenstate", ax=axes[1])
+axes[0].set_xlim(140,160)
+axes[1].set_xlim(140,160)
+fig.tight_layout()
+```
+
+We cam see that the 149th and 159th eigenstates are mostly made up of the 143rd and 156th base states. We can check this.
+
+```python
+print( np.abs(ekets[150][143])**2, np.abs(ekets[150][156])**2)
+```
+
+We can check what these base states correspond to by referring back to our ket labels
+
+```python
+print ( ket_labels[143], ket_labels[156])
+```
+
+```python
+# psi_150_minus = tensor(basis(M, 156), basis(2, 1))  
+# P_150_minus = psi_150_minus*psi_150_minus.dag() 
+
+# psi_149_plus = tensor(basis(M, 148), basis(2, 1)) 
+# P_149_plus = psi_149_plus*psi_149_plus.dag() 
+
+# psi_151_plus = tensor(basis(M, 151), basis(2, 0)) 
+# P_151_plus = psi_151_plus*psi_151_plus.dag() 
+
+
+# psi_150_minus    = psi_150_minus.extract_states(subset_idx) 
+# P_150_minus    = P_150_minus.extract_states(subset_idx) 
+
+# psi_149_plus    = psi_149_plus.extract_states(subset_idx) 
+# P_149_plus    = P_149_plus.extract_states(subset_idx) 
+
+# psi_151_plus    = psi_151_plus.extract_states(subset_idx) 
+# P_151_plus    = P_151_plus.extract_states(subset_idx) 
+
+
+psi_143_plus = basis(M,143)
+psi_156_minus = basis(M,156)
+
+P_143_minus = psi_143_plus*psi_143_plus.dag() 
+P_156_minus = psi_156_minus*psi_156_minus.dag() 
+
+
+times = np.linspace(0.0, 100, 10000)      # simulation time
+
+
+H = two_state + phonons + anti_crossing.loc[0].coupling*interaction
+
+result = sesolve(H, psi_156_minus, times,[P_143_minus,P_156_minus])
+
+```
+
+```python
+plt.plot(times, result.expect[0], label="143")
+plt.plot(times, result.expect[1], label="156")
+plt.legend(loc="right")
+plt.show();
+```
+
+```python
+P = []
+
+for i in range(0,M):
+    psi = basis(M,i)
+    P.append(psi*psi.dag())
+```
+
+```python
+result = sesolve(H, psi_156_minus, times,P)
+
+```
+
+```python
+plt.figure(figsize=(15,6))
+
+for i in range(150,159):
+    plt.plot(times, result.expect[i], label=f"{i}")
+    
+plt.ylabel("Probability")
+plt.legend(loc="right")
+plt.show();
+```
+
+```python
+ket_labels[155:159]
+```
+
+```python
 
 ```
