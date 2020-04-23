@@ -103,6 +103,16 @@ if parity != "all":
 
 ```
 
+It will be helpful for us to be able to search for the index of a particular state by the (n,m) numbers
+
+```python
+def index_from_nm(n,m): 
+    try:
+        return [item for item in mn_from_index].index((n,m))
+    except:
+        print("ERROR: State doesn't exist or has the wrong parity ")
+```
+
 ```python
     # http://qutip.org/docs/latest/apidoc/classes.html?highlight=extract_states#qutip.Qobj.extract_states
     two_state    = two_state.extract_states(subset_idx) 
@@ -253,17 +263,19 @@ axes[1].set_xlim(-1,20)
 fig.tight_layout()
 ```
 
-Energy eigenstates 7 and 8 are mostly made up of states numbered 1 and 14. But what do these correspond to. We can use our ket_labels for this:
+Energy eigenstates 7 and 8 are mostly made up of states numbered 1 and 14. But what do these correspond to. We can use the nm index we made earlier:
 
 ```python
-print ( ket_labels[1], ket_labels[14])
+print ( mn_from_index[1], mn_from_index[14])
 ```
 
 ### What does |1,0> look like in the basis of the eigenstates?
 
+
+We should create the state |1,0> by using `tensor` function and the extracting the states that have the wrong parity. We can however use the function we made earlier, `index_from_nm` to create the state directly from the `basis` function
+
 ```python
-psi0 = tensor(basis(max_bosons+1, 1), basis(2, 0))
-psi0 = psi0.extract_states(subset_idx) 
+psi0 = basis(max_bosons+1, index_from_nm(1,0))
 ```
 
 ```python
@@ -284,46 +296,57 @@ Let's see
 ```python
 P = []
 
-for i in range(0,max_bosons):
-    psi = basis(max_bosons,i)
+for i in range(0,max_bosons+1):
+    psi = basis(max_bosons+1,i)
     P.append(psi*psi.dag())
 ```
 
 ```python
-times = np.linspace(0.0, 100.0, 1000)      # simulation time
+times = np.linspace(0.0, 1000.0, 10000)      # simulation time
 
 result = sesolve(H, psi0, times,P)
 ```
 
 ```python
-plt.figure(figsize=(15,6))
-
-for i in range(0,16):
+plt.figure(figsize=(10,6))
+for i in range(0,17):
     plt.plot(times, result.expect[i], label=f"{ket_labels[i]}")
-    
+plt.ylabel("Probability")
+plt.legend(loc="right")
+plt.show();
+
+
+```
+
+Not much osccilation at all!
+
+Maybe we need to wait longer. Let's manually do a time varying state otherwise it will take a very long time.
+
+> TODO: explain the method below
+
+```python
+times = np.linspace(0.0, 1000000.0, 10000)
+```
+
+```python
+P = []
+
+for i in range(0,max_bosons+1):
+    psi_num = basis(max_bosons+1,i)
+    psi_H   = psi_num.transform(ekets)
+    amp = 0
+    for i in range(0,max_bosons+1):
+        amp +=  psi_H[i][0][0]*np.exp(-1j*evals[i]*times)*ekets[i][1][0][0]
+    P.append(amp*np.conj(amp))
+```
+
+```python
+plt.figure(figsize=(10,6))
+for i in range(0,17):
+    plt.plot(times, P[i], label=f"{ket_labels[i]}")
 plt.ylabel("Probability")
 plt.legend(loc="right")
 plt.show();
 ```
 
-Not much osccilation at all!
-
-Maybe we need to wait longer. Let's manually do a time varying state
-
-```python
-times = np.linspace(0.0, 1000000.0, 10000000)
-```
-
-```python
-PP = 0.7*np.exp(-1j*evals[7]*times) +  0.7*np.exp(-1j*evals[8]*times)
-```
-
-```python
-plt.plot(PP*np.conj(PP))
-```
-
 Seems like we'd have to wait a really long time to see the Rabi oscillation.
-
-```python
-
-```
