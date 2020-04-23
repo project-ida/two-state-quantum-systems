@@ -164,11 +164,21 @@ plt.ylabel("Energy ($\hbar\omega$)");
 ## More detail on energy levels 7 and 8
 
 ```python
+level_number_1 = 11
+level_number_2 = 12
+```
+
+```python
+level_label_1 = f"level_{level_number_1}"
+level_label_2 = f"level_{level_number_2}"
+```
+
+```python
 fig, axes = plt.subplots(nrows=4, ncols=1, figsize=(15,10))
-df[["coupling","level_7","level_8"]].plot(x="coupling",ax=axes[0]);
-df_num[["coupling","level_7","level_8"]].plot(x="coupling",ax=axes[1]);
-df_sz[["coupling","level_7","level_8"]].plot(x="coupling",ax=axes[2]);
-df_int[["coupling","level_7","level_8"]].plot(x="coupling",ax=axes[3]);
+df[["coupling",level_label_1,level_label_2]].plot(x="coupling",ax=axes[0]);
+df_num[["coupling",level_label_1,level_label_2]].plot(x="coupling",ax=axes[1]);
+df_sz[["coupling",level_label_1,level_label_2]].plot(x="coupling",ax=axes[2]);
+df_int[["coupling",level_label_1,level_label_2]].plot(x="coupling",ax=axes[3]);
 axes[0].set_ylabel("Energy ($\hbar\omega$)")
 axes[1].set_ylabel("<N>")
 axes[2].set_ylabel("<$s_z$>");
@@ -176,11 +186,11 @@ axes[3].set_ylabel("<int>");
 ```
 
 ```python
-df_num[["coupling","level_7","level_8"]].plot(x="coupling",figsize=(10,6));
+df_num[["coupling",level_label_1,level_label_2]].plot(x="coupling",figsize=(10,6));
 plt.ylabel("<N>");
 ```
 
-## Find the anti-crossing point between levels 7 and 8
+## Find the anti-crossing points
 
 
 ### Start with rough calculation of the anti-crossing coupling
@@ -191,9 +201,11 @@ df_diff["coupling"] = df["coupling"]
 ```
 
 ```python
-df_diff_subset = df_diff[["coupling","level_8"]]
-df_diff_subset["min"] =  df_diff_subset[["level_8"]].min(axis=1)
-df_diff_subset["level_min"] = df_diff_subset[["level_8"]].idxmin(axis=1).str.split("_",expand = True)[1]
+level_label = level_label_2
+
+df_diff_subset = df_diff[["coupling",level_label]]
+df_diff_subset["min"] =  df_diff_subset[[level_label]].min(axis=1)
+df_diff_subset["level_min"] = df_diff_subset[[level_label]].idxmin(axis=1).str.split("_",expand = True)[1]
 
 argmin = argrelextrema(df_diff_subset["min"].values, np.less)[0]
 anti_crossing = df_diff_subset.iloc[argmin][["coupling","min","level_min"]]
@@ -204,7 +216,7 @@ anti_crossing.reset_index(inplace=True,drop=True)
 anti_crossing
 ```
 
-### Now more precise calculation of anti-crossing coupling
+### Now more precise calculation of anti-crossing couplings
 
 ```python
 # Define a function which returns the energy difference between two levels for a given coupling
@@ -229,7 +241,7 @@ for index, row in anti_crossing.iterrows():
 anti_crossing
 ```
 
-## Simulation of the anti-crossing
+## Simulation of the first anti-crossing
 
 
 ### First let's look at some expectation values at the anti-crossing
@@ -252,21 +264,32 @@ for i in range(0,10):
 We see above that levels 7 and 8 are almost identical which confirms what we see in the figures above
 
 
-### What are the eigenstates for 7 and 8 made of?
+### What are the anti-crossing eigenstates made of?
+
+```python
+ekets[level_number_1]
+```
 
 ```python
 fig, axes = plt.subplots(1, 2, figsize=(12,5))
-plot_fock_distribution(ekets[7], title="7 Eigenstate", ax=axes[0])
-plot_fock_distribution(ekets[8],title="8 Eigenstate", ax=axes[1])
-axes[0].set_xlim(-1,20)
-axes[1].set_xlim(-1,20)
+plot_fock_distribution(ekets[level_number_1], title=f"{level_number_1} Eigenstate", ax=axes[0])
+plot_fock_distribution(ekets[level_number_2],title=f"{level_number_2} Eigenstate", ax=axes[1])
+axes[0].set_xlim(-1,25)
+axes[1].set_xlim(-1,25)
 fig.tight_layout()
 ```
 
-Energy eigenstates 7 and 8 are mostly made up of states numbered 1 and 14. But what do these correspond to. We can use the nm index we made earlier:
+The Energy eigenstates that come together at the anti-crossing are mostly made up of states numbered:
 
 ```python
-print ( mn_from_index[1], mn_from_index[14])
+P_eigenstate = ekets[level_number_1].full()*np.conj(ekets[level_number_1].full())
+P_eigenstate = np.hstack(P_eigenstate)
+eigenstate_composition = np.argpartition(P_eigenstate, -2)[-2:]
+print(eigenstate_composition[0], eigenstate_composition[1])
+```
+
+```python
+print ( mn_from_index[eigenstate_composition[0]], mn_from_index[eigenstate_composition[1]])
 ```
 
 ### What does |1,0> look like in the basis of the eigenstates?
@@ -275,7 +298,8 @@ print ( mn_from_index[1], mn_from_index[14])
 We should create the state |1,0> by using `tensor` function and the extracting the states that have the wrong parity. We can however use the function we made earlier, `index_from_nm` to create the state directly from the `basis` function
 
 ```python
-psi0 = basis(max_bosons+1, index_from_nm(1,0))
+i = index_from_nm(5,0)
+psi0 = basis(max_bosons+1, i)
 ```
 
 ```python
@@ -283,8 +307,8 @@ psi0_in_H_basis = psi0.transform(ekets)
 ```
 
 ```python
-plot_fock_distribution(psi0_in_H_basis, title="|1,0> in H basis")
-plt.xlim(-1,15);
+plot_fock_distribution(psi0_in_H_basis, title=f"{ket_labels[i]} in H basis")
+plt.xlim(-1,20);
 ```
 
 so |1,0> (ie 1 bosons and lower state for two state system) is mixture of eigenstates 7 and 8.
@@ -331,18 +355,16 @@ times = np.linspace(0.0, 1000000.0, 10000)
 ```python
 P = []
 
-for i in range(0,max_bosons+1):
-    psi_num = basis(max_bosons+1,i)
-    psi_H   = psi_num.transform(ekets)
+for k in range(0,max_bosons+1):
     amp = 0
     for i in range(0,max_bosons+1):
-        amp +=  psi_H[i][0][0]*np.exp(-1j*evals[i]*times)*ekets[i][1][0][0]
+        amp +=  psi0_in_H_basis[i][0][0]*np.exp(-1j*evals[i]*times)*ekets[i][k][0][0]
     P.append(amp*np.conj(amp))
 ```
 
 ```python
 plt.figure(figsize=(10,6))
-for i in range(0,17):
+for i in range(0,20):
     plt.plot(times, P[i], label=f"{ket_labels[i]}")
 plt.ylabel("Probability")
 plt.legend(loc="right")
