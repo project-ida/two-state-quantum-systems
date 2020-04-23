@@ -164,8 +164,8 @@ plt.ylabel("Energy ($\hbar\omega$)");
 ## More detail on energy levels 7 and 8
 
 ```python
-level_number_1 = 11
-level_number_2 = 12
+level_number_1 = 7
+level_number_2 = 8
 ```
 
 ```python
@@ -267,10 +267,6 @@ We see above that levels 7 and 8 are almost identical which confirms what we see
 ### What are the anti-crossing eigenstates made of?
 
 ```python
-ekets[level_number_1]
-```
-
-```python
 fig, axes = plt.subplots(1, 2, figsize=(12,5))
 plot_fock_distribution(ekets[level_number_1], title=f"{level_number_1} Eigenstate", ax=axes[0])
 plot_fock_distribution(ekets[level_number_2],title=f"{level_number_2} Eigenstate", ax=axes[1])
@@ -284,21 +280,27 @@ The Energy eigenstates that come together at the anti-crossing are mostly made u
 ```python
 P_eigenstate = ekets[level_number_1].full()*np.conj(ekets[level_number_1].full())
 P_eigenstate = np.hstack(P_eigenstate)
-eigenstate_composition = np.argpartition(P_eigenstate, -2)[-2:]
-print(eigenstate_composition[0], eigenstate_composition[1])
+P_eigenstate.argsort()[-2:][::-1]
+eigenstate_composition = P_eigenstate.argsort()[-2:][::-1]
+print(eigenstate_composition[0], ",", eigenstate_composition[1])
+```
+
+What do these numbered states corresponds to? We can use the `mn_from_index` to find the n and m numbers.
+
+```python
+print ( mn_from_index[eigenstate_composition[0]], ",", mn_from_index[eigenstate_composition[1]])
+```
+
+### What does the most dominate part look like in basis of the eigenstates?
+
+
+We should create the state by using `tensor` function and the extracting the states that have the wrong parity. We can however create the state directly from the `basis` function using the index we found above.
+
+```python
+i = eigenstate_composition[0]
 ```
 
 ```python
-print ( mn_from_index[eigenstate_composition[0]], mn_from_index[eigenstate_composition[1]])
-```
-
-### What does |1,0> look like in the basis of the eigenstates?
-
-
-We should create the state |1,0> by using `tensor` function and the extracting the states that have the wrong parity. We can however use the function we made earlier, `index_from_nm` to create the state directly from the `basis` function
-
-```python
-i = index_from_nm(5,0)
 psi0 = basis(max_bosons+1, i)
 ```
 
@@ -372,3 +374,7 @@ plt.show();
 ```
 
 Seems like we'd have to wait a really long time to see the Rabi oscillation.
+
+```python
+
+```
