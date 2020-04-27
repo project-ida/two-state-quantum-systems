@@ -17,6 +17,8 @@ jupyter:
 # Libraries
 %matplotlib inline
 import matplotlib.pyplot as plt
+from IPython.display import Image
+import gif
 import numpy as np
 import pandas as pd
 from qutip import *
@@ -247,17 +249,17 @@ anti_crossing
 ### First let's look at some expectation values at the anti-crossing
 
 ```python
-# H = two_state + bosons + 0.01*interaction
+H = two_state + bosons + 0.15*interaction
 # H = two_state + bosons + 0.531938*interaction # for N=1
 # H = two_state + bosons + 0.08103160077219432*interaction # for N=11
 
-H = two_state + bosons + anti_crossing.loc[0]["coupling"]*interaction
+# H = two_state + bosons + anti_crossing.loc[0]["coupling"]*interaction
 evals, ekets = H.eigenstates()
 ```
 
 ```python
 print("state", "energy", "number", "spin")
-for i in range(0,10):
+for i in range(0,15):
     print(i, evals[i]/omega, expect(number,ekets[i]), expect(spin,ekets[i]))
 ```
 
@@ -280,7 +282,6 @@ The Energy eigenstates that come together at the anti-crossing are mostly made u
 ```python
 P_eigenstate = ekets[level_number_1].full()*np.conj(ekets[level_number_1].full())
 P_eigenstate = np.hstack(P_eigenstate)
-P_eigenstate.argsort()[-2:][::-1]
 eigenstate_composition = P_eigenstate.argsort()[-2:][::-1]
 print(eigenstate_composition[0], ",", eigenstate_composition[1])
 ```
@@ -297,11 +298,11 @@ print ( mn_from_index[eigenstate_composition[0]], ",", mn_from_index[eigenstate_
 We should create the state by using `tensor` function and the extracting the states that have the wrong parity. We can however create the state directly from the `basis` function using the index we found above.
 
 ```python
-i = eigenstate_composition[0]
+i0 = eigenstate_composition[0]
 ```
 
 ```python
-psi0 = basis(max_bosons+1, i)
+psi0 = basis(max_bosons+1, i0)
 ```
 
 ```python
@@ -309,7 +310,7 @@ psi0_in_H_basis = psi0.transform(ekets)
 ```
 
 ```python
-plot_fock_distribution(psi0_in_H_basis, title=f"{ket_labels[i]} in H basis")
+plot_fock_distribution(psi0_in_H_basis, title=f"{ket_labels[i0]} in H basis")
 plt.xlim(-1,20);
 ```
 
@@ -374,6 +375,89 @@ plt.show();
 ```
 
 Seems like we'd have to wait a really long time to see the Rabi oscillation.
+
+```python
+
+# Us = np.linspace(anti_crossing.loc[0]["coupling"]/10,2*anti_crossing.loc[0]["coupling"],40)
+
+Us_min = anti_crossing.loc[0]["coupling"] - anti_crossing.loc[0]["coupling"]/5000
+Us_max = anti_crossing.loc[0]["coupling"] + anti_crossing.loc[0]["coupling"]/5000
+Us = np.linspace(Us_min,Us_max,21)
+Ps = []
+for U in Us:
+    H = two_state + bosons + U*interaction
+    evals, ekets = H.eigenstates()
+    times = np.linspace(0.0, 1000000.0, 10000)
+
+    psi0 = basis(max_bosons+1, i0)
+    psi0_in_H_basis = psi0.transform(ekets)
+
+    P = []
+
+    for k in range(0,max_bosons+1):
+        amp = 0
+        for i in range(0,max_bosons+1):
+            amp +=  psi0_in_H_basis[i][0][0]*np.exp(-1j*evals[i]*times)*ekets[i][k][0][0]
+        P.append(amp*np.conj(amp))
+    Ps.append(P)
+```
+
+```python
+psi0_level = []
+for U in Us:
+    H = two_state + bosons + U*interaction
+    evals, ekets = H.eigenstates()
+    psi0_in_H_basis = psi0.transform(ekets)
+    P0 = psi0_in_H_basis.full()*np.conj(psi0_in_H_basis.full())
+    P0 = np.hstack(P0)
+    psi0_level.append(P0.argmax())
+```
+
+```python
+@gif.frame
+def plot(P,j):
+    plt.figure(figsize=(10,8))
+    for i in range(0,20):
+        plt.plot(times, P[i], label=f"{ket_labels[i]}")
+    plt.ylabel("Probability")
+    plt.xlabel("Time")
+    plt.legend(loc="right")
+    plt.title(f"U = {Us[j]}")
+```
+
+```python
+@gif.frame
+def plot2(P,j):
+    fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(15,8))
+    for i in range(0,20):
+        axes[0].plot(times, P[i], label=f"{ket_labels[i]}")
+    axes[0].set_ylabel("Probability")
+    axes[0].set_xlabel("Time")
+    axes[0].legend(loc="right")
+    deltaU = (Us[j]-anti_crossing.loc[0]["coupling"])/anti_crossing.loc[0]["coupling"]*100
+    axes[0].set_title(f"$\Delta U / U_{{anti\\times}}$ = {deltaU:.3f}%")
+    df.plot(x="coupling",ylim=[-6,20],legend=False,ax=axes[1], title=f"Tracking energy level of {ket_labels[i0]} state");
+    axes[1].set_ylabel("Energy ($\hbar\omega$)");
+    axes[1].plot(Us[j],np.interp(Us[j],df["coupling"], df[f"level_{psi0_level[j]}"]),"ok")
+```
+
+```python
+frames = []
+for j, P in enumerate(Ps):
+    frame = plot2(P, j)
+    frames.append(frame)
+gif.save(frames, "anti-crossing-approach.gif", duration=500)
+```
+
+```python
+Image(filename="./anti-crossing-approach.gif")
+```
+
+```python
+EnergyX = np.interp(Us[j],df["coupling"], df[f"level_{psi0_level[j]}"])
+df.plot(xlim=(Us_min,Us_max), ylim=(0.999*EnergyX, 1.001*EnergyX), x="coupling",legend=False, title=f"Tracking energy level of {ket_labels[i0]} state")
+
+```
 
 ```python
 
