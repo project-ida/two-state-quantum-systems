@@ -55,7 +55,7 @@ omega = delta_E
 To explore more, we will relax the assumption we have made up to now of small coupling and instead make the coupling the same as the transition energy
 
 ```python
-U = delta_E/2
+U = delta_E
 ```
 
 How does such a strongly coupled system behave? Let's see.
@@ -80,7 +80,9 @@ interaction  = (a.dag() + a) * sx             # interaction energy
 H = two_state + bosons + U*interaction
 ```
 
+<!-- #region jupyter={"source_hidden": true} -->
 One of the most instructive things to do when you get a new Hamiltonian is to visualise it. QuTiP offers a function called [`hinton`](http://qutip.org/docs/latest/apidoc/functions.html?highlight=hinton#qutip.visualization.hinton) for just such a purpose.
+<!-- #endregion -->
 
 ```python
 f, ax = hinton(H)
@@ -88,9 +90,9 @@ ax.tick_params(axis='x',labelrotation=90)
 ax.set_title("Matrix elements of H     (Fig 1)");
 ```
 
-The colour and size of the squares in Fig 1 give you a measure of the how large different matrix elements of H are. The off diagonal elements arise solely from the interaction part of the Hamiltonian - this is what allows one state to (in a sense) "mutate" into another.
+The colour and size of the squares in Fig 1 give you a measure of the how large different matrix elements are. The off diagonal elements arise solely from the interaction part of the Hamiltonian - this is what allows one state to (in a sense) "mutate" into another.
 
-We'll study Fig 1 in more detail shortly, but for now I want to draw you attention to the labels for the rows and columns. For example, $|3, 0 \rangle$ represents 3 bosons and the two state system in the 0. The two state system numbers are handled somewhat confusingly in QuTiP, namely $0 \rightarrow +$ and $1\rightarrow -$. It will be helpful to have a way to map these QuTiP states to something more immediately recognisable, i.e. $|3, + \rangle$.
+We'll study Fig 1 in more detail shortly, but for now I want to draw you attention to the labels for the rows and columns. For example, $|3, 0 \rangle$ represents 3 bosons and the two state system in the 0 state. The two state system numbers are handled somewhat confusingly in QuTiP, namely opposite to what you'd expect $0 \rightarrow +$ and $1\rightarrow -$. It will be helpful to have a way to map these QuTiP states to something more immediately recognisable, i.e. $|3, + \rangle$.
 
 ```python
 possible_ns = range(0, max_bosons+1)
@@ -117,7 +119,7 @@ ax.set_title("Matrix elements of H     (Fig 2)");
 
 That's better!
 
-If we take a closer look at the structure of the Hinton diagram we can see some interesting features:
+If we now take a closer look at the structure of the Hinton diagram we can see some interesting features:
 
 ```python
 print("                Matrix elements of H     (Fig 3)")
@@ -126,7 +128,7 @@ Image(filename='parity.png')
 
 If we imagine starting a simulation with 0 bosons and the two state system in its + state, i.e. |0,+>, then Fig 3 suggests that:
 1. there are connections (albeit indirect) from |0,+> to many different states with many more bosons, e.g. $|0,+> \rightarrow |1,-> \rightarrow |2,+> \rightarrow |3,-> \rightarrow |4,+> ...$. This implies that spontaneous emission of a single boson (as we saw in the last tutorial) isn't the only possibility
-2. there are some states that are not accessible at all to the |0,+>
+2. there are some states that are not accessible at all if we start in the |0,+> state
 
 Let's see if these features arise in the simulation and if so what do they mean?
 
@@ -134,11 +136,11 @@ Let's see if these features arise in the simulation and if so what do they mean?
 psi0 = tensor(basis(max_bosons+1, 0), basis(2, 0))
 ```
 
-In the previous tutorials we have been using QuTiP's [`sesolve`](http://qutip.org/docs/latest/apidoc/functions.html#module-qutip.sesolve) to simulate the system. `sesolve` solves the Schrödinger equation. This was convenient as for us when we were getting started - we only needed a single line of code to run the simulation. It was especially useful when we introduced a time dependent perturbation to our two state Hamiltonian in Tutorial 2. However, `sesolve` will cause us problems as we increase the number of bosons that we want to simulate. 
+In the previous tutorials we have been using QuTiP's [`sesolve`](http://qutip.org/docs/latest/apidoc/functions.html#module-qutip.sesolve) to simulate the system. `sesolve` solves the Schrödinger equation. This was convenient as for us when we were getting started - we only needed a single line of code to run the simulation. It was especially useful when we introduced a time dependent perturbation to our two state Hamiltonian in Tutorial 2. However, `sesolve` will cause us problems as we increase the number of bosons that we want to simulate - the simulation will take too long to run.
 
-Technically, we don't actually need a special solver like `sesolve`. When we deal with time-independent problems (like ours), the business of solving the Schrödinger equation can be reduced to a problem of finding the eigenvalues and eigenvectors of the Hamiltonian.
+Technically, we don't actually need a special solver like `sesolve` when dealing with time-independent problems (like ours). The business of solving the Schrödinger equation can be reduced to a problem of finding the eigenvalues and eigenvectors of the Hamiltonian.
 
-Here's how it works:
+Let's see how it works and then go through an example:
 
 1. Transform initial state $\psi_0$ into a new basis defined by the eigenvectors (aka eigenkets) of the Hamiltonian i.e. the states of constant energy (represented here by $|i>$)
   - $\psi_0 = \underset{i}{\Sigma}   <i|\psi_0> |i>$
@@ -164,7 +166,7 @@ psi0_in_H_basis = psi0.transform(ekets)
 psi0_in_H_basis
 ```
 
-This way of representing $\psi_0$ shows us that $|0,+>$ is mainly a mixture of the 1st and 3rd energy states. QuTiP has a convenient way of visualising the probabilities associated with such a state using [`plot_fock_distribution`](http://qutip.org/docs/latest/apidoc/functions.html?highlight=plot_fock_distribution#qutip.visualization.plot_fock_distribution)
+This way of representing $\psi_0$ shows us that $|0,+>$ is mainly a mixture of the 3rd and 4th energy states. QuTiP has a convenient way of visualising the probabilities associated with such a state using [`plot_fock_distribution`](http://qutip.org/docs/latest/apidoc/functions.html?highlight=plot_fock_distribution#qutip.visualization.plot_fock_distribution)
 
 ```python
 plot_fock_distribution(psi0_in_H_basis, title=f" |0,+> in constant energy basis     (Fig 4)")
@@ -174,7 +176,7 @@ plt.xlim(-1,10);
 Continuing to follow the procedure, we have:
 
 $\psi_0 = \underset{i}{\Sigma}  <i|\psi_0> |i> \\
-\ \ \ \ = 0 |0> + 0.608 |1> + 0 |2> + 0.777 |3> ...$
+\ \ \ \ = 0 |0> + 0.479 |1> + 0 |2> - 0.607 |3> ...$
 
 **Step 2:**
 
@@ -188,12 +190,12 @@ evals
 and so (dropping the zero terms from step 1) the evolved state becomes:
 
 $\psi (t)= \underset{i}{\Sigma}  <i|\psi_0> e^{-i\omega_i t}\ |i> \\
-\ \ \ \ =  0.608 e^{-i 0.380t}|1> + 0.777 e^{-i 1.326t} |3> ...$
+\ \ \ \ =  0.479 e^{-i (-0.497)t}|1> +-0.607 e^{-i 0.837t} |3> ...$
 
 
 **Step 3:**
 
-Taking only the $|1>$ part form part 2 above for the sake of brevity, we only need to look at `ekets[1]`
+Taking only the $|1>$ part form step 2 above for the sake of brevity, we only need to look at `ekets[1]`
 
 ```python
 ekets[1]
@@ -201,7 +203,7 @@ ekets[1]
 
 Then:
 
-$0.608 e^{-i 0.380t}|1> \rightarrow 0.608 e^{-i 0.380t}0.608|0'> + 0.608 e^{-i 0.380t}(-0.754)|3'> + 0.608 e^{-i 0.380t}0.231|4'> ...$
+$0.479 e^{-i (-0.497)t}|1> \rightarrow 0.479 e^{-i (-0.497)t}0.479|0'> + 0.479 e^{-i (-0.497)t}(-0.754)|3'> + 0.479 e^{-i (-0.497)t}0.421|4'> ...$
 
 where the prime in $|n'>$ indicates the original basis and not the energy basis. We can relabel these states to be the more familiar $|n,\pm>$ using the list we made earlier:
 
@@ -219,49 +221,29 @@ $|4'> = |2,+>$
 
 and so we have:
 
-$0.608 e^{-i 0.380t}|1> \rightarrow 0.608 e^{-i 0.380t}0.608|0,+> + 0.608 e^{-i 0.380t}(-0.754)|1,-> + 0.608 e^{-i 0.380t}0.231|2,+> ...$
+$0.479 e^{-i (-0.497)t}|1> \rightarrow 0.479 e^{-i (-0.497)t}0.479|0,+>  + 0.479 e^{-i (-0.497)t}(-0.754)|1,-> + 0.479 e^{-i (-0.497)t}0.421|2,+> ...$
 
 
 All of the above can be automated by making a function that we can reuse again and again:
 
 ```python
-T = np.zeros([max_bosons+1)*2,times.size])
-```
-
-```python
-times.size
-```
-
-```python
-T
-```
-
-```python
-T[:,1] = np.array([1,2,3,4,5,6,7,8,9,10])
-```
-
-```python
 def simulate(H, psi0, times):
     evals, ekets = H.eigenstates()
     psi0_in_H_basis = psi0.transform(ekets)
-    A = np.zeros([(max_bosons+1)*2,times.size], dtype="complex128")
+    psi = np.zeros([(max_bosons+1)*2,times.size], dtype="complex128")
     P = np.zeros([(max_bosons+1)*2,times.size], dtype="complex128")
     for k in range(0,(max_bosons+1)*2):
         amp = 0
         for i in range(0,(max_bosons+1)*2):
             amp +=  psi0_in_H_basis[i][0][0]*np.exp(-1j*evals[i]*times)*ekets[i][k][0][0]
-        A[k,:] = amp
+        psi[k,:] = amp
         P[k,:] = amp*np.conj(amp)
-    return P, A
+    return P, psi
 ```
 
 ```python
 times = np.linspace(0.0, 14.0, 100)
-P, A = simulate(H, psi0, times)
-```
-
-```python
-shape(P)
+P, psi = simulate(H, psi0, times)
 ```
 
 ```python
@@ -276,60 +258,112 @@ plt.show();
 
 Fig 5 is the equivalent of Fig 2 from the previous tutorial - the only significant difference is the coupling is now much larger. 
 
-Whereas previously we saw only the Rabi oscillation between $|0,+>$ and $|1,->$, now we see much more. There is a non negligible probability of finding the system with 2 or even 3 bosons - as was suggested in the Hinton diagram.
+Whereas previously we saw only the Rabi oscillation between $|0,+>$ and $|1,->$, now we see much more. There is significant probability of finding the system with more than 1 boson - as was suggested in the Hinton diagram.
 
-But, how is such a things possible? Doesn't it violate conservation of energy? After all, 2 bosons have more energy than the + state we started in. 
+But, how is such a thing possible? Doesn't it violate conservation of energy? After all, 2 or more bosons have more energy than the + state we started in. 
 
-As you might suspect, the answer is no, energy is conserved, the "missing" energy comes from the interaction term in the Hamiltonian.
+As you might suspect, the answer is no, energy is conserved, the "missing" energy comes from the interaction term in the Hamiltonian. We can see this explicitly by looking at the expectation values various parts of the Hamiltonian. QuTiP does allow us to do this using the [`expect`](http://qutip.org/docs/latest/guide/guide-states.html#expectation-values) function.
+
+
+
+It works in the following way for the expectation of the Hamiltonian H:
+
+`expect(H, state)`
+
+We have the values of the `state` at every time step from the `A` output of our `simulate` function. We must however turn those values into a QuTiP quantum object ([`Qobj`](http://qutip.org/docs/latest/guide/guide-basics.html#the-quantum-object-class)) that has dimensions compatible with the interaction operator. For example, the dimensions of $\psi_0$ are:
 
 ```python
-H
+psi0.dims
+```
+
+We can use the `dims` of $\psi_0$ to create a compatible `Qobj` in the following way (e.g. for time step 10)
+
+```python
+d = [[5, 2], [1, 1]]
+state = Qobj(psi[:,10],dims=d)
+```
+
+The expectation value of the interaction energy at time step 10 is then:
+
+```python
+expect(H, state)
+```
+
+We could automate this process, but it turns out that creating the `Qobj` for every time step can be very slow. We will instead directly calculate the expectation value using matrix multiplication, i.e.
+
+$<H> = \psi^{\dagger}H\psi = \psi^{\dagger} @ (H @\psi) $
+
+Where @ is the matrix multiplication operator and $\dagger$ in this context means taking the complex conjugate. For the 10th time step we have:
+
+```python
+np.conj(psi[:,10])@ (H @ psi[:,10])
+```
+
+Let's automate this process using a function.
+
+```python
+def expectation(operator, states):
+    operator_expect = []
+    for i in range(0,shape(states)[1]):
+        e = np.conj(states[:,i])@ (operator @ states[:,i])
+        operator_expect.append(e)
+    return operator_expect
+```
+
+We can now see how the different parts of the Hamiltonian change overtime
+
+```python
+hamiltonian_expect = expectation(H,psi)
+two_state_expect = expectation(two_state,psi)
+bosons_expect = expectation(bosons,psi)
+interaction_expect = expectation(U*interaction,psi)
 ```
 
 ```python
+plt.figure(figsize=(10,8))
+plt.plot(times, hamiltonian_expect, label="total hamiltonian")
+plt.plot(times, two_state_expect, label="two-state")
+plt.plot(times, bosons_expect, label="bosons")
+plt.plot(times, interaction_expect, label="interaction")
 
+plt.ylabel("Energy")
+plt.xlabel("Time")
+plt.legend(loc="right")
+plt.title(f"Expectation values for parts of the Hamiltoian (U={U})     (Fig 6)")
+plt.show();
+```
+
+Fig 6 confirms that the total energy (the blue line) is constant - energy conservation is not violated. We can also see that indeed it's the lowering of interaction energy that's allowing the boson energy to get higher than we might expect by only considering the two state energy and the bosons.
+
+
+It's helpful to compare this to the case from the previous tutorial, i.e. when the coupling is weak.
+
+```python
+U = delta_E/200
+H = two_state + bosons + U*interaction
+times = np.linspace(0.0, 1400.0, 10000)
+P, psi = simulate(H, psi0, times)
 ```
 
 ```python
-expect(H,Qobj(A[:,20],dims=[[5,2],[1,1]]))
+hamiltonian_expect = expectation(H,psi)
+two_state_expect = expectation(two_state,psi)
+bosons_expect = expectation(bosons,psi)
+interaction_expect = expectation(U*interaction,psi)
 ```
 
 ```python
-A[:,20]
-```
+plt.figure(figsize=(10,8))
+plt.plot(times, hamiltonian_expect, label="total hamiltonian")
+plt.plot(times, two_state_expect, label="two-state")
+plt.plot(times, bosons_expect, label="bosons")
+plt.plot(times, interaction_expect, label="interaction")
 
-```python
-all(P[3]==0)
-```
-
-```python
-Qobj(A[:,2],dims=[[5,2],[1,1]])
-```
-
-```python
-A[:,20]
-```
-
-```python
-
-```
-
-```python
-H.dims
-```
-
-```python
-AA = []
-for i, t in enumerate(times):
-    AA.append(expect(interaction,Qobj(A[:,i],dims=[[5,2],[1,1]])))
-```
-
-```python
-plt.plot(times,AA)
-```
-
-```python
-
+plt.ylabel("Energy")
+plt.xlabel("Time")
+plt.legend(loc="right")
+plt.title(f"Expectation values for parts of the Hamiltoian (U={U})     (Fig 7)")
+plt.show();
 ```
 
 ```python
