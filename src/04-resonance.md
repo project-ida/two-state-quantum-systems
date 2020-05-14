@@ -249,17 +249,16 @@ anti_crossing
 ### First let's look at some expectation values at the anti-crossing
 
 ```python
-H = two_state + bosons + 0.15*interaction
+H = two_state + bosons + anti_crossing.loc[0]["coupling"]*interaction
+# H = two_state + bosons + 0.15*interaction
 # H = two_state + bosons + 0.531938*interaction # for N=1
 # H = two_state + bosons + 0.08103160077219432*interaction # for N=11
-
-# H = two_state + bosons + anti_crossing.loc[0]["coupling"]*interaction
 evals, ekets = H.eigenstates()
 ```
 
 ```python
 print("state", "energy", "number", "spin")
-for i in range(0,15):
+for i in range(level_number_1-3,level_number_2+3):
     print(i, evals[i]/omega, expect(number,ekets[i]), expect(spin,ekets[i]))
 ```
 
@@ -366,7 +365,7 @@ for k in range(0,max_bosons+1):
 ```
 
 ```python
-plt.figure(figsize=(10,6))
+plt.figure(figsize=(10,8))
 for i in range(0,20):
     plt.plot(times, P[i], label=f"{ket_labels[i]}")
 plt.ylabel("Probability")
@@ -375,6 +374,9 @@ plt.show();
 ```
 
 Seems like we'd have to wait a really long time to see the Rabi oscillation.
+
+
+### How sensitive is the anti-crossing?
 
 ```python
 
@@ -451,12 +453,6 @@ gif.save(frames, "anti-crossing-approach.gif", duration=500)
 
 ```python
 Image(filename="./anti-crossing-approach.gif")
-```
-
-```python
-EnergyX = np.interp(Us[j],df["coupling"], df[f"level_{psi0_level[j]}"])
-df.plot(xlim=(Us_min,Us_max), ylim=(0.999*EnergyX, 1.001*EnergyX), x="coupling",legend=False, title=f"Tracking energy level of {ket_labels[i0]} state")
-
 ```
 
 ```python
