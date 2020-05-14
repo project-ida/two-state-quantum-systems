@@ -54,7 +54,8 @@ We can however still apply ideas we've learnt about two-state systems in some sp
 To get a feel for this more complicated system we will find the energies/frequencies of the stationary states and see how they depend on the various parameters - just as we did in Fig 3 of Tutorial 2 when we made an avoided crossing plot.
 
 ```python
-def make_hamiltonian(max_bosons, delta_E, omega, U):
+def make_hamilton(max_bosons, delta_E, omega, U):
+    
     a  = tensor(destroy(max_bosons+1), qeye(2))     # tensorised boson destruction operator
     sx = tensor(qeye(max_bosons+1), sigmax())       # tensorised sigma_x operator
     sz = tensor(qeye(max_bosons+1),sigmaz())        # tensorised sigma_z operator
@@ -72,11 +73,15 @@ def make_hamiltonian(max_bosons, delta_E, omega, U):
 
 ```python
 def make_df_for_energy_scan(label_param, min_param, max_param, num_param, num_levels):
+    
     param_values = np.linspace(min_param, max_param, num_param)
     d = {label_param:param_values}
+    
     for i in range(num_levels):
         d[f"level_{i}"] = np.zeros(num_param)
+        
     df = pd.DataFrame(data=d)
+    
     return df
 ```
 
@@ -147,7 +152,7 @@ Two main features are:
 
 On 1. Applying our knowledge from Tutorial 1, we would say that the effective coupling between levels (which is proportional to the level splitting) increases with increasing boson number
 
-On 2. Upon closer inspection we can see that the level splittings only occur when $\Delta E  \approx n \omega$ where n is an odd integer (we'll come to why we now use $\approx$ instead of = shortly). Zooming in on $\Delta E \approx 3\omega$ indeed reveals an anti-crossing:
+On 2. Upon closer inspection we can see that the level splittings only occur when $\Delta E  \approx n \omega$ where n is an odd integer (we'll come to why we now use $\approx$ instead of = shortly). Although it is hard to see in Fig 2, if we zoom in on $\Delta E \approx 3\omega$ we can indeed see an anti-crossing:
 
 ```python
 max_bosons = 4
@@ -169,17 +174,17 @@ plt.ylabel("Energy");
 <!-- #region -->
 
 
-The level splitting seen in Fig 3 is much smaller than those seen in Fig 2 at the primary resonance ($\Delta E \approx \omega$). Applying our knowledge from Tutorial 1, we would say that the effective coupling (which is proportional to the level splitting) is much less for the non-primary resonances.
+The level splitting seen in Fig 3 is much smaller than those seen in Fig 2 at the primary resonance ($\Delta E \approx \omega$). We can therefore say that the effective coupling between levels is much less for the non-primary resonances.
 
 Fig 3 also shows us that the location of resonance is somewhat shifted, i.e. the anti-crossing does not occur when $\Delta E = 3 \omega$ but instead $\Delta E \approx 3\omega$. This shift is known as the [Bloch-Siegert shift](https://en.wikipedia.org/wiki/Bloch-Siegert_shift) (see also [Cohen-Tannoudji](https://iopscience.iop.org/article/10.1088/0022-3700/6/8/007) and [Hagelstein](https://iopscience.iop.org/article/10.1088/0953-4075/41/3/035601)).
 
 >TODO: Classical meaning of Bloch-Siegert shift
 
-This shift arises because we have to consider the effect of the interaction energy in the Hamiltonian ($E_{I}$) on the  resonance condition. Specifically, the resonance condition should instead be $\Delta E + E_{I} = 3\omega$ and hence the value of $\Delta E$ needed for resonance is somewhat reduced. 
+This shift arises because we have to consider the effect of the interaction energy in the Hamiltonian ($E_{I}$) on the  resonance condition. Specifically, the resonance condition should instead be written as $\Delta E + E_{I} = 3\omega$ and hence the value of $\Delta E$ needed for resonance is somewhat reduced. 
 
 > TODO:Make referenced to dressed atom picture https://www.youtube.com/watch?v=k0X7iSaPM38 and https://ocw.mit.edu/courses/physics/8-422-atomic-and-optical-physics-ii-spring-2013/
 
-Fig 3 is also showing us something we haven't seen before. $\Delta E \approx 3\omega$ is suggesting that it might be possible for the two state system transition to result in the emission of 3 smaller bosons rather than a single larger one We'll investigate the possibility of this "down conversion" more deeply shortly.
+Fig 3 is also showing us something we haven't seen before. A resonance at $\Delta E \approx 3\omega$ suggests that it might be possible for the two state system transition to result in the emission of 3 smaller bosons rather than a single larger one (as we have seen previously when $\Delta E \approx \omega$ ). We'll investigate the possibility of this "down conversion" shortly.
 <!-- #endregion -->
 
 In the meantime, let's try and understand why some levels don't couple to each other. For this we need to visualise the Hamiltonian. QuTiP offers a function called [`hinton`](http://qutip.org/docs/latest/apidoc/functions.html?highlight=hinton#qutip.visualization.hinton) for just such a purpose.
@@ -187,6 +192,7 @@ In the meantime, let's try and understand why some levels don't couple to each o
 We'll work with a Hamiltonian with a very large coupling of $U=1$ so that we'll be able to see things more clearly.
 
 ```python
+max_bosons = 4
 H,h = make_hamiltonian(max_bosons=max_bosons, delta_E=1, omega=1, U=1)
 ```
 
@@ -232,23 +238,23 @@ print("                Matrix elements of H     (Fig 6)")
 Image(filename='parity.png') 
 ```
 
-If we imagine starting a simulation with 0 bosons and the two state system in its + state, i.e. |0,+>, then Fig 3 suggests that:
+If we imagine starting a simulation with 0 bosons and the two state system in its + state, i.e. |0,+>, then Fig 6 suggests that:
 1. there are connections (albeit indirect) from |0,+> to many different states with many more bosons, e.g. $|0,+> \rightarrow |1,-> \rightarrow |2,+> \rightarrow |3,-> \rightarrow |4,+> ...$.
 2. there are some states that are not accessible at all if we start in the |0,+> state
 
 
-On 1. This implies that there indeed exists a mechanism inside the Hamiltonian to achieve the down conversation that we saw hints of earlier.
+On 1. These indirect connections provide a mechanism to achieve the down conversation that we saw hints of earlier.
 
-On 2. The Hamiltonian appears to be composed of two separate "universes" that don't interact with each other. In our energy level diagram we have both universes present - perhaps if we separate them we'll only see anti-crossings in the plots.
+On 2. The Hamiltonian appears to be composed of two separate "universes" that don't interact with each other. In our energy level diagram (Fig 2) both universes are present - perhaps if we separate them we'll only see anti-crossings in the respective plots.
 
 
 What separates these universes is a form of [parity](https://en.wikipedia.org/wiki/Parity_%28physics%29). Parity is not particularly intuitive and a full discussion of it is somewhat involved and takes us deep into the topic of transition [selection rules](https://en.wikipedia.org/wiki/Selection_rule) - we'll come back to this another time.
 
-For now, the the important things to note are [how the parity operator $P$ acts on the system](https://iopscience.iop.org/article/10.1088/0305-4470/29/14/026):
+For now, the the important thing to note is [how the parity operator $P$ acts on the system](https://iopscience.iop.org/article/10.1088/0305-4470/29/14/026):
 - for the two state system $P |\pm> = \pm1|\pm> $, i.e. parity operator is the same as $\sigma_z$
 - for [the field](https://ia801608.us.archive.org/11/items/TheParityOperatorForTheQuantumHarmonicOscillator/partity_article.pdf) with $n$ bosons $P |n> = -1^n |n>$, i.e. the parity is $-1^n = e^{i\pi n}$ 
 
-The combined parity is made by multiplying the two together. We can use QuTiP's [`expm`](http://qutip.org/docs/latest/apidoc/classes.html#qutip.Qobj.expm) function to create the exponential operator from the number operator $n = a^{\dagger}a$. Let's see this in action:
+Note, that we can use QuTiP's [`expm`](http://qutip.org/docs/latest/apidoc/classes.html#qutip.Qobj.expm) function to create the exponential operator from the number operator $n = a^{\dagger}a$. The combined parity is made by multiplying the two together. Let's see this in action:
 
 ```python
 sz = h["sz"]
@@ -268,9 +274,9 @@ ax.tick_params(axis='x',labelrotation=90,)
 ax.set_title("Matrix elements of H     (Fig 7)");
 ```
 
-In Fig 7, we see that the the blue squares (parity=+1, often called even) matches up with the path of the yellow arrows in Fig 6. It also suggests that if we start on a blue/red square then we remain on a blue/red square - must like a bishop in a game of chess.
+In Fig 7, we see that the the blue squares (parity=+1, often called even) matches up with the path of the yellow arrows in Fig 6. It is suggesting that if we start on a blue/red square then we remain on a blue/red square - much like a bishop in a game of chess.
 
-To check this we can look at the [`commutator`](http://qutip.org/docs/latest/apidoc/functions.html#qutip.operators.commutator) between the Hamiltonian and parity:
+To check this, we need to look at the [`commutator`](http://qutip.org/docs/latest/apidoc/functions.html#qutip.operators.commutator) between the Hamiltonian and parity:
 
 ```python
 commutator(H,P)
@@ -278,10 +284,161 @@ commutator(H,P)
 
 A zero commutator tells us that parity is conserved as the system evolves.
 
-We can therefore split up the description of our system into two universes based on whether the states have even (+1) parity or odd (-1) parity. Let's look at these two universes separately.
+We can therefore split up the description of our system into two universes based on whether the states have even (+1) parity or odd (-1) parity.
+
+```python
+P
+```
 
 ```python
 
+```
+
+```python
+state_number_index([max_bosons+1,2],(3,0))
+```
+
+```python
+nm_list
+```
+
+```python
+even
+```
+
+```python
+even = np.where(P.diag()==1)[0]
+odd = np.where(P.diag()==-1)[0]
+```
+
+```python
+H2 = H.extract_states(even)
+```
+
+```python
+H2
+```
+
+```python
+
+```
+
+```python
+def make_hamiltonian(max_bosons, delta_E, omega, U, parity):
+    
+    a  = tensor(destroy(max_bosons+1), qeye(2))     # tensorised boson destruction operator
+    sx = tensor(qeye(max_bosons+1), sigmax())       # tensorised sigma_x operator
+    sz = tensor(qeye(max_bosons+1),sigmaz())        # tensorised sigma_z operator
+    
+    P = sz*(1j*np.pi*num).expm()                   # parity operator
+    
+    two_state     =  delta_E/2*sz                   # two state system energy
+    bosons       =  omega*(a.dag()*a+0.5)          # bosons field energy
+    interaction  = U*(a.dag() + a) * sx            # interaction energy
+    
+    H = two_state + bosons + interaction
+    
+    components = {"a":a, "sx":sx, "sz":sz, "two_state":two_state, "bosons": bosons, "interaction":interaction}
+    
+    return H, components
+```
+
+```python
+
+```
+
+```python
+
+```
+
+```python
+
+```
+
+```python
+
+```
+
+```python
+max_bosons = 4
+df = make_df_for_energy_scan("$\Delta E$", -4, 4, 201, (max_bosons+1))
+
+for i, row in df.iterrows():
+    # Note below the "_" are used because right now we don't want to save the component parts of the Hamiltonian
+    H,_ = make_hamiltonian(max_bosons=max_bosons, delta_E=row["$\Delta E$"], omega=1, U=0.2)
+    evals, ekets = H2.eigenstates()
+    df.iloc[i,1:] = evals   # Fills the columns 1 onwards of row i with the eigenvalues
+```
+
+```python
+df.plot(x="$\Delta E$",figsize=(10,8),ylim=[0,6],legend=True, 
+        title="Energy of the stationary states ($\omega=1$, $U=0.2$)     (Fig 2)");
+plt.ylabel("Energy");
+```
+
+```python
+
+```
+
+```python
+
+```
+
+```python
+
+```
+
+```python
+
+```
+
+```python
+
+```
+
+```python
+
+```
+
+```python
+
+```
+
+```python
+
+```
+
+```python
+
+```
+
+```python
+#inspired by SJB code https://github.com/sbyrnes321/cf/blob/1a34a461c3b15e26cad3a15de3402142b07422d9/spinboson.py#L56
+if parity != "all":
+    S=1/2
+    possible_ns = range(0, max_bosons+1)
+    possible_ms = - (np.arange(2*S+1) - S)
+    Smn_list = product([S], possible_ns, possible_ms)
+
+    if parity == "even":
+        mn_from_index = [(n,int(np.abs(m-0.5))) for (S,n,m) in Smn_list if (S+m+n) % 2 == 0]
+    elif parity == "odd":
+        mn_from_index = [(n,int(np.abs(m-0.5))) for (S,n,m) in Smn_list if (S+m+n) % 2 == 1]
+
+    subset_idx = []
+    for s in mn_from_index:
+        subset_idx.append(state_number_index([max_bosons+1,2],s))
+    
+    # Labels for hinton plots in case we want to plot it later (use xlabels=ket_labels, ylabels = bra_labels)
+    bra_labels = ["$\langle$"+str(n)+", "+str(m)+"|" for (n,m) in mn_from_index]
+    ket_labels = ["|"+str(n)+", "+str(m)+"$\\rangle$" for (n,m) in mn_from_index]
+
+        # http://qutip.org/docs/latest/apidoc/classes.html?highlight=extract_states#qutip.Qobj.extract_states
+    two_state    = two_state.extract_states(subset_idx) 
+    bosons      = bosons.extract_states(subset_idx) 
+    interaction  = interaction.extract_states(subset_idx) 
+    number          = (a.dag()*a).extract_states(subset_idx)
+    spin         = spin.extract_states(subset_idx)
 ```
 
 ```python
