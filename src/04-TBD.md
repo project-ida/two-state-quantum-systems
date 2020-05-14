@@ -477,94 +477,7 @@ In the previous tutorials we have been using QuTiP's [`sesolve`](http://qutip.or
 
 Technically, we don't actually need a special solver like `sesolve` when dealing with time-independent problems (like ours). The business of solving the Schrödinger equation can be reduced to a problem of finding the eigenvalues and eigenvectors of the Hamiltonian.
 
-Let's see how it works and then go through an example:
-
-1. Transform initial state $\psi_0$ into a new basis defined by the eigenvectors (aka eigenkets) of the Hamiltonian i.e. the states of constant energy (represented here by $|i>$)
-  - $\psi_0 = \underset{i}{\Sigma}   <i|\psi_0> |i>$
-  -  $<i|\psi_0> = $ `psi0.transform(ekets)[i]`
-2. Evolve each part of the state according to its eigenfrequency (aka eigenvalues) $\omega_i$
-  - $\psi (t)= \underset{i}{\Sigma}  <i|\psi_0> e^{-i\omega_i t}\ |i>$
-  - $\omega_i =$ `evals[i]`
-3. Transform the evolved state back into the basis we started with (represented here by $|k>$)
-  - $\psi (t)= \underset{i,k}{\Sigma}  <i|\psi_0> e^{-i\omega_i t}\ <k|i>|k>$
-  - $<k|i> = $ `ekets[i][k]`
-
-
-Let's try it out.
-
-
-**Step 1**:
-
-```python
-evals, ekets = H.eigenstates()
-psi0_in_H_basis = psi0.transform(ekets)
-```
-
-```python
-psi0_in_H_basis
-```
-
-This way of representing $\psi_0$ shows us that at the anti-crossing $|0,+>$ is mainly a mixture of the 1st and 2nd energy states. QuTiP has a convenient way of visualising the probabilities associated with such a state using [`plot_fock_distribution`](http://qutip.org/docs/latest/apidoc/functions.html?highlight=plot_fock_distribution#qutip.visualization.plot_fock_distribution)
-
-```python
-plot_fock_distribution(psi0_in_H_basis, title=f" |0,+> in constant energy basis     (Fig 11)")
-plt.xlim(-1,10);
-```
-
-> TODO: FIX ALL THE NUMBERS
-
-Continuing to follow the procedure, we have:
-
-$\psi_0 = \underset{i}{\Sigma}  <i|\psi_0> |i> \\
-\ \ \ \ = 0 |0> + 0.479 |1> + 0 |2> - 0.607 |3> ...$
-
-**Step 2:**
-
-
-The frequencies are given by the eigenvalues of the Hamiltonian:
-
-```python
-evals
-```
-
-and so (dropping the zero terms from step 1) the evolved state becomes:
-
-$\psi (t)= \underset{i}{\Sigma}  <i|\psi_0> e^{-i\omega_i t}\ |i> \\
-\ \ \ \ =  0.479 e^{-i (-0.497)t}|1> +-0.607 e^{-i 0.837t} |3> ...$
-
-
-**Step 3:**
-
-Taking only the $|1>$ part form step 2 above for the sake of brevity, we only need to look at `ekets[1]`
-
-```python
-ekets[1]
-```
-
-Then:
-
-$0.479 e^{-i (-0.497)t}|1> \rightarrow 0.479 e^{-i (-0.497)t}0.479|0'> + 0.479 e^{-i (-0.497)t}(-0.754)|3'> + 0.479 e^{-i (-0.497)t}0.421|4'> ...$
-
-where the prime in $|n'>$ indicates the original basis and not the energy basis. We can relabel these states to be the more familiar $|n,\pm>$ using the list we made earlier:
-
-```python
-nm_list
-```
-
-From this we see that:
-
-$|0'> = |0,+>$,  
-
-$|3'> = |1,->$ 
-
-$|4'> = |2,+>$
-
-and so we have:
-
-$0.479 e^{-i (-0.497)t}|1> \rightarrow 0.479 e^{-i (-0.497)t}0.479|0,+>  + 0.479 e^{-i (-0.497)t}(-0.754)|1,-> + 0.479 e^{-i (-0.497)t}0.421|2,+> ...$
-
-
-All of the above can be automated by making a function that we can reuse again and again:
+We'll not go into the details of how this works right now - head over to the appendix for that. For now, we'll just use the results to run some simulations.
 
 ```python
 def simulate(H, psi0, times):
@@ -655,3 +568,132 @@ We'll look at ...
 - large n
 - sensitivity of resonances
 - interaction energy allows more bosons than you might expect, e.g. when $\Delta E =11 \omega$ we can have 11, or 13 or 15 or 17 bosons.
+
+
+---
+
+
+## Appendix - Solving the Schrödinger equation
+
+```python
+# Create the operators and state list for even parity universe
+two_state, bosons, interaction, number, nm_list = make_operators(max_bosons=4, parity=1)
+
+# Create the nice bra and ket labels for plots later
+bra_labels, ket_labels = make_braket_labels(nm_list)
+
+# Create the Hamiltonian corresponding to the anti-crossing we saw in Fig 3
+H =  2.88*two_state + 1*bosons + 0.2*interaction
+```
+
+```python
+i = index_from_nm(nm_list, 0, "+")  # Find which index corresponds to the |0,+> state
+psi0 = basis(H.shape[0], i)
+```
+
+Let's see how it works and then go through an example:
+
+1. Transform initial state $\psi_0$ into a new basis defined by the eigenvectors (aka eigenkets) of the Hamiltonian i.e. the states of constant energy (represented here by $|i>$)
+  - $\psi_0 = \underset{i}{\Sigma}   <i|\psi_0> |i>$
+  -  $<i|\psi_0> = $ `psi0.transform(ekets)[i]`
+2. Evolve each part of the state according to its eigenfrequency (aka eigenvalues) $\omega_i$
+  - $\psi (t)= \underset{i}{\Sigma}  <i|\psi_0> e^{-i\omega_i t}\ |i>$
+  - $\omega_i =$ `evals[i]`
+3. Transform the evolved state back into the basis we started with (represented here by $|k>$)
+  - $\psi (t)= \underset{i,k}{\Sigma}  <i|\psi_0> e^{-i\omega_i t}\ <k|i>|k>$
+  - $<k|i> = $ `ekets[i][k]`
+
+
+Let's try it out.
+
+**Step 1**:
+
+```python
+evals, ekets = H.eigenstates()
+psi0_in_H_basis = psi0.transform(ekets)
+```
+
+```python
+psi0_in_H_basis
+```
+
+This way of representing $\psi_0$ shows us that at the anti-crossing $|0,+>$ is mainly a mixture of the 1st and 2nd energy states. QuTiP has a convenient way of visualising the probabilities associated with such a state using [`plot_fock_distribution`](http://qutip.org/docs/latest/apidoc/functions.html?highlight=plot_fock_distribution#qutip.visualization.plot_fock_distribution)
+
+```python
+plot_fock_distribution(psi0_in_H_basis, title=f" |0,+> in constant energy basis     (Fig 11)")
+plt.xlim(-1,10);
+```
+
+> TODO: FIX ALL THE NUMBERS
+
+Continuing to follow the procedure, we have:
+
+$\psi_0 = \underset{i}{\Sigma}  <i|\psi_0> |i> \\
+\ \ \ \ = 0 |0> + 0.479 |1> + 0 |2> - 0.607 |3> ...$
+
+**Step 2:**
+
+The frequencies are given by the eigenvalues of the Hamiltonian:
+
+```python
+evals
+```
+
+and so (dropping the zero terms from step 1) the evolved state becomes:
+
+$\psi (t)= \underset{i}{\Sigma}  <i|\psi_0> e^{-i\omega_i t}\ |i> \\
+\ \ \ \ =  0.479 e^{-i (-0.497)t}|1> +-0.607 e^{-i 0.837t} |3> ...$
+
+
+**Step 3:**
+
+Taking only the $|1>$ part form step 2 above for the sake of brevity, we only need to look at `ekets[1]`
+
+```python
+ekets[1]
+```
+
+Then:
+
+$0.479 e^{-i (-0.497)t}|1> \rightarrow 0.479 e^{-i (-0.497)t}0.479|0'> + 0.479 e^{-i (-0.497)t}(-0.754)|3'> + 0.479 e^{-i (-0.497)t}0.421|4'> ...$
+
+where the prime in $|n'>$ indicates the original basis and not the energy basis. We can relabel these states to be the more familiar $|n,\pm>$ using the list we made earlier:
+
+```python
+nm_list
+```
+
+From this we see that:
+
+$|0'> = |0,+>$,  
+
+$|3'> = |1,->$ 
+
+$|4'> = |2,+>$
+
+and so we have:
+
+$0.479 e^{-i (-0.497)t}|1> \rightarrow 0.479 e^{-i (-0.497)t}0.479|0,+>  + 0.479 e^{-i (-0.497)t}(-0.754)|1,-> + 0.479 e^{-i (-0.497)t}0.421|2,+> ...$
+
+<!-- #region -->
+All of the above can be automated by making a function that we can reuse again and again:
+
+```python
+def simulate(H, psi0, times):
+    num_states = H.shape[0]
+    
+    psi = np.zeros([num_states,times.size], dtype="complex128")
+    P = np.zeros([num_states,times.size], dtype="complex128")
+    
+    evals, ekets = H.eigenstates()
+    psi0_in_H_basis = psi0.transform(ekets)
+
+    for k in range(0,num_states):
+        amp = 0
+        for i in range(0,num_states):
+            amp +=  psi0_in_H_basis[i][0][0]*np.exp(-1j*evals[i]*times)*ekets[i][k][0][0]
+        psi[k,:] = amp
+        P[k,:] = amp*np.conj(amp)
+    return P, psi
+```
+<!-- #endregion -->
