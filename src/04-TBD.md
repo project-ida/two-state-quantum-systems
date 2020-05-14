@@ -65,7 +65,9 @@ def make_hamiltonian(max_bosons, delta_E, omega, U):
     
     H = two_state + bosons + interaction
     
-    return H, two_state, bosons, interaction
+    components = {"a":a, "sx":sx, "sz":sz, "two_state":two_state, "bosons": bosons, "interaction":interaction}
+    
+    return H, components
 ```
 
 ```python
@@ -94,7 +96,7 @@ We'll now fill these rows with the energies of the different levels (aka the eig
 ```python
 for i, row in df.iterrows():
     # Note below the "_" are used because right now we don't want to save the component parts of the Hamiltonian
-    H,_,_,_ = make_hamiltonian(max_bosons=max_bosons, delta_E=row["$\Delta E$"], omega=1, U=0)
+    H,_ = make_hamiltonian(max_bosons=max_bosons, delta_E=row["$\Delta E$"], omega=1, U=0)
     evals, ekets = H.eigenstates()
     df.iloc[i,1:] = evals   # Fills the columns 1 onwards of row i with the eigenvalues
 ```
@@ -126,7 +128,7 @@ df = make_df_for_energy_scan("$\Delta E$", -4, 4, 201, 2*(max_bosons+1))
 
 for i, row in df.iterrows():
     # Note below the "_" are used because right now we don't want to save the component parts of the Hamiltonian
-    H,_,_,_ = make_hamiltonian(max_bosons=max_bosons, delta_E=row["$\Delta E$"], omega=1, U=0.2)
+    H,_ = make_hamiltonian(max_bosons=max_bosons, delta_E=row["$\Delta E$"], omega=1, U=0.2)
     evals, ekets = H.eigenstates()
     df.iloc[i,1:] = evals   # Fills the columns 1 onwards of row i with the eigenvalues
 ```
@@ -153,7 +155,7 @@ df = make_df_for_energy_scan("$\Delta E$", 2.8, 3, 201, 2*(max_bosons+1))
 
 for i, row in df.iterrows():
     # Note below the "_" are used because right now we don't want to save the component parts of the Hamiltonian
-    H,_,_,_ = make_hamiltonian(max_bosons=max_bosons, delta_E=row["$\Delta E$"], omega=1, U=0.2)
+    H,_ = make_hamiltonian(max_bosons=max_bosons, delta_E=row["$\Delta E$"], omega=1, U=0.2)
     evals, ekets = H.eigenstates()
     df.iloc[i,1:] = evals   # Fills the columns 1 onwards of row i with the eigenvalues
 ```
@@ -164,7 +166,8 @@ df.plot(x="$\Delta E$",figsize=(10,8),ylim=[1.9,2],legend=True,
 plt.ylabel("Energy");
 ```
 
->TODO Implications of Fig 3 in terms of 3 bosons emitted rather than a single one.
+<!-- #region -->
+
 
 The level splitting seen in Fig 3 is much smaller than those seen in Fig 2 at the primary resonance ($\Delta E \approx \omega$). Applying our knowledge from Tutorial 1, we would say that the effective coupling (which is proportional to the level splitting) is much less for the non-primary resonances.
 
@@ -176,14 +179,15 @@ This shift arises because we have to consider the effect of the interaction ener
 
 > TODO:Make referenced to dressed atom picture https://www.youtube.com/watch?v=k0X7iSaPM38 and https://ocw.mit.edu/courses/physics/8-422-atomic-and-optical-physics-ii-spring-2013/
 
+Fig 3 is also showing us something we haven't seen before. $\Delta E \approx 3\omega$ is suggesting that it might be possible for the two state system transition to result in the emission of 3 smaller bosons rather than a single larger one We'll investigate the possibility of this "down conversion" more deeply shortly.
+<!-- #endregion -->
 
-
-To understand why some levels don't couple to each other, we need to visualise the Hamiltonian. QuTiP offers a function called [`hinton`](http://qutip.org/docs/latest/apidoc/functions.html?highlight=hinton#qutip.visualization.hinton) for just such a purpose.
+In the meantime, let's try and understand why some levels don't couple to each other. For this we need to visualise the Hamiltonian. QuTiP offers a function called [`hinton`](http://qutip.org/docs/latest/apidoc/functions.html?highlight=hinton#qutip.visualization.hinton) for just such a purpose.
 
 We'll work with a Hamiltonian with a very large coupling of $U=1$ so that we'll be able to see things more clearly.
 
 ```python
-H,_,_,_ = make_hamiltonian(max_bosons=max_bosons, delta_E=1, omega=1, U=1)
+H,h = make_hamiltonian(max_bosons=max_bosons, delta_E=1, omega=1, U=1)
 ```
 
 ```python
@@ -216,52 +220,65 @@ ket_labels = ["| "+str(n)+", "+str(m)+"$\\rangle$" for (n,m) in nm_list]
 ```python
 f, ax = hinton(H, xlabels=ket_labels, ylabels=bra_labels)
 ax.tick_params(axis='x',labelrotation=90,)
-ax.set_title("Matrix elements of H     (Fig 2)");
+ax.set_title("Matrix elements of H     (Fig 5)");
 ```
 
 That's better!
 
-If we now take a closer look at the structure of the Hinton diagram we can see some interesting features:
+If we now take a closer look at the structure of the Hinton diagram we can see some interesting features when we follow a path that connects one state to another:
 
 ```python
-print("                Matrix elements of H     (Fig 3)")
+print("                Matrix elements of H     (Fig 6)")
 Image(filename='parity.png') 
 ```
 
 If we imagine starting a simulation with 0 bosons and the two state system in its + state, i.e. |0,+>, then Fig 3 suggests that:
-1. there are connections (albeit indirect) from |0,+> to many different states with many more bosons, e.g. $|0,+> \rightarrow |1,-> \rightarrow |2,+> \rightarrow |3,-> \rightarrow |4,+> ...$. This implies that spontaneous emission of a single boson (as we saw in the last tutorial) isn't the only possibility
+1. there are connections (albeit indirect) from |0,+> to many different states with many more bosons, e.g. $|0,+> \rightarrow |1,-> \rightarrow |2,+> \rightarrow |3,-> \rightarrow |4,+> ...$.
 2. there are some states that are not accessible at all if we start in the |0,+> state
 
 
-
-
-On 1. This must be the mechanism by which the non-primary resonances operate
+On 1. This implies that there indeed exists a mechanism inside the Hamiltonian to achieve the down conversation that we saw hints of earlier.
 
 On 2. The Hamiltonian appears to be composed of two separate "universes" that don't interact with each other. In our energy level diagram we have both universes present - perhaps if we separate them we'll only see anti-crossings in the plots.
 
-```python
 
+What separates these universes is a form of [parity](https://en.wikipedia.org/wiki/Parity_%28physics%29). Parity is not particularly intuitive and a full discussion of it is somewhat involved and takes us deep into the topic of transition [selection rules](https://en.wikipedia.org/wiki/Selection_rule) - we'll come back to this another time.
+
+For now, the the important things to note are [how the parity operator $P$ acts on the system](https://iopscience.iop.org/article/10.1088/0305-4470/29/14/026):
+- for the two state system $P |\pm> = \pm1|\pm> $, i.e. parity operator is the same as $\sigma_z$
+- for [the field](https://ia801608.us.archive.org/11/items/TheParityOperatorForTheQuantumHarmonicOscillator/partity_article.pdf) with $n$ bosons $P |n> = -1^n |n>$, i.e. the parity is $-1^n = e^{i\pi n}$ 
+
+The combined parity is made by multiplying the two together. We can use QuTiP's [`expm`](http://qutip.org/docs/latest/apidoc/classes.html#qutip.Qobj.expm) function to create the exponential operator from the number operator $n = a^{\dagger}a$. Let's see this in action:
+
+```python
+sz = h["sz"]
+a = h["a"]
+num = a.dag()*a
 ```
 
 ```python
-
+P = sz*(1j*np.pi*num).expm()
 ```
+
+Creating a hinton diagram for the parity operator is revealing:
 
 ```python
-
+f, ax = hinton(P, xlabels=ket_labels, ylabels=bra_labels)
+ax.tick_params(axis='x',labelrotation=90,)
+ax.set_title("Matrix elements of H     (Fig 7)");
 ```
+
+In Fig 7, we see that the the blue squares (parity=+1, often called even) matches up with the path of the yellow arrows in Fig 6. It also suggests that if we start on a blue/red square then we remain on a blue/red square - must like a bishop in a game of chess.
+
+To check this we can look at the [`commutator`](http://qutip.org/docs/latest/apidoc/functions.html#qutip.operators.commutator) between the Hamiltonian and parity:
 
 ```python
-
+commutator(H,P)
 ```
 
-```python
+A zero commutator tells us that parity is conserved as the system evolves.
 
-```
-
-```python
-
-```
+We can therefore split up the description of our system into two universes based on whether the states have even (+1) parity or odd (-1) parity. Let's look at these two universes separately.
 
 ```python
 
