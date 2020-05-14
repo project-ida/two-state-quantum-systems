@@ -22,13 +22,9 @@ import gif
 import numpy as np
 import pandas as pd
 from qutip import *
-from scipy.signal import argrelextrema
 import warnings
 warnings.filterwarnings('ignore')
 from itertools import product
-
-from scipy.optimize import minimize_scalar
-from scipy.signal import argrelextrema
 ```
 
 Let's remind ourselves of the Hamiltonian that we've been working with:
@@ -54,21 +50,24 @@ We can however still apply ideas we've learnt about two-state systems in some sp
 To get a feel for this more complicated system we will find the energies/frequencies of the stationary states and see how they depend on the various parameters - just as we did in Fig 3 of Tutorial 2 when we made an avoided crossing plot.
 
 ```python
-def make_hamilton(max_bosons, delta_E, omega, U):
+def make_operators(max_bosons):
     
     a  = tensor(destroy(max_bosons+1), qeye(2))     # tensorised boson destruction operator
     sx = tensor(qeye(max_bosons+1), sigmax())       # tensorised sigma_x operator
     sz = tensor(qeye(max_bosons+1),sigmaz())        # tensorised sigma_z operator
     
-    two_state     =  delta_E/2*sz                   # two state system energy
-    bosons       =  omega*(a.dag()*a+0.5)          # bosons field energy
-    interaction  = U*(a.dag() + a) * sx            # interaction energy
+    two_state     =  1/2*sz                      # two state system energy operator
+    bosons       =  (a.dag()*a+0.5)              # boson energy operator
+    number        = a.dag()*a                      # boson number operator
+    interaction  = (a.dag() + a) * sx            # interaction energy operator    
+
     
-    H = two_state + bosons + interaction
-    
-    components = {"a":a, "sx":sx, "sz":sz, "two_state":two_state, "bosons": bosons, "interaction":interaction}
-    
-    return H, components
+    return two_state, bosons, interaction, number
+```
+
+```python
+max_bosons=4
+two_state, bosons, interaction, number = make_operators(max_bosons)
 ```
 
 ```python
@@ -86,8 +85,7 @@ def make_df_for_energy_scan(label_param, min_param, max_param, num_param, num_le
 ```
 
 ```python
-max_bosons = 4
-df = make_df_for_energy_scan("$\Delta E$", -4, 4, 201, 2*(max_bosons+1))
+df = make_df_for_energy_scan("$\Delta E$", -4, 4, 201, two_state.shape[0])
 ```
 
 We have 10 levels associated with the 2 states from the two state system (|+>, |->) and 5 bosons states (0,1,2,3,4) making 2*5 = 10 states
@@ -100,8 +98,7 @@ We'll now fill these rows with the energies of the different levels (aka the eig
 
 ```python
 for i, row in df.iterrows():
-    # Note below the "_" are used because right now we don't want to save the component parts of the Hamiltonian
-    H,_ = make_hamiltonian(max_bosons=max_bosons, delta_E=row["$\Delta E$"], omega=1, U=0)
+    H =  row["$\Delta E$"]*two_state + 1*bosons
     evals, ekets = H.eigenstates()
     df.iloc[i,1:] = evals   # Fills the columns 1 onwards of row i with the eigenvalues
 ```
@@ -128,12 +125,10 @@ Let's see how we get on.
 
 
 ```python
-max_bosons = 4
-df = make_df_for_energy_scan("$\Delta E$", -4, 4, 201, 2*(max_bosons+1))
+df = make_df_for_energy_scan("$\Delta E$", -4, 4, 201, two_state.shape[0])
 
 for i, row in df.iterrows():
-    # Note below the "_" are used because right now we don't want to save the component parts of the Hamiltonian
-    H,_ = make_hamiltonian(max_bosons=max_bosons, delta_E=row["$\Delta E$"], omega=1, U=0.2)
+    H =  row["$\Delta E$"]*two_state + 1*bosons + 0.2*interaction
     evals, ekets = H.eigenstates()
     df.iloc[i,1:] = evals   # Fills the columns 1 onwards of row i with the eigenvalues
 ```
@@ -155,12 +150,10 @@ On 1. Applying our knowledge from Tutorial 1, we would say that the effective co
 On 2. Upon closer inspection we can see that the level splittings only occur when $\Delta E  \approx n \omega$ where n is an odd integer (we'll come to why we now use $\approx$ instead of = shortly). Although it is hard to see in Fig 2, if we zoom in on $\Delta E \approx 3\omega$ we can indeed see an anti-crossing:
 
 ```python
-max_bosons = 4
-df = make_df_for_energy_scan("$\Delta E$", 2.8, 3, 201, 2*(max_bosons+1))
+df = make_df_for_energy_scan("$\Delta E$", 2.8, 3, 201, two_state.shape[0])
 
 for i, row in df.iterrows():
-    # Note below the "_" are used because right now we don't want to save the component parts of the Hamiltonian
-    H,_ = make_hamiltonian(max_bosons=max_bosons, delta_E=row["$\Delta E$"], omega=1, U=0.2)
+    H =  row["$\Delta E$"]*two_state + 1*bosons + 0.2*interaction
     evals, ekets = H.eigenstates()
     df.iloc[i,1:] = evals   # Fills the columns 1 onwards of row i with the eigenvalues
 ```
@@ -169,6 +162,8 @@ for i, row in df.iterrows():
 df.plot(x="$\Delta E$",figsize=(10,8),ylim=[1.9,2],legend=True, 
         title="Zoom in of energy of the stationary states ($\omega=1$, $U=0.2$)     (Fig 3)");
 plt.ylabel("Energy");
+
+
 ```
 
 <!-- #region -->
@@ -184,16 +179,55 @@ This shift arises because we have to consider the effect of the interaction ener
 
 > TODO:Make referenced to dressed atom picture https://www.youtube.com/watch?v=k0X7iSaPM38 and https://ocw.mit.edu/courses/physics/8-422-atomic-and-optical-physics-ii-spring-2013/
 
-Fig 3 is also showing us something we haven't seen before. A resonance at $\Delta E \approx 3\omega$ suggests that it might be possible for the two state system transition to result in the emission of 3 smaller bosons rather than a single larger one (as we have seen previously when $\Delta E \approx \omega$ ). We'll investigate the possibility of this "down conversion" shortly.
+We can more clearly see the splitting of the levels and shifting of the resonances by scanning through various values of the coupling parameter $U$. Let's create an [animated gif](https://github.com/maxhumber/gif) to show this.
 <!-- #endregion -->
+
+```python
+# NOTE: THIS CELL TAKES ABOUT 2 MIN TO RUN
+
+dfs = []                        # This is hold the dataframes for each value of U
+Us = np.linspace(0, 0.6, 40)    # This will give us 40 frames in our animation from U=0 to U=0.6
+for U in Us:
+    
+    df = make_df_for_energy_scan("$\Delta E$", -4, 4, 201, two_state.shape[0])
+
+    for i, row in df.iterrows():
+        H =  row["$\Delta E$"]*two_state + 1*bosons + U*interaction
+        evals, ekets = H.eigenstates()
+        df.iloc[i,1:] = evals   # Fills the columns 1 onwards of row i with the eigenvalues
+        
+    dfs.append(df)
+```
+
+```python
+# Uses the gif library from https://github.com/maxhumber/gif
+@gif.frame
+def plot(df,j):
+    df.plot(x="$\Delta E$",figsize=(10,8),ylim=[0,6],legend=True, 
+        title=f"Stationary states for $H = (\Delta E / 2) \sigma_z + \hbar\omega(a^{{\dagger}}a +1/2) + U( a^{{\dagger}} + a )\sigma_x$     ($\omega=1$, $U={Us[j]:.3f}$) ");
+    plt.ylabel("Energy");
+    
+    
+frames = []
+for j, df in enumerate(dfs):
+    frame = plot(df, j)
+    frames.append(frame)
+gif.save(frames, "energy-levels.gif", duration=250)
+```
+
+```python
+Image(filename="./energy-levels.gif")
+```
+
+Fig 3 also shows us something we haven't seen before. A resonance at $\Delta E \approx 3\omega$ suggests that it might be possible for the two state system transition to result in the emission of 3 smaller bosons rather than a single larger one. We'll investigate the possibility of this "down conversion" shortly.
+
 
 In the meantime, let's try and understand why some levels don't couple to each other. For this we need to visualise the Hamiltonian. QuTiP offers a function called [`hinton`](http://qutip.org/docs/latest/apidoc/functions.html?highlight=hinton#qutip.visualization.hinton) for just such a purpose.
 
 We'll work with a Hamiltonian with a very large coupling of $U=1$ so that we'll be able to see things more clearly.
 
 ```python
-max_bosons = 4
-H,h = make_hamiltonian(max_bosons=max_bosons, delta_E=1, omega=1, U=1)
+H = 1*two_state + 1*bosons + 1*interaction
 ```
 
 ```python
@@ -219,11 +253,15 @@ nm_list
 We can create some nice labels corresponding to the `nm_list`. This will make things like the hinton plot a lot easier to understand.
 
 ```python
-bra_labels = ["$\langle$"+str(n)+", "+str(m)+" |" for (n,m) in nm_list]
-ket_labels = ["| "+str(n)+", "+str(m)+"$\\rangle$" for (n,m) in nm_list]
+def make_braket_labels(nm_list):
+    bra_labels = ["$\langle$"+str(n)+", "+str(m)+" |" for (n,m) in nm_list]
+    ket_labels = ["| "+str(n)+", "+str(m)+"$\\rangle$" for (n,m) in nm_list]
+    return bra_labels, ket_labels
 ```
 
 ```python
+bra_labels, ket_labels = make_braket_labels(nm_list)
+
 f, ax = hinton(H, xlabels=ket_labels, ylabels=bra_labels)
 ax.tick_params(axis='x',labelrotation=90,)
 ax.set_title("Matrix elements of H     (Fig 5)");
@@ -232,6 +270,9 @@ ax.set_title("Matrix elements of H     (Fig 5)");
 That's better!
 
 If we now take a closer look at the structure of the Hinton diagram we can see some interesting features when we follow a path that connects one state to another:
+
+
+> TODO: Remake the parity.png picture with the correct value of U
 
 ```python
 print("                Matrix elements of H     (Fig 6)")
@@ -257,13 +298,8 @@ For now, the the important thing to note is [how the parity operator $P$ acts on
 Note, that we can use QuTiP's [`expm`](http://qutip.org/docs/latest/apidoc/classes.html#qutip.Qobj.expm) function to create the exponential operator from the number operator $n = a^{\dagger}a$. The combined parity is made by multiplying the two together. Let's see this in action:
 
 ```python
-sz = h["sz"]
-a = h["a"]
-num = a.dag()*a
-```
-
-```python
-P = sz*(1j*np.pi*num).expm()
+sz = 2*two_state                 # recall we set Delta_E=1 for this example so two_state = 1/2*s_z
+P = sz*(1j*np.pi*number).expm()
 ```
 
 Creating a hinton diagram for the parity operator is revealing:
@@ -274,7 +310,7 @@ ax.tick_params(axis='x',labelrotation=90,)
 ax.set_title("Matrix elements of H     (Fig 7)");
 ```
 
-In Fig 7, we see that the the blue squares (parity=+1, often called even) matches up with the path of the yellow arrows in Fig 6. It is suggesting that if we start on a blue/red square then we remain on a blue/red square - much like a bishop in a game of chess.
+In Fig 7, we see that the the blue squares (parity=+1, often called even) matches up with the path of the yellow arrows in Fig 6. It is suggesting that if we start on a blue/red square then we remain on a blue/red square.
 
 To check this, we need to look at the [`commutator`](http://qutip.org/docs/latest/apidoc/functions.html#qutip.operators.commutator) between the Hamiltonian and parity:
 
@@ -282,181 +318,159 @@ To check this, we need to look at the [`commutator`](http://qutip.org/docs/lates
 commutator(H,P)
 ```
 
-A zero commutator tells us that parity is conserved as the system evolves.
+A [zero commutator with H](https://youtu.be/eZ2UKJqLs4M) tells us that parity is conserved as the system evolves.
 
-We can therefore split up the description of our system into two universes based on whether the states have even (+1) parity or odd (-1) parity.
+We can therefore break up the description of our system into two universes based on whether the states have even (+1) parity or odd (-1) parity.
 
-```python
-P
-```
+Let's look at even parity manually before we create a function to handle separation of the parity universes.
 
-```python
-
-```
-
-```python
-state_number_index([max_bosons+1,2],(3,0))
-```
-
-```python
-nm_list
-```
-
-```python
-even
-```
+First, we need to get the row/column numbers where we have parity = 1
 
 ```python
 even = np.where(P.diag()==1)[0]
-odd = np.where(P.diag()==-1)[0]
+even
+```
+
+We can now use a QuTiP function called [`extract_states`](http://qutip.org/docs/latest/apidoc/classes.html?highlight=extract_states#qutip.Qobj.extract_states) to only select the parts of the Hamiltonian that's of interest to us:
+
+```python
+H_even = H.extract_states(even)
+```
+
+Before we have a look at the resulting Hinton diagram we must also extract the corresponding state labels |n,±>:
+
+```python
+nm_list_even = [nm_list[i] for i in even]
+nm_list_even
 ```
 
 ```python
-H2 = H.extract_states(even)
+bra_labels, ket_labels = make_braket_labels(nm_list_even)
 ```
 
 ```python
-H2
+f, ax = hinton(H_even, xlabels=ket_labels, ylabels=bra_labels)
+ax.tick_params(axis='x',labelrotation=90,)
+ax.set_title("Even matrix elements of H     (Fig 8)");
 ```
 
-```python
+Now with only a single parity, Fig 8 makes it easier to see how the system behaves - boson numbers can only go up by one each time and when they do the two state system must flip between \+> and |-> (the same is true for the odd universe).
 
-```
+
+It will be helpful for us to be able to handle the extraction of states and state labels in a more automatic way. Let's augment the `make_operators` function to do this:
 
 ```python
-def make_hamiltonian(max_bosons, delta_E, omega, U, parity):
+def make_operators(max_bosons, parity):
     
     a  = tensor(destroy(max_bosons+1), qeye(2))     # tensorised boson destruction operator
     sx = tensor(qeye(max_bosons+1), sigmax())       # tensorised sigma_x operator
     sz = tensor(qeye(max_bosons+1),sigmaz())        # tensorised sigma_z operator
     
-    P = sz*(1j*np.pi*num).expm()                   # parity operator
+    two_state     =  1/2*sz                      # two state system energy operator
+    bosons       =  (a.dag()*a+0.5)              # boson energy operator
+    number        = a.dag()*a                      # boson number operator
+    interaction  = (a.dag() + a) * sx            # interaction energy operator      
     
-    two_state     =  delta_E/2*sz                   # two state system energy
-    bosons       =  omega*(a.dag()*a+0.5)          # bosons field energy
-    interaction  = U*(a.dag() + a) * sx            # interaction energy
+    P = sz*(1j*np.pi*a.dag()*a).expm()            # parity operator 
     
-    H = two_state + bosons + interaction
-    
-    components = {"a":a, "sx":sx, "sz":sz, "two_state":two_state, "bosons": bosons, "interaction":interaction}
-    
-    return H, components
-```
-
-```python
-
-```
-
-```python
-
-```
-
-```python
-
-```
-
-```python
-
-```
-
-```python
-max_bosons = 4
-df = make_df_for_energy_scan("$\Delta E$", -4, 4, 201, (max_bosons+1))
-
-for i, row in df.iterrows():
-    # Note below the "_" are used because right now we don't want to save the component parts of the Hamiltonian
-    H,_ = make_hamiltonian(max_bosons=max_bosons, delta_E=row["$\Delta E$"], omega=1, U=0.2)
-    evals, ekets = H2.eigenstates()
-    df.iloc[i,1:] = evals   # Fills the columns 1 onwards of row i with the eigenvalues
-```
-
-```python
-df.plot(x="$\Delta E$",figsize=(10,8),ylim=[0,6],legend=True, 
-        title="Energy of the stationary states ($\omega=1$, $U=0.2$)     (Fig 2)");
-plt.ylabel("Energy");
-```
-
-```python
-
-```
-
-```python
-
-```
-
-```python
-
-```
-
-```python
-
-```
-
-```python
-
-```
-
-```python
-
-```
-
-```python
-
-```
-
-```python
-
-```
-
-```python
-
-```
-
-```python
-#inspired by SJB code https://github.com/sbyrnes321/cf/blob/1a34a461c3b15e26cad3a15de3402142b07422d9/spinboson.py#L56
-if parity != "all":
-    S=1/2
     possible_ns = range(0, max_bosons+1)
-    possible_ms = - (np.arange(2*S+1) - S)
-    Smn_list = product([S], possible_ns, possible_ms)
-
-    if parity == "even":
-        mn_from_index = [(n,int(np.abs(m-0.5))) for (S,n,m) in Smn_list if (S+m+n) % 2 == 0]
-    elif parity == "odd":
-        mn_from_index = [(n,int(np.abs(m-0.5))) for (S,n,m) in Smn_list if (S+m+n) % 2 == 1]
-
-    subset_idx = []
-    for s in mn_from_index:
-        subset_idx.append(state_number_index([max_bosons+1,2],s))
+    possible_ms = ["+","-"]
+    nm_list = [(n,m) for (n,m) in product(possible_ns, possible_ms)]
     
-    # Labels for hinton plots in case we want to plot it later (use xlabels=ket_labels, ylabels = bra_labels)
-    bra_labels = ["$\langle$"+str(n)+", "+str(m)+"|" for (n,m) in mn_from_index]
-    ket_labels = ["|"+str(n)+", "+str(m)+"$\\rangle$" for (n,m) in mn_from_index]
+    if (parity==1) | (parity==-1):
+        p           = np.where(P.diag()==parity)[0]
+        
+        two_state   = two_state.extract_states(p)
+        bosons      = bosons.extract_states(p)
+        number      = number.extract_states(p)
+        interaction = interaction.extract_states(p)
+        nm_list     = [nm_list[i] for i in p]
+    
+    
+    return two_state, bosons, interaction, number, nm_list
+```
 
-        # http://qutip.org/docs/latest/apidoc/classes.html?highlight=extract_states#qutip.Qobj.extract_states
-    two_state    = two_state.extract_states(subset_idx) 
-    bosons      = bosons.extract_states(subset_idx) 
-    interaction  = interaction.extract_states(subset_idx) 
-    number          = (a.dag()*a).extract_states(subset_idx)
-    spin         = spin.extract_states(subset_idx)
+We are now in a position to compare the energy level plots for the different parity universes side by side.
+
+```python
+# EVEN PARITY
+
+two_state, bosons, interaction, number, nm_list = make_operators(max_bosons=4, parity=1)
+
+df_even = make_df_for_energy_scan("$\Delta E$", -4, 4, 201, two_state.shape[0])
+
+for i, row in df_even.iterrows():
+    H =  row["$\Delta E$"]*two_state + 1*bosons + 0.2*interaction
+    evals, ekets = H.eigenstates()
+    df_even.iloc[i,1:] = evals   # Fills the columns 1 onwards of row i with the eigenvalues
 ```
 
 ```python
+# ODD PARITY
+
+two_state, bosons, interaction, number, nm_list = make_operators(max_bosons=4, parity=-1)
+
+df_odd = make_df_for_energy_scan("$\Delta E$", -4, 4, 201, two_state.shape[0])
+
+for i, row in df_odd.iterrows():
+    H =  row["$\Delta E$"]*two_state + 1*bosons + 0.2*interaction
+    evals, ekets = H.eigenstates()
+    df_odd.iloc[i,1:] = evals   # Fills the columns 1 onwards of row i with the eigenvalues
+```
+
+```python
+fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(15,6), sharey=True)
+
+
+df_even.plot(x="$\Delta E$",ylim=[0,6],legend=False, 
+        title="Even stationary states ($\omega=1$, $U=0.2$)     (Fig 9)",  ax=axes[0]);
+
+df_odd.plot(x="$\Delta E$",ylim=[0,6],legend=False, 
+        title="Odd stationary states ($\omega=1$, $U=0.2$)     (Fig 10)",  ax=axes[1]);
+
+axes[0].set_ylabel("Energy");
+```
+
+Figs 9 and 10 show us the energy of the stationary states for the even and odd parity states respectively. As we expected, we now only see anti-crossings because in each universe there are no forbidden interactions.
+
+
+Now we are in a position to explore some new physics - we predicted that when $\delta E \approx 3\omega$ (anti-crossing in Fig 9 and also Fig 3) we get down conversation? Let's simulate and see if we are correct.
+
+```python
+# Create the operators and state list for even parity universe
+two_state, bosons, interaction, number, nm_list = make_operators(max_bosons=4, parity=1)
+
+# Create the nice bra and ket labels for plots later
+bra_labels, ket_labels = make_braket_labels(nm_list)
+
+# Create the Hamiltonian corresponding to the anti-crossing we saw in Fig 3
+H =  2.88*two_state + 1*bosons + 0.2*interaction
+```
+
+We also need to specify the initial condition for the state - we want this to be |0,+>. Previously we used the `tensor` function to make this, but now that we are working in the parity universe this doesn't work so easily.
+
+Instead we will need to use `basis` function as we did at the very start of Tutorial 1. In order for this to be convenient, we need to make a function that takes as an input |n,±> and scans through our list of states to find which entry it corresponds to.
+
+```python
+def index_from_nm(nm_list,n,m): 
+    try:
+        return [item for item in nm_list].index((n,m))
+    except:
+        print("ERROR: State doesn't exist")
 
 ```
 
 ```python
-
+i = index_from_nm(nm_list, 0, "+")  # Find which index corresponds to the |0,+> state
+i
 ```
 
 ```python
-
+psi0 = basis(H.shape[0], i)
 ```
 
-Let's see if these features arise in the simulation and if so what do they mean?
-
 ```python
-psi0 = tensor(basis(max_bosons+1, 0), basis(2, 0))
+psi0
 ```
 
 In the previous tutorials we have been using QuTiP's [`sesolve`](http://qutip.org/docs/latest/apidoc/functions.html#module-qutip.sesolve) to simulate the system. `sesolve` solves the Schrödinger equation. This was convenient as for us when we were getting started - we only needed a single line of code to run the simulation. It was especially useful when we introduced a time dependent perturbation to our two state Hamiltonian in Tutorial 2. However, `sesolve` will cause us problems as we increase the number of bosons that we want to simulate - the simulation will take too long to run.
@@ -476,7 +490,8 @@ Let's see how it works and then go through an example:
   - $<k|i> = $ `ekets[i][k]`
 
 
-Let's see this in action.
+Let's try it out.
+
 
 **Step 1**:
 
@@ -489,12 +504,14 @@ psi0_in_H_basis = psi0.transform(ekets)
 psi0_in_H_basis
 ```
 
-This way of representing $\psi_0$ shows us that $|0,+>$ is mainly a mixture of the 3rd and 4th energy states. QuTiP has a convenient way of visualising the probabilities associated with such a state using [`plot_fock_distribution`](http://qutip.org/docs/latest/apidoc/functions.html?highlight=plot_fock_distribution#qutip.visualization.plot_fock_distribution)
+This way of representing $\psi_0$ shows us that at the anti-crossing $|0,+>$ is mainly a mixture of the 1st and 2nd energy states. QuTiP has a convenient way of visualising the probabilities associated with such a state using [`plot_fock_distribution`](http://qutip.org/docs/latest/apidoc/functions.html?highlight=plot_fock_distribution#qutip.visualization.plot_fock_distribution)
 
 ```python
-plot_fock_distribution(psi0_in_H_basis, title=f" |0,+> in constant energy basis     (Fig 4)")
+plot_fock_distribution(psi0_in_H_basis, title=f" |0,+> in constant energy basis     (Fig 11)")
 plt.xlim(-1,10);
 ```
+
+> TODO: FIX ALL THE NUMBERS
 
 Continuing to follow the procedure, we have:
 
@@ -551,15 +568,17 @@ All of the above can be automated by making a function that we can reuse again a
 
 ```python
 def simulate(H, psi0, times):
-    psi = np.zeros([(max_bosons+1)*2,times.size], dtype="complex128")
-    P = np.zeros([(max_bosons+1)*2,times.size], dtype="complex128")
+    num_states = H.shape[0]
+    
+    psi = np.zeros([num_states,times.size], dtype="complex128")
+    P = np.zeros([num_states,times.size], dtype="complex128")
     
     evals, ekets = H.eigenstates()
     psi0_in_H_basis = psi0.transform(ekets)
 
-    for k in range(0,(max_bosons+1)*2):
+    for k in range(0,num_states):
         amp = 0
-        for i in range(0,(max_bosons+1)*2):
+        for i in range(0,num_states):
             amp +=  psi0_in_H_basis[i][0][0]*np.exp(-1j*evals[i]*times)*ekets[i][k][0][0]
         psi[k,:] = amp
         P[k,:] = amp*np.conj(amp)
@@ -567,62 +586,31 @@ def simulate(H, psi0, times):
 ```
 
 ```python
-times = np.linspace(0.0, 14.0, 100)
+times = np.linspace(0.0, 1000.0, 1000)
 P, psi = simulate(H, psi0, times)
 ```
 
 ```python
 plt.figure(figsize=(10,8))
-for i in range(0,(max_bosons+1)*2):
+for i in range(0,P.shape[0]):
     plt.plot(times, P[i,:], label=f"{ket_labels[i]}")
 plt.ylabel("Probability")
 plt.legend(loc="right")
-plt.title("(Fig 5)")
+plt.title("($\Delta E=2.88$, $\omega=1$, $U=0.2$)     (Fig 12)")
 plt.show();
 ```
 
-Fig 5 is the equivalent of Fig 2 from the previous tutorial - the only significant difference is the coupling is now much larger. 
-
-Whereas previously we saw only the Rabi oscillation between $|0,+>$ and $|1,->$, now we see much more. There is significant probability of finding the system with more than 1 boson - as was suggested in the Hinton diagram.
-
-But, how is such a thing possible? Doesn't it violate conservation of energy? After all, 2 or more bosons have more energy than the + state we started in. 
-
-As you might suspect, the answer is no, energy is conserved, the "missing" energy comes from the interaction term in the Hamiltonian. We can see this explicitly by looking at the expectation values various parts of the Hamiltonian. QuTiP does allow us to do this using the [`expect`](http://qutip.org/docs/latest/guide/guide-states.html#expectation-values) function.
+Fig 12 shows us that our ideas were correct - the system starts off with bosons and transitions to a state with 3 at the expense of the two state energy. We can see this energy exchange explicitly by evaluating the expectation values of the various parts of the Hamiltonian.
 
 
+QuTiP does allow us to do this using the [`expect`](http://qutip.org/docs/latest/guide/guide-states.html#expectation-values) function. However, it turns out that we need to create a `Qobj` for every time step in order to use this function and it can be very slow. We will instead directly calculate the expectation value using matrix multiplication, i.e.
 
-It works in the following way for the expectation of the Hamiltonian H:
 
-`expect(H, state)`
-
-We have the values of the `state` at every time step from the `A` output of our `simulate` function. We must however turn those values into a QuTiP quantum object ([`Qobj`](http://qutip.org/docs/latest/guide/guide-basics.html#the-quantum-object-class)) that has dimensions compatible with the interaction operator. For example, the dimensions of $\psi_0$ are:
-
-```python
-psi0.dims
-```
-
-We can use the `dims` of $\psi_0$ to create a compatible `Qobj` in the following way (e.g. for time step 10)
-
-```python
-d = [[5, 2], [1, 1]]
-state = Qobj(psi[:,10],dims=d)
-```
-
-The expectation value of the interaction energy at time step 10 is then:
-
-```python
-expect(H, state)
-```
-
-We could automate this process, but it turns out that creating the `Qobj` for every time step can be very slow. We will instead directly calculate the expectation value using matrix multiplication, i.e.
 
 $<H> = \psi^{\dagger}H\psi = \psi^{\dagger} @ (H @\psi) $
 
-Where @ is the matrix multiplication operator and $\dagger$ in this context means taking the complex conjugate. For the 10th time step we have:
+Where @ is the matrix multiplication operator and $\dagger$ in this context means taking the complex conjugate.
 
-```python
-np.conj(psi[:,10])@ (H @ psi[:,10])
-```
 
 Let's automate this process for all time steps using a function.
 
@@ -639,9 +627,9 @@ We can now see how the different parts of the Hamiltonian change overtime
 
 ```python
 hamiltonian_expect = expectation(H,psi)
-two_state_expect = expectation(two_state,psi)
-bosons_expect = expectation(bosons,psi)
-interaction_expect = expectation(U*interaction,psi)
+two_state_expect = expectation(2.88*two_state,psi)
+bosons_expect = expectation(1*bosons,psi)
+interaction_expect = expectation(0.2*interaction,psi)
 ```
 
 ```python
@@ -654,750 +642,16 @@ plt.plot(times, interaction_expect, label="interaction")
 plt.ylabel("Energy")
 plt.xlabel("Time")
 plt.legend(loc="right")
-plt.title(f"Expectation values for parts of the Hamiltoian (U={U})     (Fig 6)")
+plt.title(f"Expectation values for parts of the Hamiltoian ($\Delta E=2.88$, $\omega=1$, $U=0.2$)     (Fig 13)")
 plt.show();
 ```
 
-Fig 6 confirms that the total energy (the blue line) is constant - energy conservation is not violated. We can also see that that the interaction energy is dominating over the two-state energy. This is what is allowing the boson energy to get higher than we might expect by only considering the two state energy and the bosons. This is not the case when the coupling is weak (as in the previous tutorial). Let's compare, by making the coupling 100 times weaker.
+We can indeed see in Fig 13 the energy exchange that we expect between the two state system and the bosons field. We can also see how the interaction energy is moving in sync with the two state energy - this is another way of seeing the "dressing" effect that we mentioned earlier.
 
-```python
-U = delta_E/100
-H = two_state + bosons + U*interaction
-times = np.linspace(0.0, 1400.0, 10000)
-P, psi = simulate(H, psi0, times)
-```
 
-```python
-hamiltonian_expect = expectation(H,psi)
-two_state_expect = expectation(two_state,psi)
-bosons_expect = expectation(bosons,psi)
-interaction_expect = expectation(U*interaction,psi)
-```
+## Next time...
 
-```python
-plt.figure(figsize=(10,8))
-plt.plot(times, hamiltonian_expect, label="total hamiltonian")
-plt.plot(times, two_state_expect, label="two-state")
-plt.plot(times, bosons_expect, label="bosons")
-plt.plot(times, interaction_expect, label="interaction")
-
-plt.ylabel("Energy")
-plt.xlabel("Time")
-plt.legend(loc="right")
-plt.title(f"Expectation values for parts of the Hamiltoian (U={U})     (Fig 7)")
-plt.show();
-```
-
-Fig 7 shows that the behaviour in the weak coupling case is much more as we would expect, i.e. the bosons "trade" energy with the two-state system.
-
-Strong coupling is not as intuitive as weak coupling. Specifically, it is not obvious how to interpret the interaction energy. We'll instead look at some of the consequences.
-
-```python
-delta_E = 4.525252525252525
-max_bosons = 100
-omega = 1
-U = 1
-
-# delta_E = 2.9996999918083977
-# max_bosons = 100
-# omega = 1
-# U = 0.01
-```
-
-```python
-a  = tensor(destroy(max_bosons+1), qeye(2))     # tensorised boson destruction operator
-sx = tensor(qeye(max_bosons+1), sigmax())       # tensorised sigma_x operator
-sz = tensor(qeye(max_bosons+1),sigmaz())        # tensorised sigma_z operator
-
-two_state     =  delta_E/2*sz                          # two state system energy
-bosons       =  omega*(a.dag()*a+0.5)          # bosons field energy
-interaction  = (a.dag() + a) * sx             # interaction energy
-
-H = two_state + bosons + U*interaction
-```
-
-```python
-possible_ns = range(0, max_bosons+1)
-possible_ms = ["+","-"]
-nm_list = [(n,m) for (n,m) in product(possible_ns, possible_ms)]
-```
-
-```python
-bra_labels = ["$\langle$"+str(n)+", "+str(m)+" |" for (n,m) in nm_list]
-ket_labels = ["| "+str(n)+", "+str(m)+"$\\rangle$" for (n,m) in nm_list]
-```
-
-```python
-psi0 = tensor(basis(max_bosons+1, 0), basis(2, 0))
-```
-
-```python
-times = np.linspace(0.0, 5000000.0, 1000)
-times = np.linspace(0.0, 140.0, 1000)
-
-
-P, psi = simulate(H, psi0, times)
-```
-
-```python
-
-```
-
-```python
-plt.figure(figsize=(10,8))
-# for i in range(0,(max_bosons+1)*2):
-for i in range(0,20):
-    plt.plot(times, P[i,:], label=f"{ket_labels[i]}")
-plt.ylabel("Probability")
-plt.legend(loc="right")
-plt.title("(Fig 5)")
-plt.show();
-```
-
-```python
-hamiltonian_expect = expectation(H,psi)
-two_state_expect = expectation(two_state,psi)
-bosons_expect = expectation(bosons,psi)
-interaction_expect = expectation(U*interaction,psi)
-```
-
-```python
-# plt.figure(figsize=(10,8))
-# plt.plot(times, boson_number_expect, label="bosons")
-
-# plt.ylabel("Energy")
-# plt.xlabel("Time")
-# plt.legend(loc="right")
-# plt.title(f"Expectation values for parts of the Hamiltoian (U={U})     (Fig 7)")
-# plt.show();
-
-plt.figure(figsize=(10,8))
-plt.plot(times, hamiltonian_expect, label="total hamiltonian")
-plt.plot(times, two_state_expect, label="two-state")
-plt.plot(times, bosons_expect, label="bosons")
-plt.plot(times, interaction_expect, label="interaction")
-
-plt.ylabel("Energy")
-plt.xlabel("Time")
-plt.legend(loc="right")
-plt.title(f"Expectation values for parts of the Hamiltoian (U={U})     (Fig 7)")
-plt.show();
-```
-
-```python
-
-```
-
-```python
-
-```
-
-```python
-
-```
-
-```python
-
-```
-
-```python
-
-```
-
-```python
-
-```
-
-```python
-
-```
-
-```python
-
-```
-
-```python
-
-```
-
-```python
-P = sz*(1j*np.pi*a.dag()*a).expm()
-```
-
-```python
-(1j*np.pi*a.dag()*a).expm()
-```
-
-```python
-P
-```
-
-```python
-f, ax = hinton(H)
-ax.tick_params(axis='x',labelrotation=90)
-ax.set_title("Matrix elements of H     (Fig 1)");
-```
-
-```python
-commutator(H,P)
-```
-
-```python
-possible_ms
-```
-
-```python
-psi0 = tensor(basis(max_bosons+1, 0), basis(2, 0))
-```
-
-```python
-evals, ekets = H.eigenstates()
-psi0_in_H_basis = psi0.transform(ekets)
-```
-
-```python
-times = np.linspace(0.0, 14.0, 100)
-```
-
-```python
-P = []
-
-for k in range(0,(max_bosons+1)*2):
-    amp = 0
-    for i in range(0,max_bosons+1):
-        amp +=  psi0_in_H_basis[i][0][0]*np.exp(-1j*evals[i]*times)*ekets[i][k][0][0]
-    P.append(amp*np.conj(amp))
-```
-
-```python
-plt.figure(figsize=(10,8))
-for i in range(0,(max_bosons+1)*2):
-    plt.plot(times, P[i], label=f"{ket_labels[i]}")
-plt.ylabel("Probability")
-plt.legend(loc="right")
-plt.show();
-```
-
-```python
-
-```
-
-```python
-
-```
-
-```python
-omega
-```
-
-## Calculate energy eigenvalues for different couplings
-
-```python
-delta_E = 1.0            # two level energy difference
-N = 1                    # number of phonon quanta needed to exite the atom
-omega = delta_E / N          # phonon energy
-max_bosons =  100             # Max mode number to simulation
-num_U = 100                  # number of different coupling strengths to try out (need 100 to reproduce SJByrnes Moiré pattern)
-U_min = 0.01    # min atom phonon coupling
-U_max = 1.2*delta_E     # maximum atom phonon coupling
-```
-
-```python
-a  = tensor(destroy(max_bosons+1), qeye(2))     # tensorised boson destruction operator
-sx = tensor(qeye(max_bosons+1), sigmax())             # tensorised sigma_x operator
-sz = tensor(qeye(max_bosons+1),sigmaz())              # tensorised sigma_z operator
-
-two_state     =  sz                          # two state system energy
-bosons       =  omega*(a.dag()*a+0.5)          # bosons field energy
-interaction   = (a.dag() + a) * sx*0.2     # interaction energy (needs to be multiplied by coupling constant)
-
-number           = a.dag()*a  # phonon number operator
-spin          = sz/2       # z component of spin
-```
-
-```python
-H = two_state + bosons + interaction
-```
-
-```python
-# f, ax = hinton(H)
-# ax.tick_params(axis='x',labelrotation=90)
-# ax.set_title("Matrix elements of H     (Fig 1)");
-```
-
-```python
-parity = "odd"
-```
-
-```python
-#inspired by SJB code https://github.com/sbyrnes321/cf/blob/1a34a461c3b15e26cad3a15de3402142b07422d9/spinboson.py#L56
-if parity != "all":
-    S=1/2
-    possible_ns = range(0, max_bosons+1)
-    possible_ms = - (np.arange(2*S+1) - S)
-    Smn_list = product([S], possible_ns, possible_ms)
-
-    if parity == "even":
-        mn_from_index = [(n,int(np.abs(m-0.5))) for (S,n,m) in Smn_list if (S+m+n) % 2 == 0]
-    elif parity == "odd":
-        mn_from_index = [(n,int(np.abs(m-0.5))) for (S,n,m) in Smn_list if (S+m+n) % 2 == 1]
-
-    subset_idx = []
-    for s in mn_from_index:
-        subset_idx.append(state_number_index([max_bosons+1,2],s))
-    
-    # Labels for hinton plots in case we want to plot it later (use xlabels=ket_labels, ylabels = bra_labels)
-    bra_labels = ["$\langle$"+str(n)+", "+str(m)+"|" for (n,m) in mn_from_index]
-    ket_labels = ["|"+str(n)+", "+str(m)+"$\\rangle$" for (n,m) in mn_from_index]
-
-        # http://qutip.org/docs/latest/apidoc/classes.html?highlight=extract_states#qutip.Qobj.extract_states
-    two_state    = two_state.extract_states(subset_idx) 
-    bosons      = bosons.extract_states(subset_idx) 
-    interaction  = interaction.extract_states(subset_idx) 
-    number          = (a.dag()*a).extract_states(subset_idx)
-    spin         = spin.extract_states(subset_idx)
-```
-
-It will be helpful for us to be able to search for the index of a particular state by the (n,m) numbers
-
-```python
-def index_from_nm(n,m): 
-    try:
-        return [item for item in mn_from_index].index((n,m))
-    except:
-        print("ERROR: State doesn't exist or has the wrong parity ")
-```
-
-```python
-
-```
-
-```python
-# H = two_state + bosons + interaction
-# f, ax = hinton(H, xlabels=ket_labels, ylabels=bra_labels)
-# ax.tick_params(axis='x',labelrotation=90)
-# ax.set_title("Matrix elements of H     (Fig 1) EVEN");
-```
-
-```python
-# d = {"coupling":np.linspace(U_min,U_max,num_U)}
-d = {"E":np.linspace(-4,4*delta_E,100)}
-for i in range((max_bosons+1)):
-#     d[f"level_{i}"] = np.zeros(num_U)
-    d[f"level_{i}"] = np.zeros(100)
-    
-df = pd.DataFrame(data=d)
-
-
-# We'll create some dataframes to store expectation values for: 
-df_num = pd.DataFrame(data=d) # phonon number
-df_sz = pd.DataFrame(data=d)  # z component of spin
-df_int = pd.DataFrame(data=d) # interaction energy
-```
-
-```python
-for index, row in df.iterrows():
-    # c.f. https://coldfusionblog.net/2017/07/09/numerical-spin-boson-model-part-1/
-#     H = two_state + bosons + row.coupling*interaction
-    H = two_state*row.E/2 + bosons + interaction
-    evals, ekets = H.eigenstates()
-#     df.iloc[index,1:] = np.real(evals/omega)
-    df.iloc[index,1:] = np.real(evals)
-    
-#     # We'll also calculate some expectation values so we don't have to do it later
-#     df_num.iloc[index,1:] = expect(number,ekets)           # phonon number
-#     df_sz.iloc[index,1:] = expect(spin,ekets)           # z component of spin
-#     df_int.iloc[index,1:] = expect(row.coupling*interaction,ekets)   # interaction energy
-```
-
-```python
-
-```
-
-```python
-df.plot(x="E",ylim=[-1,10],xlim=[-4,4],figsize=(10,6),legend=False);
-plt.ylabel("Energy ($\hbar\omega$)");
-```
-
-```python
-
-```
-
-```python
-ind = (df["level_2"]-df["level_1"]).argmin()
-```
-
-```python
-df["E"].iloc[ind]
-```
-
-```python
-# H = two_state*2.9996999918083977/2 + bosons + interaction
-H = two_state*3/2 + bosons + interaction
-```
-
-```python
-evals, ekets = H.eigenstates()
-```
-
-```python
-plot_fock_distribution(ekets[1], title=f" |0,+> in constant energy basis     (Fig 4)")
-plt.xlim(-1,10);
-```
-
-```python
-plot_fock_distribution(ekets[2], title=f" |0,+> in constant energy basis     (Fig 4)")
-plt.xlim(-1,10)
-```
-
-```python
-# Define a function which returns the energy difference between two levels for a given coupling
-def ev(E,i):
-    H = two_state*E/2 + bosons + interaction
-    evals, ekets = H.eigenstates()
-    return evals[i] - evals[i-1] 
-```
-
-```python
-dE = 7*delta_E/100
-```
-
-```python
-res = minimize_scalar(ev,args=2,bracket=[df["E"].iloc[ind]-dE, df["E"].iloc[ind]+dE])
-```
-
-```python
-res.x
-```
-
-```python
-res.fun
-```
-
-## More detail on energy levels 7 and 8
-
-```python
-level_number_1 = 2
-level_number_2 = 3
-```
-
-```python
-level_label_1 = f"level_{level_number_1}"
-level_label_2 = f"level_{level_number_2}"
-```
-
-```python
-fig, axes = plt.subplots(nrows=4, ncols=1, figsize=(15,10))
-df[["coupling",level_label_1,level_label_2]].plot(x="coupling",ax=axes[0]);
-df_num[["coupling",level_label_1,level_label_2]].plot(x="coupling",ax=axes[1]);
-df_sz[["coupling",level_label_1,level_label_2]].plot(x="coupling",ax=axes[2]);
-df_int[["coupling",level_label_1,level_label_2]].plot(x="coupling",ax=axes[3]);
-axes[0].set_ylabel("Energy ($\hbar\omega$)")
-axes[1].set_ylabel("<N>")
-axes[2].set_ylabel("<$s_z$>");
-axes[3].set_ylabel("<int>");
-```
-
-```python
-df_num[["coupling",level_label_1,level_label_2]].plot(x="coupling",figsize=(10,6));
-plt.ylabel("<N>");
-```
-
-## Find the anti-crossing points
-
-
-### Start with rough calculation of the anti-crossing coupling
-
-```python
-df_diff = df.drop('coupling', axis=1).diff(axis=1).dropna(axis=1)
-df_diff["coupling"] = df["coupling"]
-```
-
-```python
-level_label = level_label_2
-
-df_diff_subset = df_diff[["coupling",level_label]]
-df_diff_subset["min"] =  df_diff_subset[[level_label]].min(axis=1)
-df_diff_subset["level_min"] = df_diff_subset[[level_label]].idxmin(axis=1).str.split("_",expand = True)[1]
-
-argmin = argrelextrema(df_diff_subset["min"].values, np.less)[0]
-anti_crossing = df_diff_subset.iloc[argmin][["coupling","min","level_min"]]
-anti_crossing.reset_index(inplace=True,drop=True)
-```
-
-```python
-anti_crossing
-```
-
-### Now more precise calculation of anti-crossing couplings
-
-```python
-# Define a function which returns the energy difference between two levels for a given coupling
-def ev(U,i):
-    H = two_state + bosons + U*interaction
-    evals, ekets = H.eigenstates()
-    return evals[i] - evals[i-1] 
-```
-
-```python
-dU = (U_max - U_min)/num_U
-```
-
-```python
-for index, row in anti_crossing.iterrows():
-    res = minimize_scalar(ev,args=int(row["level_min"]),bracket=[row["coupling"]-dU, row["coupling"]+dU])
-    anti_crossing.loc[index, "coupling"] = res.x
-    anti_crossing.loc[index, "min"] = res.fun
-```
-
-```python
-anti_crossing
-```
-
-## Simulation of the first anti-crossing
-
-
-### First let's look at some expectation values at the anti-crossing
-
-```python
-H = two_state + bosons + anti_crossing.loc[0]["coupling"]*interaction
-# H = two_state + bosons + 0.15*interaction
-# H = two_state + bosons + 0.531938*interaction # for N=1
-# H = two_state + bosons + 0.08103160077219432*interaction # for N=11
-evals, ekets = H.eigenstates()
-```
-
-```python
-print("state", "energy", "number", "spin")
-for i in range(level_number_1-3,level_number_2+3):
-    print(i, evals[i]/omega, expect(number,ekets[i]), expect(spin,ekets[i]))
-```
-
-We see above that levels 7 and 8 are almost identical which confirms what we see in the figures above
-
-
-### What are the anti-crossing eigenstates made of?
-
-```python
-fig, axes = plt.subplots(1, 2, figsize=(12,5))
-plot_fock_distribution(ekets[level_number_1], title=f"{level_number_1} Eigenstate", ax=axes[0])
-plot_fock_distribution(ekets[level_number_2],title=f"{level_number_2} Eigenstate", ax=axes[1])
-axes[0].set_xlim(-1,25)
-axes[1].set_xlim(-1,25)
-fig.tight_layout()
-```
-
-The Energy eigenstates that come together at the anti-crossing are mostly made up of states numbered:
-
-```python
-P_eigenstate = ekets[level_number_1].full()*np.conj(ekets[level_number_1].full())
-P_eigenstate = np.hstack(P_eigenstate)
-eigenstate_composition = P_eigenstate.argsort()[-2:][::-1]
-print(eigenstate_composition[0], ",", eigenstate_composition[1])
-```
-
-What do these numbered states corresponds to? We can use the `mn_from_index` to find the n and m numbers.
-
-```python
-print ( mn_from_index[eigenstate_composition[0]], ",", mn_from_index[eigenstate_composition[1]])
-```
-
-### What does the most dominate part look like in basis of the eigenstates?
-
-
-We should create the state by using `tensor` function and the extracting the states that have the wrong parity. We can however create the state directly from the `basis` function using the index we found above.
-
-```python
-i0 = eigenstate_composition[0]
-```
-
-```python
-psi0 = basis(max_bosons+1, i0)
-```
-
-```python
-psi0_in_H_basis = psi0.transform(ekets)
-```
-
-```python
-plot_fock_distribution(psi0_in_H_basis, title=f"{ket_labels[i0]} in H basis")
-plt.xlim(-1,20);
-```
-
-so |1,0> (ie 1 bosons and lower state for two state system) is mixture of eigenstates 7 and 8.
-
-Therefore if we start the system off in |1,0> we can expect it to rabi oscillate between 7 and 8 which should give us some oscilation between |1,0> and |14,1>. 
-
-Let's see
-
-```python
-P = []
-
-for i in range(0,max_bosons+1):
-    psi = basis(max_bosons+1,i)
-    P.append(psi*psi.dag())
-```
-
-```python
-times = np.linspace(0.0, 1000.0, 10000)      # simulation time
-
-result = sesolve(H, psi0, times,P)
-```
-
-```python
-plt.figure(figsize=(10,6))
-for i in range(0,17):
-    plt.plot(times, result.expect[i], label=f"{ket_labels[i]}")
-plt.ylabel("Probability")
-plt.legend(loc="right")
-plt.show();
-
-
-```
-
-Not much osccilation at all!
-
-Maybe we need to wait longer. Let's manually do a time varying state otherwise it will take a very long time.
-
-> TODO: explain the method below
-
-```python
-times = np.linspace(0.0, 1000000.0, 10000)
-```
-
-```python
-P = []
-
-for k in range(0,max_bosons+1):
-    amp = 0
-    for i in range(0,max_bosons+1):
-        amp +=  psi0_in_H_basis[i][0][0]*np.exp(-1j*evals[i]*times)*ekets[i][k][0][0]
-    P.append(amp*np.conj(amp))
-```
-
-```python
-plt.figure(figsize=(10,8))
-for i in range(0,20):
-    plt.plot(times, P[i], label=f"{ket_labels[i]}")
-plt.ylabel("Probability")
-plt.legend(loc="right")
-plt.show();
-```
-
-Seems like we'd have to wait a really long time to see the Rabi oscillation.
-
-
-### How sensitive is the anti-crossing?
-
-```python
-
-# Us = np.linspace(anti_crossing.loc[0]["coupling"]/10,2*anti_crossing.loc[0]["coupling"],40)
-
-Us_min = anti_crossing.loc[0]["coupling"] - anti_crossing.loc[0]["coupling"]/5000
-Us_max = anti_crossing.loc[0]["coupling"] + anti_crossing.loc[0]["coupling"]/5000
-Us = np.linspace(Us_min,Us_max,21)
-Ps = []
-for U in Us:
-    H = two_state + bosons + U*interaction
-    evals, ekets = H.eigenstates()
-    times = np.linspace(0.0, 1000000.0, 10000)
-
-    psi0 = basis(max_bosons+1, i0)
-    psi0_in_H_basis = psi0.transform(ekets)
-
-    P = []
-
-    for k in range(0,max_bosons+1):
-        amp = 0
-        for i in range(0,max_bosons+1):
-            amp +=  psi0_in_H_basis[i][0][0]*np.exp(-1j*evals[i]*times)*ekets[i][k][0][0]
-        P.append(amp*np.conj(amp))
-    Ps.append(P)
-```
-
-```python
-psi0_level = []
-for U in Us:
-    H = two_state + bosons + U*interaction
-    evals, ekets = H.eigenstates()
-    psi0_in_H_basis = psi0.transform(ekets)
-    P0 = psi0_in_H_basis.full()*np.conj(psi0_in_H_basis.full())
-    P0 = np.hstack(P0)
-    psi0_level.append(P0.argmax())
-```
-
-```python
-@gif.frame
-def plot(P,j):
-    plt.figure(figsize=(10,8))
-    for i in range(0,20):
-        plt.plot(times, P[i], label=f"{ket_labels[i]}")
-    plt.ylabel("Probability")
-    plt.xlabel("Time")
-    plt.legend(loc="right")
-    plt.title(f"U = {Us[j]}")
-```
-
-```python
-@gif.frame
-def plot2(P,j):
-    fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(15,8))
-    for i in range(0,20):
-        axes[0].plot(times, P[i], label=f"{ket_labels[i]}")
-    axes[0].set_ylabel("Probability")
-    axes[0].set_xlabel("Time")
-    axes[0].legend(loc="right")
-    deltaU = (Us[j]-anti_crossing.loc[0]["coupling"])/anti_crossing.loc[0]["coupling"]*100
-    axes[0].set_title(f"$\Delta U / U_{{anti\\times}}$ = {deltaU:.3f}%")
-    df.plot(x="coupling",ylim=[-6,20],legend=False,ax=axes[1], title=f"Tracking energy level of {ket_labels[i0]} state");
-    axes[1].set_ylabel("Energy ($\hbar\omega$)");
-    axes[1].plot(Us[j],np.interp(Us[j],df["coupling"], df[f"level_{psi0_level[j]}"]),"ok")
-```
-
-```python
-frames = []
-for j, P in enumerate(Ps):
-    frame = plot2(P, j)
-    frames.append(frame)
-gif.save(frames, "anti-crossing-approach.gif", duration=500)
-```
-
-```python
-Image(filename="./anti-crossing-approach.gif")
-```
-
-```python
-
-```
-
-```python
-
-```
-
-```python
-
-```
-
-```python
-
-```
-
-```python
-
-```
-
-```python
-
-```
-
-```python
-def index_from_nm(n,m): 
-    try:
-        return [item for item in nm_list].index((n,m))
-    except:
-        print("ERROR: State doesn't exist")
-```
-
-```python
-
-```
+We'll look at ...
+- large n
+- sensitivity of resonances
+- interaction energy allows more bosons than you might expect, e.g. when $\Delta E =11 \omega$ we can have 11, or 13 or 15 or 17 bosons.
