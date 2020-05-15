@@ -391,5 +391,10 @@ ket_labels[155:159]
 ```
 
 ```python
+def index_from_nm(nm_list,n,m): 
+    try:
+        return [item for item in nm_list].index((n,m))
+    except:
+        print("ERROR: State doesn't exist")
 
 ```

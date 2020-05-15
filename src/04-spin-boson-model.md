@@ -161,7 +161,7 @@ df.plot(x="$\Delta E$",figsize=(10,8),ylim=[-0.5,5.5],legend=True,
 plt.ylabel("Energy");
 ```
 
-How do we understand Fig 1?
+How do we understand Fig 1 (often called an energy level diagram)?
 
 Start by focusing on where $\Delta E = 0$, i.e. there is no difference between the energies of the |+> and |-> states - this is the first thing we looked at back in Tutorial 1. There are several states/levels that appear to cross each other, they correspond to:
 - orange/blue - 0 bosons (|0,±>)
@@ -237,14 +237,15 @@ Fig 3 also shows us that the location of the resonance is somewhat shifted, i.e.
 
 > TODO:Make referenced to dressed atom picture https://www.youtube.com/watch?v=k0X7iSaPM38 and https://ocw.mit.edu/courses/physics/8-422-atomic-and-optical-physics-ii-spring-2013/
 
-We can more clearly see the splitting of the levels and shifting of the resonances by scanning through various values of the interaction strength $U$. Let's create an [animated gif](https://github.com/maxhumber/gif) to show this.
+We can see the splitting of the levels and shifting of the resonances more clearly by scanning through various values of the interaction strength $U$. Let's create an [animated gif](https://github.com/maxhumber/gif) to show this.
 <!-- #endregion -->
 
 ```python
 # NOTE: THIS CELL TAKES ABOUT 2 MIN TO RUN
 
-dfs = []                        # This is hold the dataframes for each value of U
+dfs = []                        # This will hold the dataframes for each value of U
 Us = np.linspace(0, 0.6, 40)    # This will give us 40 frames in our animation from U=0 to U=0.6
+
 for U in Us:
     
     df = make_df_for_energy_scan("$\Delta E$", -4, 4, 201, two_state.shape[0])
@@ -270,19 +271,26 @@ frames = []
 for j, df in enumerate(dfs):
     frame = plot(df, j)
     frames.append(frame)
-gif.save(frames, "energy-levels.gif", duration=250)
+gif.save(frames, "04-energy-levels.gif", duration=250)
 ```
 
 ```python
-Image(filename="./energy-levels.gif")
+Image(filename="./04-energy-levels.gif")
 ```
 
-Fig 3 also shows us something we haven't seen before. A resonance at $\Delta E \approx 3\omega$ suggests that it might be possible for the two state system transition to result in the emission of 3 smaller bosons rather than a single larger one. We'll investigate the possibility of this "down conversion" shortly.
+Fig 3 also suggests some new physics. A resonance at $\Delta E \approx 3\omega$ implies that it might be possible for the TSS transition from |+> to |-> to result in the emission of 3 smaller bosons instead of a single larger one (as we would normally expect) - so called "down conversion". We'll investigate this possibility shortly.
+
+In the meantime, let's try and understand why some levels don't couple to each other.
 
 
-In the meantime, let's try and understand why some levels don't couple to each other. For this we need to visualise the Hamiltonian. QuTiP offers a function called [`hinton`](http://qutip.org/docs/latest/apidoc/functions.html?highlight=hinton#qutip.visualization.hinton) for just such a purpose.
+## 4.3 - Structure of the Hamiltonian
 
-We'll work with a Hamiltonian with a very large coupling of $U=1$ so that we'll be able to see things more clearly.
+
+We have seen in Fig 2 that some energy levels don't interact with each other - why?
+
+To answer this question we need to visualise the Hamiltonian. QuTiP offers a function called [`hinton`](http://qutip.org/docs/latest/apidoc/functions.html?highlight=hinton#qutip.visualization.hinton) for just such a purpose.
+
+We'll use a Hamiltonian with a very large coupling of $U=1$ so that we'll be able to see things more clearly.
 
 ```python
 H = 1*two_state + 1*bosons + 1*interaction
@@ -294,9 +302,17 @@ ax.tick_params(axis='x',labelrotation=90)
 ax.set_title("Matrix elements of H     (Fig 4)");
 ```
 
-The colour and size of the squares in Fig 4 give you a measure of the how large different matrix elements are. The off diagonal elements arise solely from the interaction part of the Hamiltonian - this is what allows one state to (in a sense) "mutate" into another.
+The colour and size of the squares in Fig 4 give you a measure of the how large various matrix elements are. The off diagonal elements arise solely from the interaction part of the Hamiltonian - this is what allows one state to (in a sense) "mutate" into another.
 
-We'll study Fig 4 in more detail shortly, but for now I want to draw you attention to the labels for the rows and columns. For example, $|3, 0 \rangle$ represents 3 bosons and the two state system in the 0 state. The two state system numbers are handled somewhat confusingly in QuTiP, namely opposite to what you'd expect $0 \rightarrow +$ and $1\rightarrow -$. It will be helpful to have a way to map these QuTiP states to something more immediately recognisable, i.e. $|3, + \rangle$.
+
+
+**Important detour on state numbers and labels**
+
+We'll study Fig 4 in more detail shortly, but for now I want to draw you attention to the labels for the rows and columns. For example:
+- $|3, 0 \rangle$ represents 3 bosons and a TSS state of |+>
+- $|3, 1 \rangle$ represents 3 bosons and a TSS state of |->
+
+It is hard to remember QuTiP's convention for the numbering of states. It is therefore very helpful to have a way to map these QuTiP number states to something more immediately recognisable - let's create such a map.
 
 ```python
 possible_ns = range(0, max_bosons+1)
@@ -308,7 +324,13 @@ nm_list = [(n,m) for (n,m) in product(possible_ns, possible_ms)]
 nm_list
 ```
 
-We can create some nice labels corresponding to the `nm_list`. This will make things like the hinton plot a lot easier to understand.
+Whenever we want to know what |n,±> state corresponds to QuTiP's number state e.g. 4, we can just do this:
+
+```python
+nm_list[4]
+```
+
+We can create some nice labels corresponding to the `nm_list`. This will make things plots easier to understand.
 
 ```python
 def make_braket_labels(nm_list):
@@ -319,7 +341,11 @@ def make_braket_labels(nm_list):
 
 ```python
 bra_labels, ket_labels = make_braket_labels(nm_list)
+```
 
+We can now pass these labels into the Hinton diagram
+
+```python
 f, ax = hinton(H, xlabels=ket_labels, ylabels=bra_labels)
 ax.tick_params(axis='x',labelrotation=90,)
 ax.set_title("Matrix elements of H     (Fig 5)");
@@ -329,34 +355,36 @@ That's better!
 
 If we now take a closer look at the structure of the Hinton diagram we can see some interesting features when we follow a path that connects one state to another:
 
-
-> TODO: Remake the parity.png picture with the correct value of U
-
 ```python
 print("                Matrix elements of H     (Fig 6)")
-Image(filename='parity.png') 
+Image(filename='04-hinton.png') 
 ```
 
-If we imagine starting a simulation with 0 bosons and the two state system in its + state, i.e. |0,+>, then Fig 6 suggests that:
-1. there are connections (albeit indirect) from |0,+> to many different states with many more bosons, e.g. $|0,+> \rightarrow |1,-> \rightarrow |2,+> \rightarrow |3,-> \rightarrow |4,+> ...$.
+If we imagine starting a simulation with 0 bosons and the TSS in its + state, i.e. |0,+>, then Fig 6 suggests that:
+1. there are connections (albeit indirect) from |0,+> to many different states with many more bosons, e.g. $|0,+> \rightarrow |1,-> \rightarrow |2,+> \rightarrow |3,-> \rightarrow |4,+> ...$
 2. there are some states that are not accessible at all if we start in the |0,+> state
 
 
-On 1. These indirect connections provide a mechanism to achieve the down conversation that we saw hints of earlier.
+On 1. These indirect connections provide a mechanism to achieve the down conversation that we saw hints of earlier (namely $|0,+> \rightarrow |3,->$).
 
 On 2. The Hamiltonian appears to be composed of two separate "universes" that don't interact with each other. In our energy level diagram (Fig 2) both universes are present - perhaps if we separate them we'll only see anti-crossings in the respective plots.
 
+We're getting closer to convincing ourselves of the reality of down conversion, but before we check this through simulation we need to figure out how to separate the two universes.
 
-What separates these universes is a form of [parity](https://en.wikipedia.org/wiki/Parity_%28physics%29). Parity is not particularly intuitive and a full discussion of it is somewhat involved and takes us deep into the topic of transition [selection rules](https://en.wikipedia.org/wiki/Selection_rule) - we'll come back to this another time.
 
-For now, the the important thing to note is [how the parity operator $P$ acts on the system](https://iopscience.iop.org/article/10.1088/0305-4470/29/14/026):
-- for the two state system $P |\pm> = \pm1|\pm> $, i.e. parity operator is the same as $\sigma_z$
-- for [the field](https://ia801608.us.archive.org/11/items/TheParityOperatorForTheQuantumHarmonicOscillator/partity_article.pdf) with $n$ bosons $P |n> = -1^n |n>$, i.e. the parity is $-1^n = e^{i\pi n}$ 
+## 4.3 - Parity
 
-Note, that we can use QuTiP's [`expm`](http://qutip.org/docs/latest/apidoc/classes.html#qutip.Qobj.expm) function to create the exponential operator from the number operator $n = a^{\dagger}a$. The combined parity is made by multiplying the two together. Let's see this in action:
+
+What separates the two spin-boson universes is a form of [parity](https://en.wikipedia.org/wiki/Parity_%28physics%29). Parity is not particularly intuitive and a full discussion of it is somewhat involved and takes us deep into the topic of transition [selection rules](https://en.wikipedia.org/wiki/Selection_rule) - we'll come back to this another time.
+
+For now, the the important thing to note is [how the parity operator $P$ acts on the spin-boson system](https://iopscience.iop.org/article/10.1088/0305-4470/29/14/026):
+- for the TSS, $P |\pm> = \pm1|\pm> $, i.e. parity operator is the same as $\sigma_z$
+- for [the field](https://ia801608.us.archive.org/11/items/TheParityOperatorForTheQuantumHarmonicOscillator/partity_article.pdf) with $n$ bosons, $P |n> = -1^n |n>$, i.e. the parity is $-1^n = e^{i\pi n}$ 
+
+The combined parity is made by multiplying the two together and we can do this easily in QuTiP by using the [`expm`](http://qutip.org/docs/latest/apidoc/classes.html#qutip.Qobj.expm) function to create the exponential operator from the number operator $n = a^{\dagger}a$.  Let's see this in action:
 
 ```python
-sz = 2*two_state                 # recall we set Delta_E=1 for this example so two_state = 1/2*s_z
+sz = 2*two_state                 # recall that we set Delta_E=1 for this example, so two_state = 1/2*s_z
 P = sz*(1j*np.pi*number).expm()
 ```
 
@@ -368,7 +396,7 @@ ax.tick_params(axis='x',labelrotation=90,)
 ax.set_title("Matrix elements of H     (Fig 7)");
 ```
 
-In Fig 7, we see that the the blue squares (parity=+1, often called even) matches up with the path of the yellow arrows in Fig 6. It is suggesting that if we start on a blue/red square then we remain on a blue/red square.
+In Fig 7, we see that the the blue squares (parity=+1, often called even) matches up with the path of the yellow arrows in Fig 6 (along the diagonal). This suggests that if we start on a blue/red square then we remain on a blue/red square, i.e. parity is conserved during the evolution of the system.
 
 To check this, we need to look at the [`commutator`](http://qutip.org/docs/latest/apidoc/functions.html#qutip.operators.commutator) between the Hamiltonian and parity:
 
@@ -376,11 +404,9 @@ To check this, we need to look at the [`commutator`](http://qutip.org/docs/lates
 commutator(H,P)
 ```
 
-A [zero commutator with H](https://youtu.be/eZ2UKJqLs4M) tells us that parity is conserved as the system evolves.
+A [zero commutator with H](https://youtu.be/eZ2UKJqLs4M) tells us that parity is indeed conserved as the system evolves. We can therefore break up the description of our system into two universes based on whether the states have even (+1) parity or odd (-1) parity.
 
-We can therefore break up the description of our system into two universes based on whether the states have even (+1) parity or odd (-1) parity.
-
-Let's look at even parity manually before we create a function to handle separation of the parity universes.
+Before we automate the process of universe separation based on parity, let's manually take a look at even parity.
 
 First, we need to get the row/column numbers where we have parity = 1
 
@@ -389,18 +415,20 @@ even = np.where(P.diag()==1)[0]
 even
 ```
 
-We can now use a QuTiP function called [`extract_states`](http://qutip.org/docs/latest/apidoc/classes.html?highlight=extract_states#qutip.Qobj.extract_states) to only select the parts of the Hamiltonian that's of interest to us:
+We can now use a QuTiP function called [`extract_states`](http://qutip.org/docs/latest/apidoc/classes.html?highlight=extract_states#qutip.Qobj.extract_states) to only select the even parts of the Hamiltonian that interest us:
 
 ```python
 H_even = H.extract_states(even)
 ```
 
-Before we have a look at the resulting Hinton diagram we must also extract the corresponding state labels |n,±>:
+Before we have a look at the resulting Hinton diagram we must also extract the corresponding state list |n,±>:
 
 ```python
 nm_list_even = [nm_list[i] for i in even]
 nm_list_even
 ```
+
+We must also remember to re-generate our labels
 
 ```python
 bra_labels, ket_labels = make_braket_labels(nm_list_even)
@@ -412,10 +440,10 @@ ax.tick_params(axis='x',labelrotation=90,)
 ax.set_title("Even matrix elements of H     (Fig 8)");
 ```
 
-Now with only a single parity, Fig 8 makes it easier to see how the system behaves - boson numbers can only go up by one each time and when they do the two state system must flip between \+> and |-> (the same is true for the odd universe).
+Now with only a single parity, Fig 8 makes it easier to see how the system behaves - boson numbers can only go up by one each time and when they do the TSS must flip between \+> and |-> (the same is true for the odd universe).
 
 
-It will be helpful for us to be able to handle the extraction of states and state labels in a more automatic way. Let's augment the `make_operators` function to do this:
+Now, we'll automate the parity extraction process. Let's augment the `make_operators` function to do this:
 
 ```python
 def make_operators(max_bosons, parity):
@@ -424,17 +452,19 @@ def make_operators(max_bosons, parity):
     sx = tensor(qeye(max_bosons+1), sigmax())       # tensorised sigma_x operator
     sz = tensor(qeye(max_bosons+1),sigmaz())        # tensorised sigma_z operator
     
-    two_state     =  1/2*sz                      # two state system energy operator
-    bosons       =  (a.dag()*a+0.5)              # boson energy operator
-    number        = a.dag()*a                      # boson number operator
-    interaction  = (a.dag() + a) * sx            # interaction energy operator      
+    two_state     =  1/2*sz                         # two state system energy operator
+    bosons       =  (a.dag()*a+0.5)                 # boson energy operator
+    number        = a.dag()*a                       # boson number operator
+    interaction  = (a.dag() + a) * sx               # interaction energy operator      
     
-    P = sz*(1j*np.pi*a.dag()*a).expm()            # parity operator 
+    P = sz*(1j*np.pi*a.dag()*a).expm()              # parity operator 
     
+    # map from QuTiP number states to |n,±> states
     possible_ns = range(0, max_bosons+1)
     possible_ms = ["+","-"]
     nm_list = [(n,m) for (n,m) in product(possible_ns, possible_ms)]
     
+    # only do parity extraction if a valid parity is being used
     if (parity==1) | (parity==-1):
         p           = np.where(P.diag()==parity)[0]
         
@@ -451,19 +481,6 @@ def make_operators(max_bosons, parity):
 We are now in a position to compare the energy level plots for the different parity universes side by side.
 
 ```python
-# EVEN PARITY
-
-two_state, bosons, interaction, number, nm_list = make_operators(max_bosons=4, parity=1)
-
-df_even = make_df_for_energy_scan("$\Delta E$", -4, 4, 201, two_state.shape[0])
-
-for i, row in df_even.iterrows():
-    H =  row["$\Delta E$"]*two_state + 1*bosons + 0.2*interaction
-    evals, ekets = H.eigenstates()
-    df_even.iloc[i,1:] = evals   # Fills the columns 1 onwards of row i with the eigenvalues
-```
-
-```python
 # ODD PARITY
 
 two_state, bosons, interaction, number, nm_list = make_operators(max_bosons=4, parity=-1)
@@ -473,65 +490,65 @@ df_odd = make_df_for_energy_scan("$\Delta E$", -4, 4, 201, two_state.shape[0])
 for i, row in df_odd.iterrows():
     H =  row["$\Delta E$"]*two_state + 1*bosons + 0.2*interaction
     evals, ekets = H.eigenstates()
-    df_odd.iloc[i,1:] = evals   # Fills the columns 1 onwards of row i with the eigenvalues
+    df_odd.iloc[i,1:] = evals 
+```
+
+```python
+# EVEN PARITY
+
+two_state, bosons, interaction, number, nm_list = make_operators(max_bosons=4, parity=1)
+
+df_even = make_df_for_energy_scan("$\Delta E$", -4, 4, 201, two_state.shape[0])
+
+for i, row in df_even.iterrows():
+    H =  row["$\Delta E$"]*two_state + 1*bosons + 0.2*interaction
+    evals, ekets = H.eigenstates()
+    df_even.iloc[i,1:] = evals 
 ```
 
 ```python
 fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(15,6), sharey=True)
 
 
-df_even.plot(x="$\Delta E$",ylim=[0,6],legend=False, 
-        title="Even stationary states ($\omega=1$, $U=0.2$)     (Fig 9)",  ax=axes[0]);
+df_odd.plot(x="$\Delta E$",ylim=[-0.5,5.5],legend=False, 
+        title="Odd stationary states ($\omega=1$, $U=0.2$)     (Fig 9)",  ax=axes[0]);
 
-df_odd.plot(x="$\Delta E$",ylim=[0,6],legend=False, 
-        title="Odd stationary states ($\omega=1$, $U=0.2$)     (Fig 10)",  ax=axes[1]);
+df_even.plot(x="$\Delta E$",ylim=[-0.5,5.5],legend=False, 
+        title="Even stationary states ($\omega=1$, $U=0.2$)     (Fig 10)",  ax=axes[1]);
 
 axes[0].set_ylabel("Energy");
 ```
 
-Figs 9 and 10 show us the energy of the stationary states for the even and odd parity states respectively. As we expected, we now only see anti-crossings because in each universe there are no forbidden interactions.
+Figs 9 and 10 show us the energy of the stationary states for the odd and even parity states respectively. As we expected, we now only see anti-crossings because in each universe there are no forbidden interactions.
+
+Now we are in a position to go back to the interesting physics question about the possibility of down conversion.
 
 
-Now we are in a position to explore some new physics - we predicted that when $\delta E \approx 3\omega$ (anti-crossing in Fig 9 and also Fig 3) we get down conversation? Let's simulate and see if we are correct.
+## 4.4 - Down conversion
+
+
+We've seen several signs that when $\delta E \approx 3\omega$ (anti-crossing in Fig 10 and also Fig 3) we can expect down conversation, i.e. $|0,+> \rightarrow |3,->$. Let's simulate and see if we are correct.
+
+The last energy level diagram we created was Fig 10 for even parity. Let's see if |0,+> is part of this unvierse.
 
 ```python
-# Create the operators and state list for even parity universe
-two_state, bosons, interaction, number, nm_list = make_operators(max_bosons=4, parity=1)
-
-# Create the nice bra and ket labels for plots later
-bra_labels, ket_labels = make_braket_labels(nm_list)
-
-# Create the Hamiltonian corresponding to the anti-crossing we saw in Fig 3
-H =  2.88*two_state + 1*bosons + 0.2*interaction
+nm_list
 ```
 
-We also need to specify the initial condition for the state - we want this to be |0,+>. Previously we used the `tensor` function to make this, but now that we are working in the parity universe this doesn't work so easily.
-
-Instead we will need to use `basis` function as we did at the very start of Tutorial 1. In order for this to be convenient, we need to make a function that takes as an input |n,±> and scans through our list of states to find which entry it corresponds to.
+We can see that indeed |0,+> is the 0th state in this universe. We can therefore set up our initial state for the simulation $\psi_0$ using the `basis` function we have used before in the following way:
 
 ```python
-def index_from_nm(nm_list,n,m): 
-    try:
-        return [item for item in nm_list].index((n,m))
-    except:
-        print("ERROR: State doesn't exist")
-
-```
-
-```python
-i = index_from_nm(nm_list, 0, "+")  # Find which index corresponds to the |0,+> state
-i
-```
-
-```python
-psi0 = basis(H.shape[0], i)
-```
-
-```python
+psi0 = basis(len(nm_list), 0)
 psi0
 ```
 
-In the previous tutorials we have been using QuTiP's [`sesolve`](http://qutip.org/docs/latest/apidoc/functions.html#module-qutip.sesolve) to simulate the system. `sesolve` solves the Schrödinger equation. This was convenient as for us when we were getting started - we only needed a single line of code to run the simulation. It was especially useful when we introduced a time dependent perturbation to our two state Hamiltonian in Tutorial 2. However, `sesolve` will cause us problems as we increase the number of bosons that we want to simulate - the simulation will take too long to run.
+To create the Hamiltonian corresponding to the anti-crossing we saw in Fig 3 we just need to choose the value of $\Delta E$ - by eye this is about 2.88.
+
+```python
+H =  2.88*two_state + 1*bosons + 0.2*interaction
+```
+
+In previous tutorials we have been using QuTiP's [`sesolve`](http://qutip.org/docs/latest/apidoc/functions.html#module-qutip.sesolve) to solve the Schrödinger equation. This was convenient as for us when we were getting started - we only needed a single line of code to run the simulation. It was especially useful when we introduced a time dependent perturbation to our TSS Hamiltonian in Tutorial 2. However, `sesolve` will cause us problems as we increase the number of bosons that we want to simulate - the simulation will take too long to run.
 
 Technically, we don't actually need a special solver like `sesolve` when dealing with time-independent problems (like ours). The business of solving the Schrödinger equation can be reduced to a problem of finding the eigenvalues and eigenvectors of the Hamiltonian.
 
@@ -541,7 +558,9 @@ We'll not go into the details of how this works right now - head over to the app
 def simulate(H, psi0, times):
     num_states = H.shape[0]
     
+    # create placeholder for values of amplitudes for different states
     psi = np.zeros([num_states,times.size], dtype="complex128")
+     # create placeholder for values of occupation probabilities for different states
     P = np.zeros([num_states,times.size], dtype="complex128")
     
     evals, ekets = H.eigenstates()
@@ -561,6 +580,12 @@ times = np.linspace(0.0, 1000.0, 1000)
 P, psi = simulate(H, psi0, times)
 ```
 
+Before we make the plots, we must remember to regenerate the state labels.
+
+```python
+bra_labels, ket_labels = make_braket_labels(nm_list)
+```
+
 ```python
 plt.figure(figsize=(10,8))
 for i in range(0,P.shape[0]):
@@ -571,10 +596,10 @@ plt.title("($\Delta E=2.88$, $\omega=1$, $U=0.2$)     (Fig 12)")
 plt.show();
 ```
 
-Fig 12 shows us that our ideas were correct - the system starts off with bosons and transitions to a state with 3 at the expense of the two state energy. We can see this energy exchange explicitly by evaluating the expectation values of the various parts of the Hamiltonian.
+Fig 12 shows us that our ideas were correct - the system starts off with no bosons and, over time, transitions to a state with 3 bosons at the expense of the TSS energy. We can see this energy exchange explicitly by evaluating the expectation values of the various parts of the Hamiltonian.
 
 
-QuTiP does allow us to do this using the [`expect`](http://qutip.org/docs/latest/guide/guide-states.html#expectation-values) function. However, it turns out that we need to create a `Qobj` for every time step in order to use this function and it can be very slow. We will instead directly calculate the expectation value using matrix multiplication, i.e.
+QuTiP does allow us to do this using the [`expect`](http://qutip.org/docs/latest/guide/guide-states.html#expectation-values) function. However, it turns out that we need to create a `Qobj` for every time step in order to use this function and that can be very slow. We will instead directly calculate the expectation value using matrix multiplication, i.e.
 
 
 
@@ -594,7 +619,7 @@ def expectation(operator, states):
     return operator_expect
 ```
 
-We can now see how the different parts of the Hamiltonian change overtime
+We can now see how the different parts of the Hamiltonian change over time:
 
 ```python
 hamiltonian_expect = expectation(H,psi)
@@ -617,7 +642,10 @@ plt.title(f"Expectation values for parts of the Hamiltoian ($\Delta E=2.88$, $\o
 plt.show();
 ```
 
-We can indeed see in Fig 13 the energy exchange that we expect between the two state system and the bosons field. We can also see how the interaction energy is moving in sync with the two state energy - this is another way of seeing the "dressing" effect that we mentioned earlier.
+In Fig 13 we can indeed see the energy exchange that we expect between the TSS and the boson field. We can also see how the interaction energy is moving in sync with the two state energy - this is another way of seeing the "dressing" effect that we mentioned earlier.
+
+
+> FIX DRESSIG REFERENCE
 
 
 ## Next time...
