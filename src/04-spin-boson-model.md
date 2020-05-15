@@ -47,7 +47,7 @@ from itertools import product
 ## 4.1 - Recap
 
 
-Let's remind ourselves of the Hamiltonian that we built up in the last tutorial ([Tutorial 3](https://github.com/project-ida/two-state-quantum-systems/blob/master/03-a-two-state-system-in-a-quantised-field.ipynb)):
+Let's remind ourselves of the Hamiltonian that we built up in the last tutorial ([Tutorial 3](https://nbviewer.jupyter.org/github/project-ida/two-state-quantum-systems/blob/master/03-a-two-state-system-in-a-quantised-field.ipynb#3.6---Spontaneous-emission)):
 
 $$H =  \overbrace{A \sigma_z}^{TSS}+ \overbrace{\hbar\omega\left(a^{\dagger}a +\frac{1}{2}\right)}^{bosons} + \overbrace{\frac{\delta}{2}\left( a^{\dagger} + a \right)\sigma_x}^{interaction}$$
 
@@ -68,9 +68,9 @@ We can however still apply the ideas we've learnt about TSS's in some special an
 ## 4.2 - Stationary states
 
 
-We begin in the same way that we started this tutorial series ([Tutorial 1](https://github.com/project-ida/two-state-quantum-systems/blob/master/01-an-isolated-two-state-system.ipynb)) by looking for the stationary states of the system. When the system is in one of these states it will remain there for all time. Such states are described by a single constant energy.
+We begin in the same way that we started this tutorial series ([Tutorial 1](https://nbviewer.jupyter.org/github/project-ida/two-state-quantum-systems/blob/master/01-an-isolated-two-state-system.ipynb#1.1---Stationary-state)) by looking for the stationary states of the system. When the system is in one of these states it will remain there for all time. Such states are described by a single constant energy.
 
-To find the states of constant energy, we'll follow what we did in [Tutorial 2](https://github.com/project-ida/two-state-quantum-systems/blob/master/02-perturbing-a-two-state-system.ipynb). Specifically, we will calculate the eigenvalues of the Hamiltonian (i.e the energies) and see how they depend on the TSS transition energy $\Delta E$.
+To find the states of constant energy, we'll follow what we did in [Tutorial 2](https://nbviewer.jupyter.org/github/project-ida/two-state-quantum-systems/blob/master/02-perturbing-a-two-state-system.ipynb#2.1-Static-perturbation). Specifically, we will calculate the eigenvalues of the Hamiltonian (i.e the energies) and see how they depend on the TSS transition energy $\Delta E$.
 
 What do we expect to find? Recall that in Tutorial 2 (see Fig 3) we discovered an [avoided crossing](https://en.wikipedia.org/wiki/Avoided_crossing) (aka anti-crossing) when the transition energy of the TSS was zero  - this was due to the coupling between the states splitting the energy levels apart.
 
