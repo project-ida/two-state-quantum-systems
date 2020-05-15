@@ -16,12 +16,12 @@ jupyter:
 <a href="https://colab.research.google.com/github/project-ida/two-state-quantum-systems/blob/master/04-spin-boson-model.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <a href="https://nbviewer.jupyter.org/github/project-ida/two-state-quantum-systems/blob/master/04-spin-boson-model.ipynb" target="_parent"><img src="https://nbviewer.jupyter.org/static/img/nav_logo.svg" alt="Open In nbviewer" width="100"/></a>
 
 
-# 4 - Spin boson model
+# 4 - Spin-boson model
 
 
 Throughout the first 3 tutorials, we have gradually come to see that a two state system (hereafter abbreviated to `TSS`) interacting with its environment can be modelled as a spin 1/2 particle in a magnetic field interacting with a quantised field of bosons.
 
-In this tutorial we explore this `spin boson` model (as it is often called) in more detail and in particular:
+In this tutorial we explore this `spin-boson` model (as it is often called) in more detail and in particular:
 1.
 
 
@@ -53,16 +53,26 @@ $$H =  \frac{\Delta E}{2} \sigma_z + \hbar\omega\left(a^{\dagger}a +\frac{1}{2}\
 where we recognise $\Delta E$ as the transition energy of the TSS, $\hbar\omega$ the energy of a single boson and $U$ as the strength of the interaction of the TSS with the boson field.
 
 
-In the last tutorial we saw how the physics of spontaneous emission arose from an indirect coupling between the |+> and |-> states of the TSS which was mediated by the interaction with the boson field. This interaction manifested as a Rabi type oscillation between two states of the combined spin boson system (described in general by |n,±>), namely |0,+> and |1,-> .
+In the last tutorial we saw how the physics of spontaneous emission arose from an indirect coupling between the |+> and |-> states of the TSS which was mediated by the interaction with the boson field. This interaction manifested as a Rabi type oscillation between two states of the combined spin boson system (described by |n,±>), namely |0,+> and |1,->.
 
-In general, the result of such interactions are far more complicated than the Rabi type oscillations we are becoming familiar with. We glimpsed this complexity last time when we observed that bosons modes, with slightly different frequencies, interact with the TSS to produce an irregular pattern of probabilities.
+In general, the result of such interactions are far more complicated than the Rabi type oscillations we are becoming familiar with. We glimpsed this complexity last time when we observed that many bosons modes, with slightly different frequencies, interact with the TSS to produce an irregular pattern of state occupation probabilities. The complexity arises because the combined TSS and field system has many states that interact with each other strongly if their energies are similar.
 
-The complexity arises because the combined two state system and field have more than two states that can interact with each other strongly if their energies are similar.
-
-We can however still apply ideas we've learnt about two-state systems in some special and interesting situations. This is what we'll explore in this notebook.
+We can however still apply the ideas we've learnt about TSS's in some special and interesting situations. That is what we'll explore in this notebook.
 
 
-To get a feel for this more complicated system we will find the energies/frequencies of the stationary states and see how they depend on the various parameters - just as we did in Fig 3 of Tutorial 2 when we made an avoided crossing plot.
+## 4.2 - Stationary states
+
+
+We begin in the same way that we started this tutorial series ([Tutorial 1](https://github.com/project-ida/two-state-quantum-systems/blob/master/01-an-isolated-two-state-system.ipynb)) by looking for the stationary states of the system. When the system is in one of these states it will remain there for all time. Such states are described by a single constant energy.
+
+To find the states of constant energy, we'll follow what we did in [Tutorial 2](https://github.com/project-ida/two-state-quantum-systems/blob/master/02-perturbing-a-two-state-system.ipynb). Specifically, we will calculate the eigenvalues of the Hamiltonian (i.e the energies) and see how they depend on the TSS transition energy $\Delta E$.
+
+What do we expect to find? Recall that in Tutorial 2 (see Fig 3) we discovered an [avoided crossing](https://en.wikipedia.org/wiki/Avoided_crossing) (aka anti-crossing) when the transition energy of the TSS was zero  - this was due to the coupling between the states splitting the energy levels apart.
+
+Let's see what we find in this more complicated spin-boson system - we'll start with no interaction $U=0$ to familiarsie ourselves with the landscape before exploring the full delights of the spin bosons system.
+
+
+Since we will be creating many Hamiltonians with differing parameters, it's helpful to create a function to pre-compute the constant pieces.
 
 ```python
 def make_operators(max_bosons):
@@ -71,29 +81,51 @@ def make_operators(max_bosons):
     sx = tensor(qeye(max_bosons+1), sigmax())       # tensorised sigma_x operator
     sz = tensor(qeye(max_bosons+1),sigmaz())        # tensorised sigma_z operator
     
-    two_state     =  1/2*sz                      # two state system energy operator
-    bosons       =  (a.dag()*a+0.5)              # boson energy operator
-    number        = a.dag()*a                      # boson number operator
-    interaction  = (a.dag() + a) * sx            # interaction energy operator    
+    two_state     =  1/2*sz                         # two state system energy operator
+    bosons       =  (a.dag()*a+0.5)                 # boson energy operator
+    number        = a.dag()*a                       # boson number operator
+    interaction  = (a.dag() + a) * sx               # interaction energy operator    
 
     
     return two_state, bosons, interaction, number
 ```
 
+If we want to be 100% correct in our description of the spin-boson system, we should allow the possibility of an infinite number of bosons to be present. This is obviously not computationally feasible so we must choose a finite number for the maximum number of bosons we wish to consider.
+
+For the sake of simplicity in visualisaion outputs, we choose a small number `max_bosons=4`.
+
 ```python
-max_bosons=4
+max_bosons = 4
 two_state, bosons, interaction, number = make_operators(max_bosons)
 ```
+
+We now need to prepare a suitable data structure to hold the data about the energies of the stationary states. A [pandas dataframe](https://www.geeksforgeeks.org/python-pandas-dataframe/) (essentially a table) is a suitable choice (which makes plotting easier later).
+
+We need to specify:
+- number of rows - equal to the number of $\Delta E$ we wish to try
+- number of columns - equal to the number of energy levels plus 1 to store the values of $\Delta E$
+- column labels
+
+Let's create another function for this and then look at an example:
 
 ```python
 def make_df_for_energy_scan(label_param, min_param, max_param, num_param, num_levels):
     
-    param_values = np.linspace(min_param, max_param, num_param)
-    d = {label_param:param_values}
+    # creates an empty dictionary to store the row/column information
+    d = {}
     
+    # creates array of parameter values that we want to scan through
+    param_values = np.linspace(min_param, max_param, num_param)
+    
+    # stores the parameter scan label and values (this will soon become the first column in the dataframe)
+    d[label_param] = param_values
+    
+    # creates empty columns to store the eigenvalues for the different levels later on
+    # num_levels will be the number of rows of H or any of the operators that make up H
     for i in range(num_levels):
         d[f"level_{i}"] = np.zeros(num_param)
-        
+     
+    # creates the dataframe
     df = pd.DataFrame(data=d)
     
     return df
@@ -101,43 +133,54 @@ def make_df_for_energy_scan(label_param, min_param, max_param, num_param, num_le
 
 ```python
 df = make_df_for_energy_scan("$\Delta E$", -4, 4, 201, two_state.shape[0])
-```
-
-We have 10 levels associated with the 2 states from the two state system (|+>, |->) and 5 bosons states (0,1,2,3,4) making 2*5 = 10 states
-
-```python
 df.head()
 ```
 
-We'll now fill these rows with the energies of the different levels (aka the eigenvalues)
+We see that we expect to calculate eigenvalues for 10 levels - these are associated with the 2 states from the TSS (|+>, |->) and 5 bosons states ($n= 0,1,2,3,4$) making $2\times5 = 10$ levels.
+
+
+### 4.2.1 - Spin-boson landscape $U=0$
+
+
+We're now ready to fill in the dataframe with the energy of the stationary sates by iterating over the rows using the [`iterrows`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.iterrows.html) function.
+
+Throughout this tutorial we will set $\omega=1$.
 
 ```python
 for i, row in df.iterrows():
     H =  row["$\Delta E$"]*two_state + 1*bosons
     evals, ekets = H.eigenstates()
-    df.iloc[i,1:] = evals   # Fills the columns 1 onwards of row i with the eigenvalues
+    df.iloc[i,1:] = evals
 ```
 
+Because we stored the data in a dataframe, plotting is now easy.
+
 ```python
-df.plot(x="$\Delta E$",figsize=(10,8),ylim=[0,6],legend=True, title="Energy of the stationary states ($\omega=1$, $U=0$)     (Fig 1)");
+df.plot(x="$\Delta E$",figsize=(10,8),ylim=[-0.5,5.5],legend=True, 
+        title="Stationary states ($\omega=1$, $U=0$)     (Fig 1)");
 plt.ylabel("Energy");
 ```
 
 How do we understand Fig 1?
 
-Start by focusing on where $\Delta E = 0$, i.e. there is no difference between the energies of the |+> and |-> states - this is the very first thing we looked at in Tutorial 1. There are several states/levels that appear to cross each other, they correspond to:
+Start by focusing on where $\Delta E = 0$, i.e. there is no difference between the energies of the |+> and |-> states - this is the first thing we looked at back in Tutorial 1. There are several states/levels that appear to cross each other, they correspond to:
 - orange/blue - 0 bosons (|0,±>)
 - red/green - 1 boson (|1,±>)
 - brown/purple - 2 bosons (|2,±>)
 - grey/pink - 3 bosons (|3,±>)
 - blue/yellow - 4 bosons (|4,±>)
 
-Let's take the orange (|0,+>) and green (|1,->) lines. As we increase $\Delta E$, The energy of |0,+> goes up  and |1,-> goes down in energy. Eventually, these levels end up with the same energy/frequency even though they have a different number of bosons - this is what allows the |0,+> to interact to |1,-> i.e. it's what makes possible the spontaneous emission we saw in the last tutorial. This particular crossing happens when $\Delta E = \omega = 1$, i.e. the resonance condition we first encountered in Tutorial 2. This is not the only resonance though. We can see there are many non-primary resonances at $\Delta E = \omega, 2\omega, 3\omega $ etc. We can therefore expect that when we switch the coupling on we will see the formation of anti-crossings where the interaction energy splits apart the interactive levels - just as we saw in Tutotial 1. 
+Let's take the orange (|0,+>) and green (|1,->) lines. As we increase $\Delta E$, The energy of |0,+> goes up  and |1,-> goes down in energy. Eventually, these levels end up with the same energy despite having a different number of bosons - this is what allows the |0,+> couple strongly to |1,-> i.e. it's what makes possible the spontaneous emission we saw in the last tutorial. This particular crossing happens when $\Delta E = \omega = 1$, i.e. the resonance condition we first encountered in Tutorial 2. This is not the only resonance though. We can see there are many "non-primary" resonances at crossings when $\Delta E = \omega, 2\omega, 3\omega $ etc. We can therefore expect that when we switch the interaction on ($U\neq 0$) we will see the formation of anti-crossings similar to Tutorial 2.
 
-In essence, we are now going to try treat these many isolated crossings as if they are acting as independent two state systems.
+In essence, we are now going to try and think about these crossings as if they are independent two state systems whose states and couplings we have to determine.
 
 Let's see how we get on.
 
+
+
+### 4.2.2 - Crossings and anti-crossings
+
+We're now going to switch on the interaction term in the Hamiltonian. In order to more clearly visualise things, we will choose a stronger coupling than we did in the previous tutorial - specifically $U=0.2$.
 
 ```python
 df = make_df_for_energy_scan("$\Delta E$", -4, 4, 201, two_state.shape[0])
@@ -145,12 +188,12 @@ df = make_df_for_energy_scan("$\Delta E$", -4, 4, 201, two_state.shape[0])
 for i, row in df.iterrows():
     H =  row["$\Delta E$"]*two_state + 1*bosons + 0.2*interaction
     evals, ekets = H.eigenstates()
-    df.iloc[i,1:] = evals   # Fills the columns 1 onwards of row i with the eigenvalues
+    df.iloc[i,1:] = evals
 ```
 
 ```python
-df.plot(x="$\Delta E$",figsize=(10,8),ylim=[0,6],legend=True, 
-        title="Energy of the stationary states ($\omega=1$, $U=0.2$)     (Fig 2)");
+df.plot(x="$\Delta E$",figsize=(10,8),ylim=[-0.5,5.5],legend=True, 
+        title="Stationary states ($\omega=1$, $U=0.2$)     (Fig 2)");
 plt.ylabel("Energy");
 ```
 
@@ -158,24 +201,26 @@ There are many things to say about what we see in Fig 2.
 
 Two main features are:
 1. the splitting of the levels increases with increasing level number i.e increasing number of bosons. 
-2. not all crossings have been split apart into avoided crossings as we expected - this means some levels don't interact with each other at all. 
+2. not all crossings have been split apart into anti-crossings as we expected - this means some levels don't interact with each other at all. 
 
-On 1. Applying our knowledge from Tutorial 1, we would say that the effective coupling between levels (which is proportional to the level splitting) increases with increasing boson number
+On 1. Applying our knowledge from Tutorial 1, we would say that the effective coupling between levels (which is proportional to the level splitting) increases with increasing boson number.
 
-On 2. Upon closer inspection we can see that the level splittings only occur when $\Delta E  \approx n \omega$ where n is an odd integer (we'll come to why we now use $\approx$ instead of = shortly). Although it is hard to see in Fig 2, if we zoom in on $\Delta E \approx 3\omega$ we can indeed see an anti-crossing:
+On 2. Upon closer inspection, we can see that the level splittings only occur when $\Delta E  \approx n \omega$ where n is an **odd** integer (we'll come to why we now use $\approx$ instead of = shortly). Although it is hard to see in Fig 2, if we zoom in on $\Delta E \approx 3\omega$ we can indeed see an anti-crossing.
+
+To perform this zoom, it is best to perform a higher resolution scan of $\Delta E$:
 
 ```python
-df = make_df_for_energy_scan("$\Delta E$", 2.8, 3, 201, two_state.shape[0])
+df = make_df_for_energy_scan("$\Delta E$", 2.8, 2.95, 201, two_state.shape[0])
 
 for i, row in df.iterrows():
     H =  row["$\Delta E$"]*two_state + 1*bosons + 0.2*interaction
     evals, ekets = H.eigenstates()
-    df.iloc[i,1:] = evals   # Fills the columns 1 onwards of row i with the eigenvalues
+    df.iloc[i,1:] = evals
 ```
 
 ```python
 df.plot(x="$\Delta E$",figsize=(10,8),ylim=[1.9,2],legend=True, 
-        title="Zoom in of energy of the stationary states ($\omega=1$, $U=0.2$)     (Fig 3)");
+        title="Zoom in of the stationary states ($\omega=1$, $U=0.2$)     (Fig 3)");
 plt.ylabel("Energy");
 
 
@@ -186,15 +231,13 @@ plt.ylabel("Energy");
 
 The level splitting seen in Fig 3 is much smaller than those seen in Fig 2 at the primary resonance ($\Delta E \approx \omega$). We can therefore say that the effective coupling between levels is much less for the non-primary resonances.
 
-Fig 3 also shows us that the location of resonance is somewhat shifted, i.e. the anti-crossing does not occur when $\Delta E = 3 \omega$ but instead $\Delta E \approx 3\omega$. This shift is known as the [Bloch-Siegert shift](https://en.wikipedia.org/wiki/Bloch-Siegert_shift) (see also [Cohen-Tannoudji](https://iopscience.iop.org/article/10.1088/0022-3700/6/8/007) and [Hagelstein](https://iopscience.iop.org/article/10.1088/0953-4075/41/3/035601)).
+Fig 3 also shows us that the location of the resonance is somewhat shifted, i.e. the anti-crossing does not occur when $\Delta E = 3 \omega$ but instead $\Delta E \approx 3\omega$. This shift is known as the [Bloch-Siegert shift](https://en.wikipedia.org/wiki/Bloch-Siegert_shift) (see also [Cohen-Tannoudji](https://iopscience.iop.org/article/10.1088/0022-3700/6/8/007) and [Hagelstein](https://iopscience.iop.org/article/10.1088/0953-4075/41/3/035601)) and arises from the the effect of the interaction energy in the Hamiltonian ($E_{I}$). Specifically, the resonance condition should instead be written as $\Delta E + E_{I} = 3\omega$ and hence the value of $\Delta E$ needed for resonance is somewhat reduced. 
 
 >TODO: Classical meaning of Bloch-Siegert shift
 
-This shift arises because we have to consider the effect of the interaction energy in the Hamiltonian ($E_{I}$) on the  resonance condition. Specifically, the resonance condition should instead be written as $\Delta E + E_{I} = 3\omega$ and hence the value of $\Delta E$ needed for resonance is somewhat reduced. 
-
 > TODO:Make referenced to dressed atom picture https://www.youtube.com/watch?v=k0X7iSaPM38 and https://ocw.mit.edu/courses/physics/8-422-atomic-and-optical-physics-ii-spring-2013/
 
-We can more clearly see the splitting of the levels and shifting of the resonances by scanning through various values of the coupling parameter $U$. Let's create an [animated gif](https://github.com/maxhumber/gif) to show this.
+We can more clearly see the splitting of the levels and shifting of the resonances by scanning through various values of the interaction strength $U$. Let's create an [animated gif](https://github.com/maxhumber/gif) to show this.
 <!-- #endregion -->
 
 ```python
@@ -209,7 +252,7 @@ for U in Us:
     for i, row in df.iterrows():
         H =  row["$\Delta E$"]*two_state + 1*bosons + U*interaction
         evals, ekets = H.eigenstates()
-        df.iloc[i,1:] = evals   # Fills the columns 1 onwards of row i with the eigenvalues
+        df.iloc[i,1:] = evals 
         
     dfs.append(df)
 ```
@@ -218,7 +261,7 @@ for U in Us:
 # Uses the gif library from https://github.com/maxhumber/gif
 @gif.frame
 def plot(df,j):
-    df.plot(x="$\Delta E$",figsize=(10,8),ylim=[0,6],legend=True, 
+    df.plot(x="$\Delta E$",figsize=(10,8),ylim=[-0.5,5.5],legend=True, 
         title=f"Stationary states for $H = (\Delta E / 2) \sigma_z + \hbar\omega(a^{{\dagger}}a +1/2) + U( a^{{\dagger}} + a )\sigma_x$     ($\omega=1$, $U={Us[j]:.3f}$) ");
     plt.ylabel("Energy");
     
