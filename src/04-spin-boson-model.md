@@ -276,7 +276,7 @@ gif.save(frames, "./img/04-energy-levels.gif", duration=250)
 ```
 
 ```python
-Image(filename="./img/04-energy-levels.gif")
+Image(filename="./img/04-energy-levels.gif.png")
 ```
 
 Fig 3 also suggests some new physics. A resonance at $\Delta E \approx 3\omega$ implies that it might be possible for the TSS transition from |+> to |-> to result in the emission of 3 smaller bosons instead of a single larger one (as we would normally expect) - so called "down conversion". We'll investigate this possibility shortly.
