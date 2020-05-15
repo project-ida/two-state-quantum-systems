@@ -21,9 +21,14 @@ jupyter:
 
 Throughout the first 3 tutorials, we have gradually come to see that a two state system (hereafter abbreviated to `TSS`) interacting with its environment can be modelled as a spin 1/2 particle in a magnetic field interacting with a quantised field of bosons.
 
-In this tutorial we explore this `spin-boson` model (as it is often called) in more detail and in particular:
-1.
+In this tutorial we explore this `spin-boson` model (as it is often called) in more detail and in so doing we'll (as always) discover some new physics along the way 🤓. It is worth noting that the spin-boson model also goes by other names - most notably the ["dressed atom"](https://youtu.be/k0X7iSaPM38) model which forms parts of various [university courses](https://ocw.mit.edu/courses/physics/8-422-atomic-and-optical-physics-ii-spring-2013/syllabus/).
 
+This tutorial is split up into the following sections:
+1. Recap
+2. Stationary states
+3. Structure of the Hamiltonian
+4. Parity
+5. Down conversion
 
 ```python
 # Libraries
@@ -121,7 +126,7 @@ def make_df_for_energy_scan(label_param, min_param, max_param, num_param, num_le
     d[label_param] = param_values
     
     # creates empty columns to store the eigenvalues for the different levels later on
-    # num_levels will be the number of rows of H or any of the operators that make up H
+    # num_levels will be the number of rows of H (or any of the operators that make up H)
     for i in range(num_levels):
         d[f"level_{i}"] = np.zeros(num_param)
      
@@ -233,10 +238,6 @@ The level splitting seen in Fig 3 is much smaller than those seen in Fig 2 at th
 
 Fig 3 also shows us that the location of the resonance is somewhat shifted, i.e. the anti-crossing does not occur when $\Delta E = 3 \omega$ but instead $\Delta E \approx 3\omega$. This shift is known as the [Bloch-Siegert shift](https://en.wikipedia.org/wiki/Bloch-Siegert_shift) (see also [Cohen-Tannoudji](https://iopscience.iop.org/article/10.1088/0022-3700/6/8/007) and [Hagelstein](https://iopscience.iop.org/article/10.1088/0953-4075/41/3/035601)) and arises from the the effect of the interaction energy in the Hamiltonian ($E_{I}$). Specifically, the resonance condition should instead be written as $\Delta E + E_{I} = 3\omega$ and hence the value of $\Delta E$ needed for resonance is somewhat reduced. 
 
->TODO: Classical meaning of Bloch-Siegert shift
-
-> TODO:Make referenced to dressed atom picture https://www.youtube.com/watch?v=k0X7iSaPM38 and https://ocw.mit.edu/courses/physics/8-422-atomic-and-optical-physics-ii-spring-2013/
-
 We can see the splitting of the levels and shifting of the resonances more clearly by scanning through various values of the interaction strength $U$. Let's create an [animated gif](https://github.com/maxhumber/gif) to show this.
 <!-- #endregion -->
 
@@ -271,11 +272,11 @@ frames = []
 for j, df in enumerate(dfs):
     frame = plot(df, j)
     frames.append(frame)
-gif.save(frames, "04-energy-levels.gif", duration=250)
+gif.save(frames, "./img/04-energy-levels.gif", duration=250)
 ```
 
 ```python
-Image(filename="./04-energy-levels.gif")
+Image(filename="./img/04-energy-levels.gif")
 ```
 
 Fig 3 also suggests some new physics. A resonance at $\Delta E \approx 3\omega$ implies that it might be possible for the TSS transition from |+> to |-> to result in the emission of 3 smaller bosons instead of a single larger one (as we would normally expect) - so called "down conversion". We'll investigate this possibility shortly.
@@ -357,7 +358,7 @@ If we now take a closer look at the structure of the Hinton diagram we can see s
 
 ```python
 print("                Matrix elements of H     (Fig 6)")
-Image(filename='04-hinton.png') 
+Image(filename='./img/04-hinton.png') 
 ```
 
 If we imagine starting a simulation with 0 bosons and the TSS in its + state, i.e. |0,+>, then Fig 6 suggests that:
@@ -372,7 +373,7 @@ On 2. The Hamiltonian appears to be composed of two separate "universes" that do
 We're getting closer to convincing ourselves of the reality of down conversion, but before we check this through simulation we need to figure out how to separate the two universes.
 
 
-## 4.3 - Parity
+## 4.4 - Parity
 
 
 What separates the two spin-boson universes is a form of [parity](https://en.wikipedia.org/wiki/Parity_%28physics%29). Parity is not particularly intuitive and a full discussion of it is somewhat involved and takes us deep into the topic of transition [selection rules](https://en.wikipedia.org/wiki/Selection_rule) - we'll come back to this another time.
@@ -524,7 +525,7 @@ Figs 9 and 10 show us the energy of the stationary states for the odd and even p
 Now we are in a position to go back to the interesting physics question about the possibility of down conversion.
 
 
-## 4.4 - Down conversion
+## 4.5 - Down conversion
 
 
 We've seen several signs that when $\delta E \approx 3\omega$ (anti-crossing in Fig 10 and also Fig 3) we can expect down conversation, i.e. $|0,+> \rightarrow |3,->$. Let's simulate and see if we are correct.
@@ -591,6 +592,7 @@ plt.figure(figsize=(10,8))
 for i in range(0,P.shape[0]):
     plt.plot(times, P[i,:], label=f"{ket_labels[i]}")
 plt.ylabel("Probability")
+plt.xlabel("Time")
 plt.legend(loc="right")
 plt.title("($\Delta E=2.88$, $\omega=1$, $U=0.2$)     (Fig 12)")
 plt.show();
@@ -642,18 +644,13 @@ plt.title(f"Expectation values for parts of the Hamiltoian ($\Delta E=2.88$, $\o
 plt.show();
 ```
 
-In Fig 13 we can indeed see the energy exchange that we expect between the TSS and the boson field. We can also see how the interaction energy is moving in sync with the two state energy - this is another way of seeing the "dressing" effect that we mentioned earlier.
+In Fig 13 we can indeed see the energy exchange that we expect between the TSS and the boson field. We can also see how the interaction energy is moving in sync with the two state energy - in some sense augmenting it. Sometimes people refer to this behaviour as the field is "dressing" the levels of the TSS.
 
 
-> FIX DRESSIG REFERENCE
+## Next up...
 
+We've discovered the surprising new physics of down conversion by exploring the energy levels of the spin boson system. This is just the tip of the ice berg though. How strong do these resonances get as we increase the boson number? How sensitive are the resonances compared to each other. We'll explore that and more in the next tutorial.
 
-## Next time...
-
-We'll look at ...
-- large n
-- sensitivity of resonances
-- interaction energy allows more bosons than you might expect, e.g. when $\Delta E =11 \omega$ we can have 11, or 13 or 15 or 17 bosons.
 
 
 ---
