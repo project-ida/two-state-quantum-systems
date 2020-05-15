@@ -175,7 +175,7 @@ Start by focusing on where $\Delta E = 0$, i.e. there is no difference between t
 - grey/pink - 3 bosons (|3,±>)
 - blue/yellow - 4 bosons (|4,±>)
 
-Let's take the orange (|0,+>) and green (|1,->) lines. As we increase $\Delta E$, The energy of |0,+> goes up  and |1,-> goes down in energy. Eventually, these levels end up with the same energy despite having a different number of bosons - this is what allows the |0,+> couple strongly to |1,-> i.e. it's what makes possible the spontaneous emission we saw in the last tutorial. This particular crossing happens when $\Delta E = \omega = 1$, i.e. the resonance condition we first encountered in Tutorial 2. This is not the only resonance though. We can see there are many "non-primary" resonances at crossings when $\Delta E = \omega, 2\omega, 3\omega $ etc. We can therefore expect that when we switch the interaction on ($U\neq 0$) we will see the formation of anti-crossings similar to Tutorial 2.
+Let's take the orange (|0,+>) and green (|1,->) lines. As we increase $\Delta E$, The energy of |0,+> goes up  and |1,-> goes down. Eventually, these levels end up with the same energy despite having a different number of bosons - this is what allows the |0,+> to couple strongly to |1,-> i.e. it's what makes possible the spontaneous emission we saw in the last tutorial. This particular crossing happens when $\Delta E = \omega = 1$, i.e. the resonance condition we first encountered in Tutorial 2. This is not the only resonance though. We can see there are many "non-primary" resonances at crossings when $\Delta E = \omega, 2\omega, 3\omega $ etc. We can therefore expect that when we switch the interaction on ($U\neq 0$) we will see the formation of anti-crossings similar to Tutorial 2.
 
 In essence, we are now going to try and think about these crossings as if they are independent two state systems whose states and couplings we have to determine.
 
@@ -441,7 +441,7 @@ ax.tick_params(axis='x',labelrotation=90,)
 ax.set_title("Even matrix elements of H     (Fig 8)");
 ```
 
-Now with only a single parity, Fig 8 makes it easier to see how the system behaves - boson numbers can only go up by one each time and when they do the TSS must flip between \+> and |-> (the same is true for the odd universe).
+Now with only a single parity, Fig 8 makes it easier to see how the system behaves - boson numbers can only change by one each time and when they do the TSS must flip between |+> and |-> (the same is true for the odd universe).
 
 
 Now, we'll automate the parity extraction process. Let's augment the `make_operators` function to do this:
@@ -528,7 +528,7 @@ Now we are in a position to go back to the interesting physics question about th
 ## 4.5 - Down conversion
 
 
-We've seen several signs that when $\delta E \approx 3\omega$ (anti-crossing in Fig 10 and also Fig 3) we can expect down conversation, i.e. $|0,+> \rightarrow |3,->$. Let's simulate and see if we are correct.
+We've seen several signs that when $\Delta E \approx 3\omega$ (anti-crossing in Fig 10 and also Fig 3) we can expect down conversation, i.e. $|0,+> \rightarrow |3,->$. Let's simulate and see if we are correct.
 
 The last energy level diagram we created was Fig 10 for even parity. Let's see if |0,+> is part of this unvierse.
 
@@ -549,7 +549,7 @@ To create the Hamiltonian corresponding to the anti-crossing we saw in Fig 3 we 
 H =  2.88*two_state + 1*bosons + 0.2*interaction
 ```
 
-In previous tutorials we have been using QuTiP's [`sesolve`](http://qutip.org/docs/latest/apidoc/functions.html#module-qutip.sesolve) to solve the Schrödinger equation. This was convenient as for us when we were getting started - we only needed a single line of code to run the simulation. It was especially useful when we introduced a time dependent perturbation to our TSS Hamiltonian in Tutorial 2. However, `sesolve` will cause us problems as we increase the number of bosons that we want to simulate - the simulation will take too long to run.
+In previous tutorials we have been using QuTiP's [`sesolve`](http://qutip.org/docs/latest/apidoc/functions.html#module-qutip.sesolve) to solve the Schrödinger equation. This was convenient for us when we were getting started - we only needed a single line of code to run the simulation. It was especially useful when we introduced a time dependent perturbation to our TSS Hamiltonian in Tutorial 2. However, `sesolve` will cause us problems as we increase the number of bosons that we want to simulate - the simulation will take too long to run.
 
 Technically, we don't actually need a special solver like `sesolve` when dealing with time-independent problems (like ours). The business of solving the Schrödinger equation can be reduced to a problem of finding the eigenvalues and eigenvectors of the Hamiltonian.
 
@@ -649,7 +649,7 @@ In Fig 13 we can indeed see the energy exchange that we expect between the TSS a
 
 ## Next up...
 
-We've discovered the surprising new physics of down conversion by exploring the energy levels of the spin boson system. This is just the tip of the ice berg though. How strong do these resonances get as we increase the boson number? How sensitive are the resonances compared to each other. We'll explore that and more in the next tutorial.
+We've discovered the surprising new physics of down conversion by exploring the energy levels of the spin boson system. This is just the tip of the ice berg though. How strong do these resonances get as we increase the boson number? How sensitive are the resonances compared to each other? We'll explore that and more in the next tutorial.
 
 
 
@@ -659,7 +659,7 @@ We've discovered the surprising new physics of down conversion by exploring the 
 ## Appendix - Solving the Schrödinger equation
 
 
-To illustrate how we solve the Schrödinger equation using the function `simulate`, we will go through an example using the set-up of down conversation in Section 4.4.
+To illustrate how we solve the Schrödinger equation using the function `simulate`, we will go through an example using the set-up of down conversation in Section 4.5.
 
 ```python
 # Create the operators and state list for even parity universe
