@@ -77,7 +77,15 @@ What do we expect to find? Recall that in Tutorial 2 (see Fig 3) we discovered a
 Let's see what we find in this more complicated spin-boson system - we'll start with no interaction $U=0$ to familiarsie ourselves with the landscape before exploring the full delights of the spin bosons system.
 
 
-Since we will be creating many Hamiltonians with differing parameters, it's helpful to create a function to pre-compute the constant pieces.
+Since we will be creating many Hamiltonians with differing parameters, it's helpful to create a function to pre-compute the constant pieces. Specifically, the following function `make_operators` will compute the following:
+
+- `two_state` = $\frac{1}{2}\sigma_z$ 
+- `bosons` = $a^{\dagger}a +\frac{1}{2}$
+- `interaction` = $\left( a^{\dagger} + a \right)\sigma_x$
+
+so that we can create Hamiltonians with many different TSS transision energies $\Delta E$, boson frequencies $\omega$  and interaction strengths $U$ in the following way:
+
+`H = DeltaE*two_state + omega*bosons + U*interaction`
 
 ```python
 def make_operators(max_bosons):
@@ -86,10 +94,10 @@ def make_operators(max_bosons):
     sx = tensor(qeye(max_bosons+1), sigmax())       # tensorised sigma_x operator
     sz = tensor(qeye(max_bosons+1),sigmaz())        # tensorised sigma_z operator
     
-    two_state     =  1/2*sz                         # two state system energy operator
-    bosons       =  (a.dag()*a+0.5)                 # boson energy operator
-    number        = a.dag()*a                       # boson number operator
-    interaction  = (a.dag() + a) * sx               # interaction energy operator    
+    two_state     =  1/2*sz                         # two state system energy operator   𝜎𝑧/2
+    bosons       =  (a.dag()*a+0.5)                 # boson energy operator              𝑎†𝑎+1/2
+    number        = a.dag()*a                       # boson number operator              𝑎†𝑎
+    interaction  = (a.dag() + a) * sx               # interaction energy operator        (𝑎†+𝑎)𝜎𝑥
 
     
     return two_state, bosons, interaction, number
