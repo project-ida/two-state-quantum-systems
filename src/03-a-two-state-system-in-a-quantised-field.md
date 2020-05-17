@@ -560,7 +560,7 @@ Ps = []                    # store the simulation data for plotting
 
 times = np.linspace(0.0, 15000.0, 1000)
 
-omegas = np.ones(i+1)*2*A
+omegas = np.ones(max_mode_number)*2*A
 
 for i in range(0,max_mode_number):
     H, psi0, P_0_plus = multi_modes(i+1, omegas)   # each time we change the number of modes the Hamiltonian changes
