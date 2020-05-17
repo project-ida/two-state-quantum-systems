@@ -107,7 +107,7 @@ two_state, bosons, interaction, number = make_operators(max_bosons)
 We now need to prepare a suitable data structure to hold the data about the energies of the stationary states. A [pandas dataframe](https://www.geeksforgeeks.org/python-pandas-dataframe/) (essentially a table) is a suitable choice (which makes plotting easier later).
 
 We need to specify:
-- number of rows - equal to the number of $\Delta E$ we wish to try
+- number of rows - equal to the number of TSS transision energies ($\Delta E$) that we wish to try
 - number of columns - equal to the number of energy levels plus 1 to store the values of $\Delta E$
 - column labels
 
