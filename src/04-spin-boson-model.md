@@ -42,6 +42,7 @@ from qutip import *
 import warnings
 warnings.filterwarnings('ignore')
 from itertools import product
+import os
 ```
 
 ## 4.1 - Recap
@@ -285,7 +286,13 @@ frames = []
 for j, df in enumerate(dfs):
     frame = plot(df, j)
     frames.append(frame)
-gif.save(frames, "./img/04-energy-levels.gif.png", duration=250)
+gif.save(frames, "./img/04-energy-levels.gif", duration=250)
+```
+
+```python
+# We need to rename the .gif to .gif.png so that the animation will render on GitHub and also NbViewer.
+# The Gif library does not allow us to name the file with .gif.png
+os.rename("./img/04-energy-levels.gif", "./img/04-energy-levels.gif.png")
 ```
 
 ```python
