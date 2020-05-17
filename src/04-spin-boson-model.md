@@ -189,7 +189,11 @@ Start by focusing on where $\Delta E = 0$, i.e. there is no difference between t
 - grey/pink - 3 bosons (|3,±>)
 - blue/yellow - 4 bosons (|4,±>)
 
-Let's take the orange (|0,+>) and green (|1,->) lines. As we increase $\Delta E$, The energy of |0,+> goes up  and |1,-> goes down. Eventually, these levels end up with the same energy despite having a different number of bosons - this is what allows the |0,+> to couple strongly to |1,-> i.e. it's what makes possible the spontaneous emission we saw in the last tutorial. This particular crossing happens when $\Delta E = \omega = 1$, i.e. the resonance condition we first encountered in [Tutorial 2](https://nbviewer.jupyter.org/github/project-ida/two-state-quantum-systems/blob/master/02-perturbing-a-two-state-system.ipynb#Resonance). This is not the only resonance though. We can see there are many "non-primary" resonances at crossings when $\Delta E = \omega, 2\omega, 3\omega $ etc. We can therefore expect that when we switch the interaction on ($U\neq 0$) we will see the formation of anti-crossings similar to Tutorial 2.
+Let's take the orange (|0,+>) and green (|1,->) lines. As we increase $\Delta E$, The energy of |0,+> goes up  and |1,-> goes down. Eventually, these levels end up with the same energy (they cross) despite having a different number of bosons - this is what allows the |0,+> to couple strongly to |1,-> i.e. it's what makes possible the spontaneous emission we saw in the last tutorial. 
+
+What's particularly interesting is the location of the crossings. For example, the crossing we just described happens when $\Delta E = \omega = 1$. This is physically significant because it is identical to the resonance condition we discovered in [Tutorial 2](https://nbviewer.jupyter.org/github/project-ida/two-state-quantum-systems/blob/master/02-perturbing-a-two-state-system.ipynb#Resonance) when the driving frequency of the classical field matched the transition frequency of the TSS. 
+
+In Tutorial 2, we found this resonance somewhat by accident. Now though, by looking at the other crossings in Fig 1 we can already start to predict the existence of other resonances when $\Delta E = 2\omega, 3\omega $ etc (we might call these "non-primary" resonances). We don't yet know what will happen at those resonances (maybe nothing at all 🤷) but it is not unreasonable to expect that when we switch the interaction on ($U\neq 0$) there will be some kind of interaction and we'll see the formation of anti-crossings similar to Tutorial 2.
 
 In essence, we are now going to try and think about these crossings as if they are independent two state systems whose states and couplings we have to determine.
 
@@ -224,7 +228,7 @@ Two main features are:
 
 On 1. Applying our knowledge from Tutorial 1, we would say that the effective coupling between levels (which is proportional to the level splitting) increases with increasing boson number.
 
-On 2. Upon closer inspection, we can see that the level splittings only occur when $\Delta E  \approx n \omega$ where n is an **odd** integer (we'll come to why we now use $\approx$ instead of = shortly). Although it is hard to see in Fig 2, if we zoom in on $\Delta E \approx 3\omega$ we can indeed see an anti-crossing.
+On 2. Upon closer inspection, we can see that the level splittings only occur when $\Delta E  \approx n \omega$ where n is an **odd** integer (we'll come to why we now use $\approx$ instead of = shortly). This tells us that our prediction of other resonances was only correct for the odd integer ones - we will understand why soon. To see the anti-crossing more clearly for $\Delta E \approx 3\omega$ we need to zoom in a bit.
 
 To perform this zoom, it is best to perform a higher resolution scan of $\Delta E$:
 
@@ -245,15 +249,11 @@ plt.ylabel("Energy");
 
 ```
 
-<!-- #region -->
-
-
-The level splitting seen in Fig 3 is much smaller than those seen in Fig 2 at the primary resonance ($\Delta E \approx \omega$). We can therefore say that the effective coupling between levels is much less for the non-primary resonances.
+The level splitting seen in Fig 3 is much smaller than those seen in Fig 2 when $\Delta E \approx \omega$ - i.e. the effective coupling between levels at this resonance is much less. This gives some physical meaning to our earlier description of these other resonances as "non-primary".
 
 Fig 3 also shows us that the location of the resonance is somewhat shifted, i.e. the anti-crossing does not occur when $\Delta E = 3 \omega$ but instead $\Delta E \approx 3\omega$. This shift is known as the [Bloch-Siegert shift](https://en.wikipedia.org/wiki/Bloch-Siegert_shift) (see also [Cohen-Tannoudji](https://iopscience.iop.org/article/10.1088/0022-3700/6/8/007) and [Hagelstein](https://iopscience.iop.org/article/10.1088/0953-4075/41/3/035601)) and arises from the the effect of the interaction energy in the Hamiltonian ($E_{I}$). Specifically, the resonance condition should instead be written as $\Delta E + E_{I} = 3\omega$ and hence the value of $\Delta E$ needed for resonance is somewhat reduced. 
 
 We can see the splitting of the levels and shifting of the resonances more clearly by scanning through various values of the interaction strength $U$. Let's create an [animated gif](https://github.com/maxhumber/gif) to show this.
-<!-- #endregion -->
 
 ```python
 # NOTE: THIS CELL TAKES ABOUT 2 MIN TO RUN
