@@ -366,7 +366,7 @@ If we imagine starting a simulation with 0 bosons and the TSS in its + state, i.
 2. there are some states that are not accessible at all if we start in the |0,+> state
 
 
-On 1. These indirect connections provide a mechanism to achieve the down conversation that we saw hints of earlier (namely $|0,+> \rightarrow |3,->$).
+On 1. These indirect connections provide a mechanism to achieve the down conversion that we saw hints of earlier (namely $|0,+> \rightarrow |3,->$).
 
 On 2. The Hamiltonian appears to be composed of two separate "universes" that don't interact with each other. In our energy level diagram (Fig 2) both universes are present - perhaps if we separate them we'll only see anti-crossings in the respective plots.
 
