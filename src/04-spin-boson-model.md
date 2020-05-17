@@ -535,7 +535,7 @@ axes[0].set_ylabel("Energy");
 
 ```
 
-Figs 9 and 10 show us the energy of the stationary states for the odd and even parity states respectively. As we expected, we now only see anti-crossings because in each universe there are no forbidden interactions.
+Figs 9 and 10 show us the energy of the stationary states for the odd and even parity states respectively. As we expected, all levels now anti-cross when they approach each other because in each universe there are no forbidden interactions.
 
 Now we are in a position to go back to the interesting physics question about the possibility of down conversion.
 
