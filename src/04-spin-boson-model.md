@@ -473,10 +473,10 @@ def make_operators(max_bosons, parity):
     sx = tensor(qeye(max_bosons+1), sigmax())       # tensorised sigma_x operator
     sz = tensor(qeye(max_bosons+1),sigmaz())        # tensorised sigma_z operator
     
-    two_state     =  1/2*sz                         # two state system energy operator
-    bosons       =  (a.dag()*a+0.5)                 # boson energy operator
-    number        = a.dag()*a                       # boson number operator
-    interaction  = (a.dag() + a) * sx               # interaction energy operator      
+    two_state     =  1/2*sz                         # two state system energy operator   𝜎𝑧/2
+    bosons       =  (a.dag()*a+0.5)                 # boson energy operator              𝑎†𝑎+1/2
+    number        = a.dag()*a                       # boson number operator              𝑎†𝑎
+    interaction  = (a.dag() + a) * sx               # interaction energy operator        (𝑎†+𝑎)𝜎𝑥  
     
     P = sz*(1j*np.pi*a.dag()*a).expm()              # parity operator 
     
