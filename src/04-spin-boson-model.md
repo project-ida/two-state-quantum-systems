@@ -57,6 +57,11 @@ $$H =  \frac{\Delta E}{2} \sigma_z + \hbar\omega\left(a^{\dagger}a +\frac{1}{2}\
 
 where we recognise $\Delta E$ as the transition energy of the TSS, $\hbar\omega$ the energy of a single boson and $U$ as the strength of the interaction of the TSS with the boson field.
 
+We will be referring to this Hamiltonian many times in our figures so let's make a variable so it's easier to refer to later.
+
+```python
+H_latex = "$H = (\Delta E / 2) \sigma_z + \hbar\omega(a^{{\dagger}}a +1/2) + U( a^{{\dagger}} + a )\sigma_x$"
+```
 
 In the last tutorial we saw how the physics of spontaneous emission arose from an indirect coupling between the |+> and |-> states of the TSS which was mediated by the interaction with the boson field. This interaction manifested as a Rabi type oscillation between two states of the combined spin boson system (described by |n,±>), namely |0,+> and |1,->.
 
@@ -170,7 +175,7 @@ Because we stored the data in a dataframe, plotting is now easy.
 
 ```python
 df.plot(x="$\Delta E$",figsize=(10,8),ylim=[-0.5,5.5],legend=True, 
-        title="Stationary states ($\omega=1$, $U=0$)     (Fig 1)");
+        title="Stationary states for $H = (\Delta E / 2) \sigma_z + \hbar\omega(a^{{\dagger}}a +1/2)$     ($\omega=1$)     (Fig 1)");
 plt.ylabel("Energy");
 ```
 
@@ -206,7 +211,7 @@ for i, row in df.iterrows():
 
 ```python
 df.plot(x="$\Delta E$",figsize=(10,8),ylim=[-0.5,5.5],legend=True, 
-        title="Stationary states ($\omega=1$, $U=0.2$)     (Fig 2)");
+        title=f"Stationary states for {H_latex}     ($\omega=1$, $U=0.2$)     (Fig 2)");
 plt.ylabel("Energy");
 ```
 
@@ -233,7 +238,7 @@ for i, row in df.iterrows():
 
 ```python
 df.plot(x="$\Delta E$",figsize=(10,8),ylim=[1.9,2],legend=True, 
-        title="Zoom in of the stationary states ($\omega=1$, $U=0.2$)     (Fig 3)");
+        title=f"Stationary states for {H_latex}    ($\omega=1$, $U=0.2$)     (Fig 3)");
 plt.ylabel("Energy");
 
 
@@ -272,7 +277,7 @@ for U in Us:
 @gif.frame
 def plot(df,j):
     df.plot(x="$\Delta E$",figsize=(10,8),ylim=[-0.5,5.5],legend=True, 
-        title=f"Stationary states for $H = (\Delta E / 2) \sigma_z + \hbar\omega(a^{{\dagger}}a +1/2) + U( a^{{\dagger}} + a )\sigma_x$     ($\omega=1$, $U={Us[j]:.3f}$) ");
+        title=f"Stationary states for {H_latex}     ($\omega=1$, $U={Us[j]:.3f}$) ");
     plt.ylabel("Energy");
     
     
@@ -518,14 +523,16 @@ for i, row in df_even.iterrows():
 ```python
 fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(15,6), sharey=True)
 
+fig.suptitle(f"Stationary states for {H_latex}    ($\omega=1$, $U=0.2$)")
 
 df_odd.plot(x="$\Delta E$",ylim=[-0.5,5.5],legend=False, 
-        title="Odd stationary states ($\omega=1$, $U=0.2$)     (Fig 9)",  ax=axes[0]);
+        title="Odd parity     (Fig 9)",  ax=axes[0]);
 
 df_even.plot(x="$\Delta E$",ylim=[-0.5,5.5],legend=False, 
-        title="Even stationary states ($\omega=1$, $U=0.2$)     (Fig 10)",  ax=axes[1]);
+        title="Even parity      (Fig 10)",  ax=axes[1]);
 
 axes[0].set_ylabel("Energy");
+
 ```
 
 Figs 9 and 10 show us the energy of the stationary states for the odd and even parity states respectively. As we expected, we now only see anti-crossings because in each universe there are no forbidden interactions.
@@ -602,7 +609,7 @@ for i in range(0,P.shape[0]):
 plt.ylabel("Probability")
 plt.xlabel("Time")
 plt.legend(loc="right")
-plt.title("($\Delta E=2.88$, $\omega=1$, $U=0.2$)     (Fig 12)")
+plt.title(f" {H_latex}    ($\Delta E=2.88$, $\omega=1$, $U=0.2$)     (Fig 12)")
 plt.show();
 ```
 
@@ -648,7 +655,7 @@ plt.plot(times, interaction_expect, label="interaction")
 plt.ylabel("Energy")
 plt.xlabel("Time")
 plt.legend(loc="right")
-plt.title(f"Expectation values for parts of the Hamiltoian ($\Delta E=2.88$, $\omega=1$, $U=0.2$)     (Fig 13)")
+plt.title(f"Expectation values for {H_latex}    ($\Delta E=2.88$, $\omega=1$, $U=0.2$)     (Fig 13)")
 plt.show();
 ```
 
