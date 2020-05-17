@@ -78,9 +78,9 @@ We begin in the same way that we started this tutorial series ([Tutorial 1](http
 
 To find the states of constant energy, we'll follow what we did in [Tutorial 2](https://nbviewer.jupyter.org/github/project-ida/two-state-quantum-systems/blob/master/02-perturbing-a-two-state-system.ipynb#2.1-Static-perturbation). Specifically, we will calculate the eigenvalues of the Hamiltonian (i.e the energies) and see how they depend on the TSS transition energy $\Delta E$.
 
-What do we expect to find? Recall that in Tutorial 2 (see Fig 3) we discovered an [avoided crossing](https://en.wikipedia.org/wiki/Avoided_crossing) (aka anti-crossing) when the transition energy of the TSS was zero  - this was due to the coupling between the states splitting the energy levels apart.
+What do we expect to find? Let's recall Tutorial 2 - the states of the TSS were directly coupled, mimicking the effect of a classical field. In Fig 3 of that tutorial we discovered an [avoided crossing](https://en.wikipedia.org/wiki/Avoided_crossing) (aka anti-crossing) when the transition energy of the TSS was zero  - this was due to the coupling between the states splitting the energy levels apart.
 
-Let's see what we find in this more complicated spin-boson system - we'll start with no interaction $U=0$ to familiarsie ourselves with the landscape before exploring the full delights of the spin bosons system.
+In the more complicated spin-boson system of this tutorial, the states of the TSS can only couple indirectly through the boson field. Let's see whether we find any similarities - we'll start with no interaction $U=0$ to familiarsie ourselves with the landscape before exploring the full delights of the spin boson system.
 
 
 Since we will be creating many Hamiltonians with differing parameters, it's helpful to create a function to pre-compute the constant pieces. Specifically, the following function `make_operators` will compute the following:
