@@ -20,3 +20,4 @@ It is therefore worthwhile to develop a strong intuition about how two state sys
 - [01 - An isolated two state system](01-an-isolated-two-state-system.ipynb)
 - [02 - Perturbing a two state system](02-perturbing-a-two-state-system.ipynb)
 - [03 - A two state system in a quantised field](03-a-two-state-system-in-a-quantised-field.ipynb)
+- [04 - Spin-boson model](04-spin-boson-model.ipynb)
