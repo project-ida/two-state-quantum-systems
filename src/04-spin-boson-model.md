@@ -467,7 +467,7 @@ Now with only a single parity, Fig 8 makes it easier to see how the system behav
 Now, we'll automate the parity extraction process. Let's augment the `make_operators` function to do this:
 
 ```python
-def make_operators(max_bosons, parity):
+def make_operators(max_bosons, parity=0):
     
     a  = tensor(destroy(max_bosons+1), qeye(2))     # tensorised boson destruction operator
     sx = tensor(qeye(max_bosons+1), sigmax())       # tensorised sigma_x operator
