@@ -89,7 +89,7 @@ Since we will be creating many Hamiltonians with differing parameters, it's help
 - `bosons` = $a^{\dagger}a +\frac{1}{2}$
 - `interaction` = $\left( a^{\dagger} + a \right)\sigma_x$
 
-so that we can create Hamiltonians with many different TSS transision energies $\Delta E$, boson frequencies $\omega$  and interaction strengths $U$ in the following way:
+so that we can create Hamiltonians with many different TSS transition energies $\Delta E$, boson frequencies $\omega$  and interaction strengths $U$ in the following way:
 
 `H = DeltaE*two_state + omega*bosons + U*interaction`
 
@@ -121,7 +121,7 @@ two_state, bosons, interaction, number = make_operators(max_bosons)
 We now need to prepare a suitable data structure to hold the data about the energies of the stationary states. A [pandas dataframe](https://www.geeksforgeeks.org/python-pandas-dataframe/) (essentially a table) is a suitable choice (which makes plotting easier later).
 
 We need to specify:
-- number of rows - equal to the number of TSS transision energies ($\Delta E$) that we wish to try
+- number of rows - equal to the number of TSS transition energies ($\Delta E$) that we wish to try
 - number of columns - equal to the number of energy levels plus 1 to store the values of $\Delta E$
 - column labels
 
@@ -329,7 +329,7 @@ The colour and size of the squares in Fig 4 give you a measure of the how large 
 
 **Important detour on state numbers and labels**
 
-We'll study Fig 4 in more detail shortly, but for now I want to draw you attention to the labels for the rows and columns. For example:
+We'll study Fig 4 in more detail shortly, but for now I want to draw your attention to the labels for the rows and columns. For example:
 - $|3, 0 \rangle$ represents 3 bosons and a TSS state of |+>
 - $|3, 1 \rangle$ represents 3 bosons and a TSS state of |->
 
@@ -398,7 +398,7 @@ We're getting closer to convincing ourselves of the reality of down conversion, 
 
 What separates the two spin-boson universes is a form of [parity](https://en.wikipedia.org/wiki/Parity_%28physics%29). Parity is not particularly intuitive and a full discussion of it is somewhat involved and takes us deep into the topic of transition [selection rules](https://en.wikipedia.org/wiki/Selection_rule) - we'll come back to this another time.
 
-For now, the the important thing to note is [how the parity operator $P$ acts on the spin-boson system](https://iopscience.iop.org/article/10.1088/0305-4470/29/14/026):
+For now, the important thing to note is [how the parity operator $P$ acts on the spin-boson system](https://iopscience.iop.org/article/10.1088/0305-4470/29/14/026):
 - for the TSS, $P |\pm> = \pm1|\pm> $, i.e. parity operator is the same as $\sigma_z$
 - for [the field](https://ia801608.us.archive.org/11/items/TheParityOperatorForTheQuantumHarmonicOscillator/partity_article.pdf) with $n$ bosons, $P |n> = -1^n |n>$, i.e. the parity is $-1^n = e^{i\pi n}$ 
 
@@ -461,7 +461,7 @@ ax.tick_params(axis='x',labelrotation=90,)
 ax.set_title("Even matrix elements of H     (Fig 8)");
 ```
 
-Now with only a single parity, Fig 8 makes it easier to see how the system behaves - boson numbers can only change by one each time and when they do the TSS must flip between |+> and |-> (the same is true for the odd universe).
+Now with only a single parity, Fig 8 makes it easier to see how the system behaves - boson numbers can only change by one each time and when they do, the TSS must flip between |+> and |-> (the same is true for the odd universe).
 
 
 Now, we'll automate the parity extraction process. Let's augment the `make_operators` function to do this:
@@ -552,9 +552,9 @@ Good news - with separate parity universes, we can run all simulations much fast
 ## 4.5 - Down conversion
 
 
-We've seen several signs that when $\Delta E \approx 3\omega$ (anti-crossing in Fig 10 and also Fig 3) we can expect down conversation, i.e. $|0,+> \rightarrow |3,->$. Let's simulate and see if we are correct.
+We've seen several signs that when $\Delta E \approx 3\omega$ (anti-crossing in Fig 10 and also Fig 3) we can expect down conversion, i.e. $|0,+> \rightarrow |3,->$. Let's simulate and see if we are correct.
 
-The last energy level diagram we created was Fig 10 for even parity. Let's see if |0,+> is part of this unvierse.
+The last energy level diagram we created was Fig 10 for even parity. Let's see if |0,+> is part of this universe.
 
 ```python
 nm_list
@@ -683,7 +683,7 @@ We've discovered the surprising new physics of down conversion by exploring the 
 ## Appendix - Solving the Schrödinger equation
 
 
-To illustrate how we solve the Schrödinger equation using the function `simulate`, we will go through an example using the set-up of down conversation in Section 4.5.
+To illustrate how we solve the Schrödinger equation using the function `simulate`, we will go through an example using the set-up of down conversion in Section 4.5.
 
 ```python
 # Create the operators and state list for even parity universe
