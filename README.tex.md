@@ -17,7 +17,7 @@ It is therefore worthwhile to develop a strong intuition about how two state sys
 
 ## Tutorials
 
-- [01 - An isolated two state system](01-an-isolated-two-state-system.ipynb)
-- [02 - Perturbing a two state system](02-perturbing-a-two-state-system.ipynb)
-- [03 - A two state system in a quantised field](03-a-two-state-system-in-a-quantised-field.ipynb)
-- [04 - Spin-boson model](04-spin-boson-model.ipynb)
+- [01 - An isolated two state system](01-an-isolated-two-state-system.ipynb)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="https://nbviewer.jupyter.org/github/project-ida/two-state-quantum-systems/blob/master/01-an-isolated-two-state-system.ipynb" target="_parent"> <img src="https://nbviewer.jupyter.org/static/img/nav_logo.svg" alt="Open In nbviewer" height="22"/></a>
+- [02 - Perturbing a two state system](02-perturbing-a-two-state-system.ipynb)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="https://nbviewer.jupyter.org/github/project-ida/two-state-quantum-systems/blob/master/02-perturbing-a-two-state-system.ipynb" target="_parent"> <img src="https://nbviewer.jupyter.org/static/img/nav_logo.svg" alt="Open In nbviewer" height="22"/></a>
+- [03 - A two state system in a quantised field](03-a-two-state-system-in-a-quantised-field.ipynb)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="https://nbviewer.jupyter.org/github/project-ida/two-state-quantum-systems/blob/master/03-a-two-state-system-in-a-quantised-field.ipynb" target="_parent"> <img src="https://nbviewer.jupyter.org/static/img/nav_logo.svg" alt="Open In nbviewer" height="22"/></a>
+- [04 - Spin-boson model](04-spin-boson-model.ipynb)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="https://nbviewer.jupyter.org/github/project-ida/two-state-quantum-systems/blob/master/04-spin-boson-model.ipynb" target="_parent"><img src="https://nbviewer.jupyter.org/static/img/nav_logo.svg" alt="Open In nbviewer" height="22"/></a>
