@@ -228,7 +228,7 @@ Two main features are:
 
 On 1. Applying our knowledge from Tutorial 1, we would say that the effective coupling between levels (which is proportional to the level splitting) increases with increasing boson number.
 
-On 2. Upon closer inspection, we can see that the level splittings only occur when $\Delta E  \approx n \omega$ where n is an **odd** integer (we'll come to why we now use $\approx$ instead of = shortly). This tells us that our prediction of other resonances was only correct for the odd integer ones - we will understand why soon. To see the anti-crossing more clearly for $\Delta E \approx 3\omega$ we need to zoom in a bit.
+On 2. Upon closer inspection, what can be seen is that when $\Delta E  \approx 2 \omega, 4 \omega ...$ etc. the levels still cross, i.e. there is no interaction between them. It is not obvious at this scale but, when we zoom in, we will find that not only do we have an anti-crossing when $\Delta E \approx \omega$ (the most pronounced in Fig 2) but also when $\Delta E  \approx 3 \omega, 5\omega...$ etc (we'll come to why we now use $\approx$ instead of = shortly). This tells us that our prediction of other resonances was only correct for the odd integer ones - we will understand why soon. To see the anti-crossing more clearly for $\Delta E \approx 3\omega$ we need to zoom in a bit.
 
 To perform this zoom, it is best to perform a higher resolution scan of $\Delta E$:
 
