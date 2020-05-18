@@ -656,10 +656,10 @@ interaction_expect = expectation(0.2*interaction,psi)
 
 ```python
 plt.figure(figsize=(10,8))
-plt.plot(times, hamiltonian_expect, label="total hamiltonian")
-plt.plot(times, two_state_expect, label="two-state")
-plt.plot(times, bosons_expect, label="bosons")
-plt.plot(times, interaction_expect, label="interaction")
+plt.plot(times, hamiltonian_expect, label="$H$ - Total Hamiltonian")
+plt.plot(times, two_state_expect, label="$(\Delta E/2) \sigma_z$ - TSS")
+plt.plot(times, bosons_expect, label="$\hbar\omega(a^{{\dagger}}a +1/2)$ - bosons")
+plt.plot(times, interaction_expect, label="$U( a^{{\dagger}} + a )\sigma_x$ - interaction")
 
 plt.ylabel("Energy")
 plt.xlabel("Time")
