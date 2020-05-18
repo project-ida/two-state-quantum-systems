@@ -493,7 +493,7 @@ It's taken us a while but we eventually arrived, as promised. We see in Fig 2 th
 
 Much like the previous two tutorials, we are continuing to see that the evolution of our systems are not irreversible but instead undergo oscillations. The particular oscillation we are seeing in Fig 2 are referred to as [vacuum Rabi oscillations](https://en.wikipedia.org/wiki/Jaynes%E2%80%93Cummings_model#Vacuum_Rabi_Oscillations). This reversibility might seem at odds with what we are taught in introductory quantum classes, particular in the context of spontaneous emission.
 
-Technically, spontaneous emission isn't actually irreversible - if you wait long enough the system will return to its original state. However, the mode modes you have (we only have 1), the more places there are for the energy to go. We know from statistical physics what that means - the system will most likely be found in a high entropy state, i.e. not in our special initial condition, but in one where the energy is in the field with its uncountably many modes. 
+Technically, spontaneous emission isn't actually irreversible - if you wait long enough the system will return to its original state. However, the more modes you have (we only have 1), the more places there are for the energy to go. We know from statistical physics what that means - the system will most likely be found in a high entropy state, i.e. not in our special initial condition, but in one where the energy is in the field with its uncountably many modes. 
 
 So, even more exciting stuff can apparently be found by looking at many mode physics. We can start to get a glimpse of many mode physics by simply adding more terms to our Hamiltonian like this:
 
@@ -630,4 +630,4 @@ Fig 5 shows a far less regular pattern - much more in line with a path towards i
 
 
 
-We've covered a **LOT** today so well done for sticking with it. We've laid the foundations for more complicated problems so that next time we can get stuck into simulations almost immediately. In tutorial 4 we'll see how our combined two state system and quantised field can extend our ideas of resonance beyond simply $\omega=\omega_0$. To do this we'll need to demystify what are often referred to as virtual transitions. See you next time!
+We've covered a **LOT** today so well done for sticking with it. We found some new physics from developing a fully quantum description for the interaction of our two state system with its environment. We'll see next time, through visualising the structure of the Hamiltonian and the resulting energy levels, that there is still lots more to discover using this simplified model of nature. See you then!
