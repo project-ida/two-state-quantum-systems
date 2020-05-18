@@ -374,7 +374,15 @@ ax.set_title("Matrix elements of H     (Fig 5)");
 
 That's better!
 
-If we now take a closer look at the structure of the Hinton diagram we can see some interesting features when we follow a path that connects one state to another:
+If we now take a closer look at the structure of the Hinton diagram we can see some interesting features when we follow a path that connects one state to another. 
+
+How are the states connected? In other words - how do we move across the Hinton diagram? In short, we can only move horizontally and vertically. In more detail:
+1. Pick a starting state from the list on the x-axis $|\psi>$
+2. Move vertically down the Hinton diagram until you reach the diagonal - this matrix element, $<\psi|H|\psi>$, represents the energy of the system when it's in the $|\psi>$ state
+3. Move horizontally until you meet a coloured square - this matrix element, $<\psi|H|\phi>$,  represents the interaction energy between $|\psi>$  and $|\phi>$
+4. Repeat step 2
+
+Let's look at an example:
 
 ```python
 print("                Matrix elements of H     (Fig 6)")
