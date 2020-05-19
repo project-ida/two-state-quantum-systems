@@ -37,7 +37,7 @@ import os
 
 # Functions created in 04 tutorial
 
-import libs.helper_05_tutorial
+from libs.helper_05_tutorial import *
 ```
 
 If we are only interested in high boson numbers and don't want to incur the cost of simulation the low ones as well then we need to modify `make_operators` from the last tutorial.
@@ -203,4 +203,27 @@ for i, row in df.iterrows():
 df.plot(x="$\Delta E$",figsize=(10,8),ylim=[min_bosons+100,min_bosons+120],legend=False, 
         title=f"Stationary states ($\omega=1$, $U=0.2$), n_max={min_bosons+200}, n_min ={min_bosons}      (Fig 2)");
 plt.ylabel("Energy");
+```
+
+Let's try and repeat that last figure but changing the max and min number of bosons - do we still get the same pattern?
+
+```python
+two_state, bosons, interaction, number, nm_list = make_operators(2900,2500,1)
+
+df = make_df_for_energy_scan("$\Delta E$", -4, 4, 201, two_state.shape[0])
+
+for i, row in df.iterrows():
+    H =  row["$\Delta E$"]*two_state + 1*bosons + 0.2*interaction
+    evals, ekets = H.eigenstates()
+    df.iloc[i,1:] = evals
+    
+df.plot(x="$\Delta E$",figsize=(10,8),ylim=[2700,2720],legend=False, 
+        title=f"Stationary states ($\omega=1$, $U=0.2$), n_max=2900, n_min =2500      (Fig 2)");
+plt.ylabel("Energy");
+```
+
+We do get the same pattern which suggests it's not a boundary effect
+
+```python
+
 ```
