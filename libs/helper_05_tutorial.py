@@ -1,5 +1,12 @@
 # Functions created in 04 tutorial that are helpful for 05 tutorial
 
+import numpy as np
+import pandas as pd
+from qutip import *
+import warnings
+warnings.filterwarnings('ignore')
+from itertools import product
+
 def make_df_for_energy_scan(label_param, min_param, max_param, num_param, num_levels):
     
     # creates an empty dictionary to store the row/column information
