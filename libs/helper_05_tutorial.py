@@ -29,12 +29,6 @@ def make_df_for_energy_scan(label_param, min_param, max_param, num_param, num_le
     return df
 
 
-def make_braket_labels(nm_list):
-    bra_labels = ["$\langle$"+str(n)+", "+str(m)+" |" for (n,m) in nm_list]
-    ket_labels = ["| "+str(n)+", "+str(m)+"$\\rangle$" for (n,m) in nm_list]
-    return bra_labels, ket_labels
-
-
 def simulate(H, psi0, times):
     num_states = H.shape[0]
     
