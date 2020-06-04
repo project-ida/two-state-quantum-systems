@@ -681,7 +681,7 @@ In Fig 13 we can indeed see the energy exchange that we expect between the TSS a
 
 ## Next up...
 
-We've discovered the surprising new physics of down conversion by exploring the energy levels of the spin boson system. This is just the tip of the ice berg though. How strong do these resonances get as we increase the boson number? How sensitive are the resonances compared to each other? We'll explore that and more in the next tutorial.
+We've discovered the surprising new physics of down conversion by exploring the energy levels of the spin boson system. This is just the tip of the ice berg though. How strong do these resonances get as we increase the boson number? How sensitive are the resonances compared to each other? We'll explore that and more in future tutorials. Before we dig into those details, let's see what delights await us when we add another two state system into the mix.
 
 
 
