@@ -60,7 +60,7 @@ def make_operators(max_bosons, parity=0):
     interaction_1  =    (a.dag() + a) * sx1     # interaction energy operator 1
     interaction_2  =    (a.dag() + a) * sx2     # interaction energy operator 2 
     
-    P = (sz1+sz2)*(1j*np.pi*number).expm()                      # parity operator 
+    P = sz1*sz2*(1j*np.pi*number).expm()                      # parity operator 
     
     # map from QuTiP number states to |n,±> states
     possible_ns = range(0, max_bosons+1)
@@ -71,14 +71,16 @@ def make_operators(max_bosons, parity=0):
     if (parity==1) | (parity==-1):
         p           = np.where(P.diag()==parity)[0]
         
-        two_state   = two_state.extract_states(p)
-        bosons      = bosons.extract_states(p)
-        number      = number.extract_states(p)
-        interaction = interaction.extract_states(p)
-        nm_list     = [nm_list[i] for i in p]
+        two_state_1     = two_state_1.extract_states(p)
+        two_state_2     = two_state_2.extract_states(p)
+        bosons          = bosons.extract_states(p)
+        number          = number.extract_states(p)
+        interaction_1   = interaction_1.extract_states(p)
+        interaction_2   = interaction_2.extract_states(p)
+        nm_list         = [nm_list[i] for i in p]
     
     
-    return two_state_1, two_state_2, bosons, interaction_1, interaction_2, number, nm_list
+    return two_state_1, two_state_2, bosons, interaction_1, interaction_2, number, nm_list, P
 ```
 
 ```python
@@ -89,7 +91,7 @@ def make_braket_labels(nm_list):
 ```
 
 ```python
-two_state_1, two_state_2, bosons, interaction_1, interaction_2, number, nm_list = make_operators(max_bosons=2)
+two_state_1, two_state_2, bosons, interaction_1, interaction_2, number, nm_list, parity = make_operators(max_bosons=2)
 ```
 
 ```python
@@ -107,7 +109,23 @@ ax.set_title("Matrix elements of H     (Fig 5)");
 ```
 
 ```python
-H = 10*two_state_1+ 10*two_state_2 + 1*bosons + 0.001*interaction_1 + 0.001*interaction_2
+S2 = (two_state_1*2+two_state_2*2)*(two_state_1*2+two_state_2*2)
+```
+
+```python
+f, ax = hinton(S2, xlabels=ket_labels, ylabels=bra_labels)
+ax.tick_params(axis='x',labelrotation=90,)
+ax.set_title("Matrix elements of H     (Fig 5)");
+```
+
+```python
+f, ax = hinton(parity, xlabels=ket_labels, ylabels=bra_labels)
+ax.tick_params(axis='x',labelrotation=90,)
+ax.set_title("Matrix elements of H     (Fig 5)");
+```
+
+```python
+H = 3*two_state_1+ 3*two_state_2 + 1*bosons + 0.001*interaction_1 + 0.001*interaction_2
 ```
 
 ```python
@@ -119,7 +137,7 @@ psi0 = basis(len(nm_list), 1)
 ```
 
 ```python
-times = np.linspace(0.0, 1000.0, 1000)
+times = np.linspace(0.0, 10000000.0, 10000) # simulation time
 P, psi = simulate(H, psi0, times)
 ```
 
@@ -130,29 +148,191 @@ for i in range(0,P.shape[0]):
 plt.ylabel("Probability")
 plt.xlabel("Time")
 plt.legend(loc="right")
-plt.title("($\Delta E=10$, $\omega=1$, $U=0.001$)     (Fig 12)")
+plt.title("($\Delta E=3$, $\omega=1$, $U=0.001$)     (Fig 12)")
 plt.show();
 ```
 
 ```python
-times = np.linspace(0.0, 100000000.0, 10000) # simulation time
-P, psi = simulate(H, psi0, times)
+parity_expect=expectation(Parity,psi)
 ```
 
 ```python
 plt.figure(figsize=(10,8))
-for i in range(0,P.shape[0]):
-    plt.plot(times, P[i,:], label=f"{ket_labels[i]}")
-plt.ylabel("Probability")
+plt.plot(times, parity_expect, label="parity")
+
+
+plt.ylabel("Energy")
 plt.xlabel("Time")
 plt.legend(loc="right")
-plt.title("($\Delta E=10$, $\omega=1$, $U=0.001$)     (Fig 12)")
 plt.show();
 ```
 
 ```python
 
 ```
+
+```python
+two_state_1, two_state_2, bosons, interaction_1, interaction_2, number, nm_list, parity = make_operators(max_bosons=4)
+```
+
+```python
+bra_labels, ket_labels = make_braket_labels(nm_list)
+```
+
+```python
+df = make_df_for_energy_scan("$\Delta E$", -4,4, 201, two_state_1.shape[0])
+```
+
+```python
+for i, row in df.iterrows():
+    H =  row["$\Delta E$"]*two_state_1+ row["$\Delta E$"]*two_state_2 + 1*bosons + 0.001*interaction_1 + 0.001*interaction_2
+    evals, ekets = H.eigenstates()
+    df.iloc[i,1:] = evals
+```
+
+```python
+df.plot(x="$\Delta E$",figsize=(10,8),ylim=[-0.5,5.5],legend=False, 
+        title="Stationary states ($\omega=1$, $U=0.001$)     (Fig 2)");
+plt.ylabel("Energy");
+```
+
+```python
+df = make_df_for_energy_scan("$\Delta E$", 2,4, 201, two_state_1.shape[0])
+for i, row in df.iterrows():
+    H =  row["$\Delta E$"]*two_state_1+ row["$\Delta E$"]*two_state_2 + 1*bosons + 0.001*interaction_1 + 0.001*interaction_2
+    evals, ekets = H.eigenstates()
+    df.iloc[i,1:] = evals
+```
+
+```python
+df.plot(x="$\Delta E$",figsize=(10,8),ylim=[-0.5,5.5],legend=False, 
+        title="Stationary states ($\omega=1$, $U=0.001$)     (Fig 2)");
+plt.ylabel("Energy");
+```
+
+```python
+df = make_df_for_energy_scan("$\Delta E$", -4,4, 201, two_state_1.shape[0])
+for i, row in df.iterrows():
+    H =  row["$\Delta E$"]*two_state_1+ row["$\Delta E$"]*two_state_2 + 1*bosons + 0.2*interaction_1 + 0.2*interaction_2
+    evals, ekets = H.eigenstates()
+    df.iloc[i,1:] = evals
+```
+
+```python
+df.plot(x="$\Delta E$",figsize=(10,8),ylim=[-0.5,5.5],legend=False, 
+        title="Stationary states ($\omega=1$, $U=0.001$)     (Fig 2)");
+plt.ylabel("Energy");
+```
+
+```python
+df = make_df_for_energy_scan("$\Delta E$", 2.75,2.8, 201, two_state_1.shape[0])
+for i, row in df.iterrows():
+    H =  row["$\Delta E$"]*two_state_1+ row["$\Delta E$"]*two_state_2 + 1*bosons + 0.2*interaction_1 + 0.2*interaction_2
+    evals, ekets = H.eigenstates()
+    df.iloc[i,1:] = evals
+```
+
+```python
+df.plot(x="$\Delta E$",figsize=(10,8),ylim=[0.47,0.6],legend=False, 
+        title="Stationary states ($\omega=1$, $U=0.001$)     (Fig 2)");
+plt.ylabel("Energy");
+```
+
+```python
+
+```
+
+```python
+# ODD PARITY
+
+two_state_1, two_state_2, bosons, interaction_1, interaction_2, number, nm_list, parity = make_operators(max_bosons=4, parity=-1)
+
+df_odd = make_df_for_energy_scan("$\Delta E$", -4, 4, 201, two_state_1.shape[0])
+
+for i, row in df_odd.iterrows():
+    H =  row["$\Delta E$"]*two_state_1+ row["$\Delta E$"]*two_state_2 + 1*bosons + 0.001*interaction_1 + 0.001*interaction_2
+    evals, ekets = H.eigenstates()
+    df_odd.iloc[i,1:] = evals 
+```
+
+```python
+# EVEN PARITY
+
+two_state_1, two_state_2, bosons, interaction_1, interaction_2, number, nm_list, parity = make_operators(max_bosons=4, parity=1)
+
+df_even = make_df_for_energy_scan("$\Delta E$", -4, 4, 201, two_state_1.shape[0])
+
+for i, row in df_even.iterrows():
+    H =  row["$\Delta E$"]*two_state_1+ row["$\Delta E$"]*two_state_2 + 1*bosons + 0.001*interaction_1 + 0.001*interaction_2
+    evals, ekets = H.eigenstates()
+    df_even.iloc[i,1:] = evals 
+```
+
+```python
+fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(15,6), sharey=True)
+
+
+df_odd.plot(x="$\Delta E$",ylim=[-0.5,5.5],legend=False, 
+        title="Odd stationary states ($\omega=1$, $U=0.001$)     (Fig 9)",  ax=axes[0]);
+
+df_even.plot(x="$\Delta E$",ylim=[-0.5,5.5],legend=False, 
+        title="Even stationary states ($\omega=1$, $U=0.001$)     (Fig 10)",  ax=axes[1]);
+
+axes[0].set_ylabel("Energy");
+```
+
+```python
+
+```
+
+```python
+# ODD PARITY
+
+two_state_1, two_state_2, bosons, interaction_1, interaction_2, number, nm_list, parity = make_operators(max_bosons=4, parity=-1)
+
+df_odd = make_df_for_energy_scan("$\Delta E$", -4, 4, 201, two_state_1.shape[0])
+
+for i, row in df_odd.iterrows():
+    H =  row["$\Delta E$"]*two_state_1+ row["$\Delta E$"]*two_state_2 + 1*bosons + 0.1*interaction_1 + 0.1*interaction_2
+    evals, ekets = H.eigenstates()
+    df_odd.iloc[i,1:] = evals 
+```
+
+```python
+# EVEN PARITY
+
+two_state_1, two_state_2, bosons, interaction_1, interaction_2, number, nm_list, parity = make_operators(max_bosons=4, parity=1)
+
+df_even = make_df_for_energy_scan("$\Delta E$", -4, 4, 201, two_state_1.shape[0])
+
+for i, row in df_even.iterrows():
+    H =  row["$\Delta E$"]*two_state_1+ row["$\Delta E$"]*two_state_2 + 1*bosons + 0.1*interaction_1 + 0.1*interaction_2
+    evals, ekets = H.eigenstates()
+    df_even.iloc[i,1:] = evals 
+```
+
+```python
+fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(15,6), sharey=True)
+
+
+df_odd.plot(x="$\Delta E$",ylim=[-0.5,5.5],legend=False, 
+        title="Odd stationary states ($\omega=1$, $U=0.1$)     (Fig 9)",  ax=axes[0]);
+
+df_even.plot(x="$\Delta E$",ylim=[-0.5,5.5],legend=False, 
+        title="Even stationary states ($\omega=1$, $U=0.1$)     (Fig 10)",  ax=axes[1]);
+
+axes[0].set_ylabel("Energy");
+```
+
+>TODO: Need to look at 
+
+https://www2.ph.ed.ac.uk/~ldeldebb/docs/QM/lect15.pdf - addition of angular momentum
+
+https://en.wikipedia.org/wiki/Clebsch%E2%80%93Gordan_coefficients
+
+http://www.lassp.cornell.edu/clh/p654/MM-Lec0.pdf
+
+https://quantummechanics.ucsd.edu/ph130a/130_notes/node312.html
 
 ```python
 
