@@ -74,6 +74,8 @@ def make_braket_labels(njm_list):
 ```python
 def make_operators(num_tss, max_bosons, j, parity=0):
     
+    j_index, jm_list = j_states_list(num_tss)
+        
     try:
         j_index[j]
     except:
@@ -83,7 +85,7 @@ def make_operators(num_tss, max_bosons, j, parity=0):
     Jx = Js[0]
     Jz = Js[2]
     
-    j_index, jm_list = j_states_list(num_tss)
+
     
     num_ms = len(m_vals(j))
     Jz = Jz.extract_states(j_index[j])
@@ -131,23 +133,59 @@ def make_operators(num_tss, max_bosons, j, parity=0):
 ```
 
 ```python
+Jz, bosons, interaction, number, njm_list, P = make_operators(6, 10, 3, 0)
 
+df = make_df_for_energy_scan("$\Delta E$", -4, 4, 201, Jz.shape[0])
+
+for i, row in df.iterrows():
+    H =  row["$\Delta E$"]*Jz + 1*bosons + 0.2*interaction
+    evals, ekets = H.eigenstates()
+    df.iloc[i,1:] = evals 
 ```
 
 ```python
-
+df.plot(x="$\Delta E$",figsize=(10,8),legend=False, ylim=[-0.5,5.5],
+        title="Stationary states ($\omega=1$, $U=0.2$)     (Fig 2)");
+plt.ylabel("Energy");
 ```
 
 ```python
+## EVEN
 
+Jz, bosons, interaction, number, njm_list, P = make_operators(10, 20, 5, 1)
+
+df_even = make_df_for_energy_scan("$\Delta E$", -4, 4, 201, Jz.shape[0])
+
+for i, row in df_even.iterrows():
+    H =  row["$\Delta E$"]*Jz + 1*bosons + 0.2*interaction
+    evals, ekets = H.eigenstates()
+    df_even.iloc[i,1:] = evals 
 ```
 
 ```python
+## ODD
 
+Jz, bosons, interaction, number, njm_list, P = make_operators(10, 20, 5, -1)
+
+df_odd = make_df_for_energy_scan("$\Delta E$", -4, 4, 201, Jz.shape[0])
+
+for i, row in df_odd.iterrows():
+    H =  row["$\Delta E$"]*Jz + 1*bosons + 0.2*interaction
+    evals, ekets = H.eigenstates()
+    df_odd.iloc[i,1:] = evals 
 ```
 
 ```python
+fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(15,6), sharey=True)
 
+
+df_odd.plot(x="$\Delta E$",ylim=[-0.5,5.5],legend=False, 
+        title="Odd stationary states ($N=10$, $J=5$, $\omega=1$, $U=0.2$)     (Fig 4)",  ax=axes[0]);
+
+df_even.plot(x="$\Delta E$",ylim=[-0.5,5.5],legend=False, 
+        title="Even stationary states ($N=10$, $J=5$, $\omega=1$, $U=0.2$)     (Fig 5)",  ax=axes[1]);
+
+axes[0].set_ylabel("Energy");
 ```
 
 ```python
