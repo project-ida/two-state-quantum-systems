@@ -31,17 +31,148 @@ import gif
 import numpy as np
 import pandas as pd
 from qutip import *
+from qutip.piqs import *
+from qutip.cy.piqs import j_min, j_vals, m_vals
 import warnings
 warnings.filterwarnings('ignore')
 from itertools import product
 import os
-
+from fractions import Fraction
 # Functions created in 04 tutorial
 
 from libs.helper_05_tutorial import *
 ```
 
 > TODO: Need to motivate how the `make_operators`function needs to be modified
+
+```python
+def j_states_list(num_tss):
+    i=0
+    
+    jm_list = []
+    j_index = {}
+
+    js = j_vals(num_tss)[::-1]
+    
+    for j in js:
+        j_index[j] = []
+        ms = m_vals(j)[::-1]
+        for m in ms:
+            j_index[j].append(i)
+            jm_list.append((j,m))
+            i+=1
+    return j_index, jm_list
+```
+
+```python
+def make_braket_labels(njm_list):
+    bra_labels = ["$\langle$"+str(n)+", "+str(Fraction(j))+", "+str(Fraction(m))+" |" for (n,j,m) in njm_list]
+    ket_labels = ["| "+str(n)+", "+str(Fraction(j))+", "+str(Fraction(m))+"$\\rangle$" for (n,j,m) in njm_list]
+    return bra_labels, ket_labels
+```
+
+```python
+def make_operators(num_tss, max_bosons, j, parity=0):
+    
+    try:
+        j_index[j]
+    except:
+        raise Exception(f"j needs to be one of {j_vals(num_tss)}")
+    
+    Js = jspin(num_tss)
+    Jx = Js[0]
+    Jz = Js[2]
+    
+    j_index, jm_list = j_states_list(num_tss)
+    
+    num_ms = len(m_vals(j))
+    Jz = Jz.extract_states(j_index[j])
+    Jx = Jx.extract_states(j_index[j])
+    jm_list = [jm_list[i] for i in j_index[j]]
+    
+    
+    a        = tensor(destroy(max_bosons+1), qeye(num_ms))     # tensorised boson destruction operator
+    number   = tensor(num(max_bosons+1), qeye(num_ms))         # tensorised boson number operator
+    Jz       = tensor(qeye(max_bosons+1), Jz)                  # tensorised sigma_x operator 1
+    Jx       = tensor(qeye(max_bosons+1), Jx)                  # tensorised sigma_x operator 1
+    
+    bosons         =   (number+0.5)                                # boson energy operator
+    interaction  =    (a.dag() + a) * 2*Jx                        # interaction energy operator
+    
+    if(num_ms==1):
+        interaction.dims = [[max_bosons+1,1],[max_bosons+1,1]]
+    
+    M = tensor(qeye(max_bosons+1),qdiags(m_vals(j)[::-1],0))    # M operator
+    
+    if((2*j)%2==0):
+        P = (1j*np.pi*M).expm()*(1j*np.pi*number).expm()                  # parity operator 
+    else:
+        P = 1j*(1j*np.pi*M).expm()*(1j*np.pi*number).expm() 
+    
+    
+    # map from QuTiP number states to |n,±, ±> states
+    possible_ns = range(0, max_bosons+1)
+    njm_list = [(n,j,m) for (n,(j,m)) in product(possible_ns, jm_list)]
+    
+    # only do parity extraction if a valid parity is being used
+    if (parity==1) | (parity==-1):
+        p           = np.where(P.diag()==parity)[0]
+        
+        Jz     = Jz.extract_states(p)
+        Jx     = Jx.extract_states(p)
+        bosons          = bosons.extract_states(p)
+        number          = number.extract_states(p)
+        interaction   = interaction.extract_states(p)
+        P               = P.extract_states(p)
+        njm_list         = [njm_list[i] for i in p]
+    
+    
+    return Jz, bosons, interaction, number, njm_list, P
+```
+
+```python
+
+```
+
+```python
+
+```
+
+```python
+
+```
+
+```python
+
+```
+
+```python
+
+```
+
+```python
+
+```
+
+```python
+
+```
+
+```python
+
+```
+
+```python
+
+```
+
+```python
+
+```
+
+```python
+
+```
 
 ```python
 def make_operators(max_bosons):
