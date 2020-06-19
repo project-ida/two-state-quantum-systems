@@ -54,74 +54,68 @@ def prettify_states(states, mm_list):
     return pd.DataFrame(data=pretty_states, index=mm_list)
 ```
 
-<!-- #region -->
+```python
+
+```
+
+```python
+
+```
+
+```python
+
+```
+
 As soon as we start adding more than one TSS things get quite complicated. In order to give us an intuition for how such systems behave, we will take inspiration from Tutorials 1 and 2.
 
-Recall that when we started in [Tutortial 2](https://nbviewer.jupyter.org/github/project-ida/two-state-quantum-systems/blob/master/02-perturbing-a-two-state-system.ipynb#2.1-Static-perturbation) we motivated that a single TSS whose states have the same energy $E_0$, are coupled together with strength $A$ and are subject to some kind of external perturbation $\delta$ can be described by a Hamiltonian
-
-$$
-H = \begin{bmatrix}
- E_0 + \delta  &  -A  \\
- -A  &  E_0 - \delta  \\
-\end{bmatrix} = E_0 I - A \sigma_x + \delta\sigma_z
-$$
 
 
-We now recognise that we can always shift all energies in the Hamiltonian by a constant amount so, without loss of generality, we can set $E_0=0$ leaving us with the following Hamiltonian
-
-$$
-H = - A \sigma_x + \delta\sigma_z
-$$
-
-<!-- #endregion -->
-
-A natural starting point for the Hamiltonian of $N$ of these TSS is then
-
-$$
-H = - A \overset{N}{\underset{n=1}{\Sigma}} \sigma_{n x} + \delta \overset{N}{\underset{n=1}{\Sigma}} \sigma_{n z}
-$$
-
-where the index $n$ refers to a particular TSS.
-
-You may recall that there are mathematical similarities between a TSS and a spin $1/2$ particle. When considering many TSS, we will find it invaluable to refer to well known spin results, such as conservation of angular momentum, to help us solve problems. In light of this, we will introduce a factor of $1/2$ into the Hamiltonian:
-
-$$
-H = - A \frac{1}{2}\overset{N}{\underset{n=1}{\Sigma}} \sigma_{n x} + \frac{1}{2}\delta \overset{N}{\underset{n=1}{\Sigma}} \sigma_{n z}
-$$
-
-so that we can rewrite our operators as spin operators, (denoted by $S$), for a [spin $1/2$ particle](https://en.wikipedia.org/wiki/Spin-%C2%BD#Observables), i.e.
-
-$$
-H = - A \overset{N}{\underset{n=1}{\Sigma}} S_{n x} + \delta \overset{N}{\underset{n=1}{\Sigma}} S_{n z}
-$$
-
-Because spin represents angular momentum, the combination of spin operators above is mathematically the same as how one would create the [total angular momentum operators](https://www2.ph.ed.ac.uk/~ldeldebb/docs/QM/lect15.pdf) - denoted by $J$, e.g. $Jx = \overset{N}{\underset{n=1}{\Sigma}} S_{n x}$. The Hamiltonian can then be written more compactly as:
-
-$$
-H = - A J_{x} + \delta J_{z}
-$$
-
-Let's see what we can learn from this.
 
 
-## 5.2 - 2 two-state systems
-
-Let's start simple and look at 2 TSS, i.e. $N=2$. In this coupled system we have 4 states:
+Let's start simple and look at 2 TSS. We can describe this system by the different possible combinations of the + and -, namely:
 - |+,+>
 - |+,->
 - |-,+>
 - |-,->
 
+So, 2 TSS is actually a 4 state system. Mathematically these 4 states can be represented as vectors of length 4 using the following basis:
 
-In [Tutorial 3](https://nbviewer.jupyter.org/github/project-ida/two-state-quantum-systems/blob/master/03-a-two-state-system-in-a-quantised-field.ipynb#3.5---Describing-coupled-systems-in-QuTiP) we learnt how to describe such coupled states in QuTiP by using the tensor product.
+$$
+|+, +> = \begin{bmatrix}
+ 1   \\
+ 0   \\
+ 0   \\
+ 0   \\
+ \end{bmatrix}, 
+|+, -> = \begin{bmatrix}
+ 0   \\
+ 1   \\
+ 0   \\
+ 0   \\
+\end{bmatrix}, 
+|-, +> = \begin{bmatrix}
+ 0   \\
+ 0   \\
+ 1   \\
+ 0   \\
+\end{bmatrix}, 
+|-, -> = \begin{bmatrix}
+ 0   \\
+ 0   \\
+ 0   \\
+ 1   \\
+\end{bmatrix}
+$$
 
-Specifically, we would create the |+,-> state by doing:
+How to we create these states in QuTiP?
+
+In [Tutorial 3](https://nbviewer.jupyter.org/github/project-ida/two-state-quantum-systems/blob/master/03-a-two-state-system-in-a-quantised-field.ipynb#3.5---Describing-coupled-systems-in-QuTiP) we learnt to describe such states| by using the tensor product. For example, we would create the |+,-> state by doing:
 
 ```python
 tensor(basis(2,0), basis(2,1))
 ```
 
-We can keep track of which state corresponds to which row by using the `product` function that we introduced in the previous tutorial. Specifically:
+and we can keep track of which basis states corresponds to which row by using the `product` function that we introduced in the previous tutorial. Specifically:
 
 ```python
 possible_ms = ["+","-"]
@@ -129,117 +123,61 @@ mm_list = [m for m in product(possible_ms, possible_ms)]
 mm_list
 ```
 
-And so, the row number 1 of the state vector corresponds to the state:
+So, the row number 1 of the state vector refers to the basis state:
 
 ```python
 mm_list[1]
 ```
 
-The tensor product could also be used for operators. For 2 TSS without a quantised field, we can create the tensorised $S_{x1}$ and $S_{x2}$ operators by doing:
-
-```python
-Sx1 = tensor(sigmax()/2, qeye(2))
-Sx2 = tensor(qeye(2), sigmax()/2)
-```
-
-```python
-Sx1
-```
-
-```python
-Sx2
-```
-
-This way of creating operators is fine for a few TSS, but the process of making these tensor products can get a bit laborious. Luckily, QuTiP has a function that can generate all of the $S$ operators for $N$ TSS with a single line of code - [`spin_algebra(N)`](http://qutip.org/docs/latest/apidoc/functions.html#qutip.piqs.spin_algebra).
-
-Let's try it it out.
-
-```python
-S = spin_algebra(2)
-```
-
-```python
-len(S)
-```
-
-Now looking at the 0th entry in the `spin_algebra` list we find that it's equal to $[S_{1x}, S_{2x}]$ (we would find a equivalent for $S_{y}$ and $S_{z}$)
-
-```python
-S[0]
-```
-
-This is very convenient! We can then write our $J$ operators as:
-
-```python
-Jx = S[0][0] + S[0][1]
-Jy = S[1][0] + S[1][1]
-Jz = S[2][0] + S[2][1]
-```
+How does such a system behave?
 
 
-We proceed as we have done several times by looking for the stationary states of the system. When the system is in one of these states it will remain there for all time. Such states are described by a single constant energy.
+## Independent TSS
 
-To find the states of constant energy, we'll follow what we did in Tutorial 1 and calculate the eigenvalues and eigenvectors of the Hamiltonian.
+In [tutorial 1](https://nbviewer.jupyter.org/github/project-ida/two-state-quantum-systems/blob/master/01-an-isolated-two-state-system.ipynb#1---An-isolated-two-state-system), we motivated that a single isolated TSS, whose states have the same energy $E_0$ and are coupled with some strength $A$, can be described by a Hamiltonian of the form:
+
+$$
+H = E_0 I - A \sigma_x
+$$
+
+where we now know that we can set $E_0=0$ (without loss of generality) leaving us with:
+
+$$
+H = - A \sigma_x
+$$
+
+We found that (due to the coupling) the |+> and |-> basis states were not actually states of constant energy (i.e. stationary states). This gave rise to Rabi oscillations in the probabilities.
+
+Let's refresh our memory and re-simulate this case.
+
+Before we do this, we will make a minor adjustment to the Hamiltonian.
+
+You may recall that there are mathematical similarities between a TSS and a spin $1/2$ particle. When considering many TSS, we will find it invaluable to refer to well known spin results, such as conservation of angular momentum, to help us solve problems. In light of this, we will introduce a factor of $1/2$ into the Hamiltonian:
+
+$$
+H = - A \frac{1}{2}\sigma_{x}
+$$
+
+so that we can rewrite the Hamiltonian in terms of spin operators, (denoted by $S$), for a [spin $1/2$ particle](https://en.wikipedia.org/wiki/Spin-%C2%BD#Observables), i.e.
+
+$$
+H = - A S_{x}
+$$
+
 
 ```python
 A=0.1
+H = -A*sigmax()/2
+
+times = np.linspace(0.0, 99.0, 1000) 
+
+psi0=basis(2,0)
+
+P, psi = simulate(H, psi0, times)
 ```
 
 ```python
-H = - A*Jx
-```
-
-```python
-evals, ekets = H.eigenstates()
-```
-
-```python
-evals
-```
-
-```python
-prettify_states(ekets, mm_list)
-```
-
-Similar to Tutorial 1, because we have coupled the states together the stationary states are now mixtures of the + and - states.
-
-The lowest energy eigenstate (column 0) is an "in phase" mixture of all the different states and the highest energy eigenstate (column 3) is an "out of phase" mixture. 
-
-We also have 2 zero energy engenstates that are either mixtures of |+,+> and |-,-> or |+,-> and |-,+>.
-
->TODO what is the classial analogy here
-
-```python
-# J = jspin(3, basis="uncoupled")
-```
-
-```python
-A = 0.1
-
-H = A*Jx
-
-times = np.linspace(0.0, 100.0, 1000) 
-
-psi0=basis(4,0)
-#psi0 = estates[3]
-
-result = sesolve(H, psi0, times)
-
-# result = sesolve(H0, basis(7,0), times)
-```
-
-```python
-num_states = result.states[0].shape[0]
-psi = np.zeros([num_states,times.size], dtype="complex128")
-P = np.zeros([num_states,times.size], dtype="complex128")
-
-for i, state in enumerate(result.states):
-    psi[:,i] = np.transpose(state)
-    P[:,i] = np.abs(psi[:,i]*np.conj(psi[:,i]))
-```
-
-```python
-bra_labels, ket_labels = make_braket_labels(mm_list)
+bra_labels, ket_labels = make_braket_labels(["+","-"])
 ```
 
 ```python
@@ -249,29 +187,162 @@ for i in range(0,P.shape[0]):
 plt.ylabel("Probability")
 plt.xlabel("Time")
 plt.legend(loc="right")
-plt.title("$H =A \ J_x + \delta \ J_z \  \cos (\omega t)$     (N=6, J=3, A=0.1, $\omega = 0.1$, $\delta=0.001$)")
+plt.title("")
 plt.show();
 ```
 
+The Rabi frequency (and hence the difference in energy of the stationary states) is now given by $A$.
 
-We'll then calculate the eigenvalues of the Hamiltonian (i.e the energies) and see how they depend on the perturbation strength $\delta$. When we did this in Tutorial 2 we discovered an avoided crossing (aka anti-crossing) when the perturbation was zero - this was due to the coupling between the states splitting the energy levels apart.
+Now back to 2 TSS. If these are considered to be independent, then we should be able to work out the probabilities from above.
+
+```python
+P2 = np.zeros([4,times.size], dtype="complex128")
+P2[0,:] = P[0,:]*P[0,:]
+P2[1,:] = P[0,:]*P[1,:]
+P2[2,:] = P[1,:]*P[0,:]
+P2[3,:] = P[1,:]*P[1,:]
+```
+
+```python
+bra_labels, ket_labels = make_braket_labels(mm_list)
+```
+
+```python
+plt.figure(figsize=(10,8))
+for i in range(0,P2.shape[0]):
+    plt.plot(times, P2[i,:], label=f"{ket_labels[i]}")
+plt.ylabel("Probability")
+plt.xlabel("Time")
+plt.legend(loc="right")
+plt.title("")
+plt.show();
+```
+
+What about the energies of the stationary states? We can have a guess by thinking that the energy difference of the levels being A. This means we can have ±A/2 for the levels. So we can have both upper giving A/2+A/2 = A, both lower giving -A or both opposite giving 0.
+
+What about the stationary states themselves? We could probably work it out, but at this point it might be easier to try and figure out the Hamiltonian and calculate from there.
+
+<!-- #region -->
+A natural starting point for the Hamiltonian of $N$  independent TSS is then
+
+
+$$
+H = - A \overset{N}{\underset{n=1}{\Sigma}} S_{n x}
+$$
+
+Because spin represents angular momentum, the combination of spin operators above is mathematically the same as how one would create the [total angular momentum operators](https://www2.ph.ed.ac.uk/~ldeldebb/docs/QM/lect15.pdf) - denoted by $J$, e.g. $Jx = \overset{N}{\underset{n=1}{\Sigma}} S_{n x}$. The Hamiltonian can then be written more compactly as:
+
+$$
+H = - A J_{x}
+$$
+
+Let's see if we can reproduce the above figure from this Hamiltonian.
+
+QuTiP has a nice function to generate the J operators for any given number of TSS.
+<!-- #endregion -->
+
+```python
+J = jspin(2, basis="uncoupled")
+
+```
+
+```python
+A=0.1
+H = -A*J[0]
+
+times = np.linspace(0.0, 99.0, 1000) 
+
+psi0=basis(4,0)
+
+P, psi = simulate(H, psi0, times)
+```
+
+```python
+bra_labels, ket_labels = make_braket_labels(mm_list)
+```
+
+```python
+plt.figure(figsize=(10,8))
+for i in range(0,P2.shape[0]):
+    plt.plot(times, P[i,:], label=f"{ket_labels[i]}")
+plt.ylabel("Probability")
+plt.xlabel("Time")
+plt.legend(loc="right")
+plt.title("")
+plt.show();
+```
+
+Great, that seemed to work! Let's take a look at the stationary states by calculating the eigenvalues and eigenstates
+
+```python
+evals, ekets = H.eigenstates()
+```
+
+```python
+evals
+```
+
+Exactly as we thought (ignore the tiny number - it's a numerical error)
+
+```python
+prettify_states(ekets, mm_list)
+```
+
+Although the stationary states look a bit complicated they are actually just combinations of the 2 stationary states from the single TSS, i.e.
+
+- |+> + |->
+- |+> - |->
+
+For example, column 0 (the state corresponding to energy = -0.1) is made from:
+
+$$(|+> + \ |->) \otimes (|+> + \ |->) = |+,+> +\ |+,-> + \ |-,+> + \ |-,->$$
+
+What else can we learn from this system?
+
+Just like in Tutorial 2, we can perturb the system and see what happens.
+
+
+
+## Perturbing 2 TSS
+
+
+We imagine some kind of perturbing field that affects all the TSS in the same way.
+
+We can extend the Hamiltonian to include a perturbation $\delta$ in a similar way to above:
+
+$$
+H = - A J_{x} + \delta J_{z}
+$$
+
+where here $J_z = \overset{N}{\underset{n=1}{\Sigma}} S_{n z}$
+
+
+We proceed as we have done several times by looking for the stationary states of the system. When the system is in one of these states it will remain there for all time. Such states are described by a single constant energy.
+
+
+
+We'll calculate the eigenvalues of the Hamiltonian (i.e the energies) and see how they depend on the perturbation strength $\delta$. When we did this in Tutorial 2 we discovered an avoided crossing (aka anti-crossing) when the perturbation was zero - this was due to the coupling between the states splitting the energy levels apart.
 
 Let's see what we find.
 
 ```python
-df = make_df_for_energy_scan("$\delta$/A", -4,4, 100, Jx.shape[0]) 
+J = jspin(2, basis="uncoupled")
+```
+
+```python
+df = make_df_for_energy_scan("$\delta$/A", -4,4, 100, J[0].shape[0]) 
 ```
 
 ```python
 for i, row in df.iterrows():
-    H = - A*Jx + row[ "$\delta$/A"]*A*Jz
+    H = - A*J[0] + row[ "$\delta$/A"]*A*J[2]
     evals, ekets = H.eigenstates()
     df.iloc[i,1:] = evals
 ```
 
 ```python
 df.plot(x="$\delta$/A",figsize=(10,8),legend=True, 
-        title="Stationary states for $H=-A\Sigma S_{nx} + \delta \Sigma S_{nz}$   (A=0.1)     (Fig 1)");
+        title="Stationary states for $H=-A\Sigma S_{nx} + \delta \Sigma S_{nz}$   (A=0.1, N=2)     (Fig 1)");
 plt.ylabel("Energy");
 ```
 
