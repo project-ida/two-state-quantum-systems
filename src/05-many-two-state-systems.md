@@ -54,18 +54,6 @@ def prettify_states(states, mm_list):
     return pd.DataFrame(data=pretty_states, index=mm_list)
 ```
 
-```python
-
-```
-
-```python
-
-```
-
-```python
-
-```
-
 As soon as we start adding more than one TSS things get quite complicated. In order to give us an intuition for how such systems behave, we will take inspiration from Tutorials 1 and 2.
 
 
@@ -191,7 +179,7 @@ plt.title("")
 plt.show();
 ```
 
-The Rabi frequency (and hence the difference in energy of the stationary states) is now given by $A$.
+The Rabi frequency (and hence the difference in energy of the stationary states) is now given by $A$ because we introduced the $1/2$ into the Hamiltonian.
 
 Now back to 2 TSS. If these are considered to be independent, then we should be able to work out the probabilities from above.
 
@@ -243,7 +231,6 @@ QuTiP has a nice function to generate the J operators for any given number of TS
 
 ```python
 J = jspin(2, basis="uncoupled")
-
 ```
 
 ```python
@@ -282,7 +269,7 @@ evals, ekets = H.eigenstates()
 evals
 ```
 
-Exactly as we thought (ignore the tiny number - it's a numerical error)
+The eigenvalues are as we predicted.
 
 ```python
 prettify_states(ekets, mm_list)
@@ -346,89 +333,95 @@ df.plot(x="$\delta$/A",figsize=(10,8),legend=True,
 plt.ylabel("Energy");
 ```
 
-> TODO: Comment on two degenerate levels and see what the eigenfunctions look like as a function of delta. Use this to motivate different universes that dont talk to each other
+We see that level_0 and level_3 show a similar dependency on $\delta$ that we saw in tutorial 2. What is most interesting is level_1 and level_2 whose energy does not show any dependence on $\delta$. Let's explore what the eigenstates look like for the $\delta/A=4$ case (the last value calculated in the above loop)
+
+```python
+evals
+```
+
+```python
+prettify_states(ekets, mm_list)
+```
+
+What is most striking is that the state corresponding to level_2 (column 2) is the same as when we had $\delta = 0$. Then it was denoted as level_1.
+
+What does this mean?
+
+Let's continue to explore by using a technique we employed in tutorial 2, namely using a resonant time dependent perturbation, i.e.
+
+$$
+H = - A J_{x} + \delta J_{z} \cos(\omega t)
+$$
+
+with $\omega = A$.
+
+The idea is to start the system off in a stationary state of the unperturbed system - we will start with the highest energy, i.e. level 3 - and see what happens. We know that when the system depends explicitly on time, the energy of the system in not conserved so we expect the state to not be fixed in time. We also saw this effect explicitly in Tutorial 2.
+
+```python
+delta = 0.001
+A = 0.1
+
+H0 = -A*J[0]
+
+evals, estates = H0.eigenstates()
+
+H1 =  delta*J[2]
+
+H = [H0,[H1,'cos(w*t)']]
+
+times = np.linspace(0.0, 20000.0, 1000) 
+
+psi0 = estates[3]
+
+result = sesolve(H, psi0, times, args={'w':A})
+
+```
+
+Now that we have simulated the system, it is convenient to transform the state vector into the basis consisting of stationary states of $H_0$. This removes fast oscillations arising from the Rabi oscillations.
+
+```python
+num_states = result.states[0].shape[0]
+psi = np.zeros([num_states,times.size], dtype="complex128")
+P = np.zeros([num_states,times.size], dtype="complex128")
+
+for i, state in enumerate(result.states):
+    transformed_state = state.transform(estates)
+    psi[:,i] = np.transpose(transformed_state)
+    P[:,i] = np.abs(psi[:,i]*np.conj(psi[:,i]))
+```
+
+```python
+plt.figure(figsize=(10,8))
+for i in range(0,P.shape[0]):
+    plt.plot(times, P[i,:], label=f"E_level_{i}")
+plt.ylabel("Probability")
+plt.xlabel("Time")
+plt.legend(loc="right")
+plt.title("$H =A \ J_x + \delta \ J_z \  \cos (\omega t)$     (N=6, J=3, A=0.1, $\omega = 0.1$, $\delta=0.001$)")
+plt.show();
+```
+
+```python
+
+```
 
 ```python
 
 ```
 
 ```python
-ekets
-```
 
-> TODO: link back to conservation of angular momentum and motivate J^2 operator
-
-```python
-J2 = Jx**2 + Jy**2 + Jz**2
-```
-
-```python
-J2
-```
-
-> TODO: See that J2 is indeed conserved by commutator with the last Hamiltonian we just calculated
-
-```python
-commutator(H,J2)
-```
-
-> TODO: Transform to basis of constant energy reveals level 3 has a different J^2 - this is why it cannot mix with the -- and ++ states which have J^2 of 2
-
-```python
-J2.transform(ekets)
-```
-
-> TODO: Better to work in a basis of constant "angular momentum"
-
-```python
-J = jspin(2)
-```
-
-```python
-J
-```
-
-```python
-Jx = J[0]
-Jy = J[1]
-Jz = J[2]
-```
-
-```python
-A = 0.01
-```
-
-```python
-H =  A*Jx
-```
-
-```python
-J2 = Jx**2 + Jy**2 + Jz**2
-```
-
-```python
-J2
-```
-
-> TOTO: moivate where j comes in and how it's related to j(j+1). QuTiP has functions for this stuff
-
-```python
-N=100
-
-j_vals(N)
-```
-
-```python
-m_vals(41)
-```
-
-```python
-m_degeneracy(N,4)
 ```
 
 ```python
 
 ```
+
+```python
+
+```
+
+## Dicke basis
 
 ```python
 def j_states_list(num_tss):
@@ -606,10 +599,14 @@ jm_list
 
 
 
-```python
-"#' + '.join(x))
-#             x.append(f"{val[0,0]:.2f}" + '|'+','.join(mm_list[j])+'>')"
-```
+
+https://www2.ph.ed.ac.uk/~ldeldebb/docs/QM/lect15.pdf
+
+https://ocw.mit.edu/courses/physics/8-05-quantum-physics-ii-fall-2013/lecture-notes/MIT8_05F13_Chap_10.pdf
+
+https://www.ks.uiuc.edu/Services/Class/PHYS480/qm_PDF/chp6.pdf
+
+https://quantummechanics.ucsd.edu/ph130a/130_notes/node312.html
 
 ```python
 
