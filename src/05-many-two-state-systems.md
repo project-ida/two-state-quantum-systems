@@ -347,7 +347,7 @@ What is most striking is that the state corresponding to level_2 (column 2) is t
 
 What does this mean?
 
-Let's continue to explore by using a technique we employed in tutorial 2, namely using a resonant time dependent perturbation, i.e.
+Let's try and answer this questions by using a technique we employed in tutorial 2, namely using a resonant time dependent perturbation, i.e.
 
 $$
 H = - A J_{x} + \delta J_{z} \cos(\omega t)
@@ -355,7 +355,11 @@ $$
 
 with $\omega = A$.
 
-The idea is to start the system off in a stationary state of the unperturbed system - we will start with the highest energy, i.e. level 3 - and see what happens. We know that when the system depends explicitly on time, the energy of the system in not conserved so we expect the state to not be fixed in time. We also saw this effect explicitly in Tutorial 2.
+The idea is to start the system off in a stationary state of the unperturbed system - we will start with of on the middle energies, specifically level 2 - and see what happens. We know that when the system depends explicitly on time, the energy of the system in not conserved so we expect the state to not be fixed in time. We also saw this effect explicitly in Tutorial 2.
+
+```python
+J = jspin(2, basis="uncoupled")
+```
 
 ```python
 delta = 0.001
@@ -363,7 +367,7 @@ A = 0.1
 
 H0 = -A*J[0]
 
-evals, estates = H0.eigenstates()
+evals, ekets = H0.eigenstates()
 
 H1 =  delta*J[2]
 
@@ -371,13 +375,73 @@ H = [H0,[H1,'cos(w*t)']]
 
 times = np.linspace(0.0, 20000.0, 1000) 
 
-psi0 = estates[3]
+psi0 = ekets[3]
 
 result = sesolve(H, psi0, times, args={'w':A})
 
 ```
 
 Now that we have simulated the system, it is convenient to transform the state vector into the basis consisting of stationary states of $H_0$. This removes fast oscillations arising from the Rabi oscillations.
+
+```python
+num_states = result.states[0].shape[0]
+psi = np.zeros([num_states,times.size], dtype="complex128")
+P = np.zeros([num_states,times.size], dtype="complex128")
+
+for i, state in enumerate(result.states):
+    transformed_state = state.transform(ekets)
+    psi[:,i] = np.transpose(transformed_state)
+    P[:,i] = np.abs(psi[:,i]*np.conj(psi[:,i]))
+```
+
+```python
+plt.figure(figsize=(10,8))
+for i in range(0,P.shape[0]):
+    plt.plot(times, P[i,:], label=f"E_level_{i}")
+plt.ylabel("Probability")
+plt.xlabel("Time")
+plt.legend(loc="right")
+plt.title("$H =A \ J_x + \delta \ J_z \  \cos (\omega t)$     (A=0.1, $\omega = 0.1$, $\delta=0.001$)")
+plt.show();
+```
+
+Just like in tutorial 2, we see that oscillations on a timescale related to $\delta$. Specifically, now that we have incorporated the factor of $1/2$ into the Hamiltonian, the oscillation in this case is $\delta/2$
+
+```python
+2*np.pi/(delta)
+```
+
+We see several things that are interesting:
+1. At around 3000 we see that there is a 50:50 chance of the system being in the upper or lower energy level. We can think of this as the chance of the combined 2 TSS undergoes stimulated absorption or emission.
+2. Throughout the simulation there is zero chance of the system moving to level 1.
+
+On 2, When we look at level 1, we find that it's the state that is unaffected by $\delta$ that we spoke of earlier.
+
+```python
+prettify_states(ekets, mm_list)
+```
+
+It seems like state 1 is unable to couple to the other 3. Let's see this explicitly by starting the simulation off in state 1.
+
+```python
+delta = 0.001
+A = 0.1
+
+H0 = -A*J[0]
+
+evals, ekets = H0.eigenstates()
+
+H1 =  delta*J[2]
+
+H = [H0,[H1,'cos(w*t)']]
+
+times = np.linspace(0.0, 20000.0, 1000) 
+
+psi0 = estates[1]
+
+result = sesolve(H, psi0, times, args={'w':A})
+
+```
 
 ```python
 num_states = result.states[0].shape[0]
@@ -397,21 +461,13 @@ for i in range(0,P.shape[0]):
 plt.ylabel("Probability")
 plt.xlabel("Time")
 plt.legend(loc="right")
-plt.title("$H =A \ J_x + \delta \ J_z \  \cos (\omega t)$     (N=6, J=3, A=0.1, $\omega = 0.1$, $\delta=0.001$)")
+plt.title("$H =A \ J_x + \delta \ J_z \  \cos (\omega t)$     (A=0.1, $\omega = 0.1$, $\delta=0.001$)")
 plt.show();
 ```
 
-```python
+This result is striking. It looks like state 1 lives in its own universe. Also, This says that in this state, the combined system is incapable of absorbing or emitting radiation. This is a new property that we would not have expected from our Hamiltonian that was supposed to be 2 independent TSS. 
 
-```
-
-```python
-
-```
-
-```python
-
-```
+How would the independent system behave?
 
 ```python
 
