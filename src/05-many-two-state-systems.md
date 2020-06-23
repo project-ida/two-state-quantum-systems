@@ -43,15 +43,19 @@ from fractions import Fraction
 
 from libs.helper_05_tutorial import *
 
-def prettify_states(states, mm_list):
-    pretty_states = np.zeros([len(mm_list),len(states)], dtype="object")
+def prettify_states(states, mm_list=None):
+    pretty_states = np.zeros([states[0].shape[0],len(states)], dtype="object")
     
     for j, state in enumerate(states):
         x = []
         for i, val in enumerate(state):
             pretty_states[i,j] = f"{val[0,0]:.1f}"
-        
-    return pd.DataFrame(data=pretty_states, index=mm_list)
+    if (mm_list == None):
+        df = pd.DataFrame(data=pretty_states)
+    else:
+        df = pd.DataFrame(data=pretty_states, index=mm_list)
+            
+    return df
 ```
 
 As soon as we start adding more than one TSS things get quite complicated. In order to give us an intuition for how such systems behave, we will take inspiration from Tutorials 1 and 2.
@@ -175,13 +179,13 @@ for i in range(0,P.shape[0]):
 plt.ylabel("Probability")
 plt.xlabel("Time")
 plt.legend(loc="right")
-plt.title("")
+plt.title(" Fig 1")
 plt.show();
 ```
 
-The Rabi frequency (and hence the difference in energy of the stationary states) is now given by $A$ because we introduced the $1/2$ into the Hamiltonian.
+The Rabi frequency (and hence the difference in energy of the stationary states) is now given by $A$ (rather than $2A$ from tutorial 1) because we introduced the $1/2$ into the Hamiltonian.
 
-Now back to 2 TSS. If these are considered to be independent, then we should be able to work out the probabilities from above.
+Now back to 2 TSS. If these are considered to be independent, then we should be able to work out the probabilities from above by simply multiplying the probabilities together, e.g. P(|+,+>) = P(|+>)P(|+>):
 
 ```python
 P2 = np.zeros([4,times.size], dtype="complex128")
@@ -202,7 +206,7 @@ for i in range(0,P2.shape[0]):
 plt.ylabel("Probability")
 plt.xlabel("Time")
 plt.legend(loc="right")
-plt.title("")
+plt.title("Fig 2")
 plt.show();
 ```
 
@@ -218,7 +222,7 @@ $$
 H = - A \overset{N}{\underset{n=1}{\Sigma}} S_{n x}
 $$
 
-Because spin represents angular momentum, the combination of spin operators above is mathematically the same as how one would create the [total angular momentum operators](https://www2.ph.ed.ac.uk/~ldeldebb/docs/QM/lect15.pdf) - denoted by $J$, e.g. $Jx = \overset{N}{\underset{n=1}{\Sigma}} S_{n x}$. The Hamiltonian can then be written more compactly as:
+Because spin represents angular momentum, the combination of spin operators above is mathematically the same as how one would create the [total angular momentum operators](https://www2.ph.ed.ac.uk/~ldeldebb/docs/QM/lect15.pdf) - denoted by $J$, e.g. $J_x = \overset{N}{\underset{n=1}{\Sigma}} S_{n x}$. The Hamiltonian can then be written more compactly as:
 
 $$
 H = - A J_{x}
@@ -235,7 +239,9 @@ J = jspin(2, basis="uncoupled")
 
 ```python
 A=0.1
+
 H = -A*J[0]
+
 
 times = np.linspace(0.0, 99.0, 1000) 
 
@@ -255,7 +261,7 @@ for i in range(0,P2.shape[0]):
 plt.ylabel("Probability")
 plt.xlabel("Time")
 plt.legend(loc="right")
-plt.title("")
+plt.title("Fig 3")
 plt.show();
 ```
 
@@ -283,6 +289,8 @@ Although the stationary states look a bit complicated they are actually just com
 For example, column 0 (the state corresponding to energy = -0.1) is made from:
 
 $$(|+> + \ |->) \otimes (|+> + \ |->) = |+,+> +\ |+,-> + \ |-,+> + \ |-,->$$
+
+> TODO: Be more explicit with the other states
 
 What else can we learn from this system?
 
@@ -323,17 +331,18 @@ df = make_df_for_energy_scan("$\delta$/A", -4,4, 100, J[0].shape[0])
 ```python
 for i, row in df.iterrows():
     H = - A*J[0] + row[ "$\delta$/A"]*A*J[2]
+
     evals, ekets = H.eigenstates()
     df.iloc[i,1:] = evals
 ```
 
 ```python
 df.plot(x="$\delta$/A",figsize=(10,8),legend=True, 
-        title="Stationary states for $H=-A\Sigma S_{nx} + \delta \Sigma S_{nz}$   (A=0.1, N=2)     (Fig 1)");
+        title="Stationary states for $H=-A\Sigma S_{nx} + \delta \Sigma S_{nz}$   (A=0.1, N=2)     (Fig 4)");
 plt.ylabel("Energy");
 ```
 
-We see that level_0 and level_3 show a similar dependency on $\delta$ that we saw in tutorial 2. What is most interesting is level_1 and level_2 whose energy does not show any dependence on $\delta$. Let's explore what the eigenstates look like for the $\delta/A=4$ case (the last value calculated in the above loop)
+We see that level_0 and level_3 show a similar dependency on $\delta$ (much like what we saw in tutorial 2). What is most interesting is level_1 and level_2 whose energy does not show any dependence on $\delta$. Let's explore what the eigenstates look like for the $\delta/A=4$ case (the last value calculated in the above loop)
 
 ```python
 evals
@@ -355,27 +364,30 @@ $$
 
 with $\omega = A$.
 
-The idea is to start the system off in a stationary state of the unperturbed system - we will start with of on the middle energies, specifically level 2 - and see what happens. We know that when the system depends explicitly on time, the energy of the system in not conserved so we expect the state to not be fixed in time. We also saw this effect explicitly in Tutorial 2.
+The idea is to start the system off in a stationary state of the unperturbed system (with $\delta=0$) - we will start with of on the middle energies, specifically state(|+,-> + |-,+>) - and see what happens. We know that when the system depends explicitly on time, the energy of the system in not conserved so we expect the state to not be fixed in time. We also saw this effect explicitly in Tutorial 2.
 
 ```python
 J = jspin(2, basis="uncoupled")
 ```
 
 ```python
+
 delta = 0.001
 A = 0.1
 
 H0 = -A*J[0]
 
+
 evals, ekets = H0.eigenstates()
 
 H1 =  delta*J[2]
+
 
 H = [H0,[H1,'cos(w*t)']]
 
 times = np.linspace(0.0, 20000.0, 1000) 
 
-psi0 = ekets[3]
+psi0 = ekets[2]
 
 result = sesolve(H, psi0, times, args={'w':A})
 
@@ -401,7 +413,7 @@ for i in range(0,P.shape[0]):
 plt.ylabel("Probability")
 plt.xlabel("Time")
 plt.legend(loc="right")
-plt.title("$H =A \ J_x + \delta \ J_z \  \cos (\omega t)$     (A=0.1, $\omega = 0.1$, $\delta=0.001$)")
+plt.title("$H =A \ J_x + \delta \ J_z \  \cos (\omega t)$     (A=0.1, $\omega = 0.1$, $\delta=0.001$)   (Fig 5)")
 plt.show();
 ```
 
@@ -421,7 +433,7 @@ On 2, When we look at level 1, we find that it's the state that is unaffected by
 prettify_states(ekets, mm_list)
 ```
 
-It seems like state 1 is unable to couple to the other 3. Let's see this explicitly by starting the simulation off in state 1.
+It seems like state 1 is unable to couple to the other 3. Let's see this explicitly by starting the simulation off in the other zero energy state (|+,-> - |-,+>).
 
 ```python
 delta = 0.001
@@ -433,11 +445,12 @@ evals, ekets = H0.eigenstates()
 
 H1 =  delta*J[2]
 
+
 H = [H0,[H1,'cos(w*t)']]
 
 times = np.linspace(0.0, 20000.0, 1000) 
 
-psi0 = estates[1]
+psi0 = ekets[1]
 
 result = sesolve(H, psi0, times, args={'w':A})
 
@@ -449,7 +462,7 @@ psi = np.zeros([num_states,times.size], dtype="complex128")
 P = np.zeros([num_states,times.size], dtype="complex128")
 
 for i, state in enumerate(result.states):
-    transformed_state = state.transform(estates)
+    transformed_state = state.transform(ekets)
     psi[:,i] = np.transpose(transformed_state)
     P[:,i] = np.abs(psi[:,i]*np.conj(psi[:,i]))
 ```
@@ -461,13 +474,194 @@ for i in range(0,P.shape[0]):
 plt.ylabel("Probability")
 plt.xlabel("Time")
 plt.legend(loc="right")
-plt.title("$H =A \ J_x + \delta \ J_z \  \cos (\omega t)$     (A=0.1, $\omega = 0.1$, $\delta=0.001$)")
+plt.title("$H =A \ J_x + \delta \ J_z \  \cos (\omega t)$     (A=0.1, $\omega = 0.1$, $\delta=0.001$)    (Fig 6)")
 plt.show();
 ```
 
-This result is striking. It looks like state 1 lives in its own universe. Also, This says that in this state, the combined system is incapable of absorbing or emitting radiation. This is a new property that we would not have expected from our Hamiltonian that was supposed to be 2 independent TSS. 
+This result is striking. The constant probability implies that, in this state, the combined system is incapable of absorbing or emitting radiation - it is stuck in a zero energy when you might expect it to drop down to the ground state.
 
-How would the independent system behave?
+How is this possible? Let's look at the maths to start with and then look at physics. 
+
+Let's look at the Hamilton $ H = - A J_{x} + \delta J_{z}$ in the basis of stationary states of the unperturbed Hamiltonian $H_0= - A J_{x} $
+
+```python
+H = H0+H1
+H
+```
+
+```python
+H.transform(ekets)
+```
+
+What can we see from this transformed Hamiltonian
+
+We see that state 1 (|+,-> - |-,+>) lives in its own universe.  We see this because row 1 and column 1 are identically zero - this means no other states can interact with it.
+
+What's the physics behind this?
+
+It's related to conservation of angular momentum. 
+
+
+## Angular momentum
+
+
+> TODO: Chat about angular momentum, including links and how do do the adding up and j
+
+```python
+J2 = J[0]*J[0] + J[1]*J[1] + J[2]*J[2] 
+J2
+```
+
+```python
+commutator(H,J2)
+```
+
+```python
+evalsJ, eketsJ = J2.eigenstates()
+```
+
+```python
+evalsJ
+```
+
+> TODO: Singlet vs triplet state chat
+
+```python
+prettify_states(eketsJ, mm_list) # cf https://quantummechanics.ucsd.edu/ph130a/130_notes/node312.html
+```
+
+```python
+J2.transform(eketsJ)
+```
+
+We see things are grouped into different blocks according to their $j$ value.
+
+Within each $j$ group, we can assign a value of $m$ according to $\frac{1}{2}\Sigma (n_+ - n_-)$ giving the total z "angular momentum". We can most conveniently see this by looking at $J_z$ in the $J^2$ basis
+
+```python
+J[2].transform(eketsJ)
+```
+
+And so we can write (ignoring normalisations):
+
+- |+,-> - |-,+> = |0,0>
+- |+,+> = |1,1/2>
+- |+,-> + |-,+> = |1,0>
+- |-,->  = |1,-1>
+
+
+QuTiP has a function that can represent the J's in this way - in the so called Dicke basis. We have used it already `jspin()` - this time we won't use the "basis" parameter.
+
+```python
+J = jspin(2)
+```
+
+Let's take a look at $J^2$ and $J_z$
+
+```python
+J2 = J[0]*J[0] + J[1]*J[1] + J[2]*J[2] 
+J2
+```
+
+```python
+J[2]
+```
+
+Almost like what we calculated above, only the order of things has been switched. In this Dicke basis states are enumerated from high to low in both j and m.
+
+What does the Hamiltonian look like in this basis.
+
+```python
+H0 = -A*J[0]
+H1 =  delta*J[2]
+H = H0 +  H1
+H
+```
+
+Straight away we see the isolation of the |0,0> state even before we transform into the stationary sates of $H_0$.
+
+Let's just confirm that we get back the same Hamilton just before the start of this section by transforming this Hamiltonian into the basis associated with the stationary states of $H_0$.
+
+```python
+evals, ekets = H0.eigenstates()
+H.transform(ekets)
+```
+
+This is exactly the same as we obtained earlier - as it should be.
+
+What is most convenient about being in the $J$ basis is that we can perform a similar trick to tutorial 2. Specifically, we found that the system described by $H =  - A \sigma_x + \delta\sigma_z$ could be described by $H =   A\sigma_z +\delta \sigma_x$ after we changed basis into the stationary states of the unperturbed Hamiltonian $H = - A \sigma_x$.
+
+We can do something similar, $H = -AJ_z + \delta J_x$
+
+```python
+H2 = -A*J[2] + delta*J[0]
+H2
+```
+
+Other than reordering of the columns, this is the same as we got by transforming using the eigenstates approach.
+
+So, in general we can say that many TSS can be described by 
+
+$$H = -AJ_z + \delta J_x \cos(\omega t)$$
+
+(we have only shown this for 2 TSS but in general this is true for arbitrary number)
+
+Let's try this out.
+
+```python
+delta = 0.001
+A = 0.1
+
+H0 = -A*J[2]
+
+# evals, ekets = H0.eigenstates()
+
+H1 =  delta*J[0]
+
+
+H = [H0,[H1,'cos(w*t)']]
+
+times = np.linspace(0.0, 20000.0, 1000) 
+
+psi0 = basis(4,0)
+
+result = sesolve(H, psi0, times, args={'w':A})
+
+```
+
+```python
+num_states = result.states[0].shape[0]
+psi = np.zeros([num_states,times.size], dtype="complex128")
+P = np.zeros([num_states,times.size], dtype="complex128")
+
+for i, state in enumerate(result.states):
+#     transformed_state = state.transform(ekets)
+    psi[:,i] = np.transpose(state)
+    P[:,i] = np.abs(psi[:,i]*np.conj(psi[:,i]))
+```
+
+```python
+plt.figure(figsize=(10,8))
+for i in range(0,P.shape[0]):
+    plt.plot(times, P[i,:], label=f"E_level_{i}")
+plt.ylabel("Probability")
+plt.xlabel("Time")
+plt.legend(loc="right")
+plt.title("$H =A \ J_x + \delta \ J_z \  \cos (\omega t)$     (A=0.1, $\omega = 0.1$, $\delta=0.001$)    (Fig 6)")
+plt.show();
+```
+
+```python
+
+```
+
+```python
+
+```
+
+```python
+
+```
 
 ```python
 
