@@ -50,6 +50,8 @@ def prettify_states(states, mm_list=None):
     return df
 ```
 
+## The states of 2 TSS
+
 <!-- #region -->
 As soon as we start adding more than one TSS things get quite complicated. In order to give us an intuition for how such systems behave, we will take inspiration from Tutorials 1 and 2.
 
@@ -159,7 +161,7 @@ $$
 QuTiP has a nice function to generate the J operators for any given number of TSS.
 <!-- #endregion -->
 
-## Independent TSS
+## Describing independent TSS
 
 <!-- #region -->
 
@@ -210,6 +212,8 @@ To find the states of constant energy, we'll follow what we did in Tutorial 2. S
 Let's see what we find.
 <!-- #endregion -->
 
+## Stationary states
+
 ```python
 df = make_df_for_energy_scan("$\delta$/A", -4,4, 100, J[0].shape[0]) 
 ```
@@ -244,7 +248,7 @@ plt.ylabel("Energy");
 
 Superficially, Fig 1 resembles Fig 3 of [Tutorial 2](https://nbviewer.jupyter.org/github/project-ida/two-state-quantum-systems/blob/master/02-perturbing-a-two-state-system.ipynb#2.1-Static-perturbation) in that we see an avoided crossing when there is no perturbation. 
 
-What is most interesting is that there are 2 levels with the same energy (aka [degenerate](https://en.wikipedia.org/wiki/Degenerate_energy_levels) levels) whose value does not show any dependence on $\delta$. Let's explore what the eigenstates look like for the $\delta/A=4$ case (the last value calculated in the above loop).
+What is most interesting is that there are 2 levels with the same energy (aka [degenerate](https://en.wikipedia.org/wiki/Degenerate_energy_levels) levels) whose value does not show any dependence on $\delta$. Let's explore what the eigenstates look like as we change $\delta$.
 
 ```python
 fig, axes = plt.subplots(nrows=1, ncols=4, figsize=(15,6), sharey=True)
@@ -271,7 +275,7 @@ We expect the eigenstates to change in a smooth way as we change $\delta$, but w
 <!-- #endregion -->
 
 ```python
-# Looks at level 1 and finds the indices where the state |+,+> (blue) has a non zero value i.e. the spiky points
+# Looks at level 1 and finds the places where the state |+,+> (blue) has a non zero value i.e. the spiky points
 ind = vec[1,0,:] > 0 
 
 # swaps the eigenstates of level_1 and level_2 only at the spiky places
@@ -324,11 +328,11 @@ evals0, ekets0 = H0.eigenstates()
 prettify_states(ekets0, mm_list)
 ```
 
-The reason for the discontinuity in the eigenstates for very small $\delta$ vs zero $\delta$ is because both basis states are equally valid ways to represent the states of constant energy.
+The reason for the discontinuity in the eigenstates for $\delta \ll 1$ vs $\delta=0$ is because both basis states are equally valid ways to represent the states of constant energy.
 
 But, there is clearly something important to understand about the basis made up of entangled states - even when we have a tiny perturbation this is the apparently the appropriate basis for describing the stationary states.
 
-What makes it special? It has to do with angular momentum.
+What makes the entangled basis special? It has to do with angular momentum.
 
 
 ## Angular momentum
