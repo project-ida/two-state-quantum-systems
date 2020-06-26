@@ -265,10 +265,10 @@ fig.suptitle('Fig 2');
 
 <!-- #region -->
 Fig 2 shows us how much of each basis state makes up each eigenstate (which corresponds to a particular energy level) as we change $\delta$. For example, level_0 with $\delta/A = -0.4$, is made up of:
-- 40% |-,-> state (red)
-- 20% |-,+> state (green)
-- 25% |+,-> state (orange)
-- 15% |+,+> state (blue).
+- 40% |-,-> (red)
+- 20% |-,+> (green)
+- 25% |+,-> (orange)
+- 15% |+,+> (blue).
 
 
 We expect the eigenstates to change in a smooth way as we change $\delta$, but we can see that level_1 and level_2 show some spiky behaviour. This is due to the degenerate nature of the energy levels and the numerical methods used by QuTiP - the eigenstates can sometimes swap their order in the numpy array. We can fix this manually in the following way:
@@ -337,10 +337,20 @@ What makes the entangled basis special? It has to do with angular momentum.
 
 ## Angular momentum
 
+
+Although we are not dealing explicitly with the physics of spin angular momentum, we are using the same mathematics. For example, we are already using the x and z "components" of the total angular momentum operator $J_x$ and $J_z$. What can we learn from other operators, e.g. what about the "magnitude" of the total angular momentum operator operator? 
+
+I use quote marks around "component" and "magnitude" because this is vector language which is not obviously applicable to operators. It turns out, however, that we can treat the angular momentum operator as a vector in some sense (see [spinors](https://en.wikipedia.org/wiki/Spinors_in_three_dimensions)). We can create the squared magnitude of the total angular momentum operator ($J^2$) much like we would a vector - we sum of the squares of the components.
+
 ```python
 J2 = J[0]*J[0] + J[1]*J[1] + J[2]*J[2]
 J2
 ```
+
+What does this operator tell us?
+
+Just as we learnt about states of constant energy by calculating the eigenvalues and eigenvectors of the Hamiltonian, we can learn about states of constant angular momentum by calculating the eigenvalues and eigenvectors of $J^2$.
+
 
 ```python
 evalsJ, eketsJ = J2.eigenstates()
@@ -350,13 +360,76 @@ evalsJ, eketsJ = J2.eigenstates()
 evalsJ
 ```
 
+Although not immediately obvious, the eigenvalues of $J^2$ always have the form $j(j+1)$, where $j$ is a number that characterises the angular momentum of the system with $2j$ being an integer. Therefore, even without explicitly looking at the eigenstates of $J^2$ above, we know they must correspond to:
+- j=0 - one state
+- j=1 - three states
+
+
+But, where do these $j$ numbers come from, and what does it mean to have many states with the same value of $j$?
+
+
+
+In quantum mechanics, it has been found experimentally that [angular momentum is quantised](https://www.feynmanlectures.caltech.edu/II_34.html#Ch34-S7) in the sense that when its z component is measured it can only take values $m\hbar$ where $m = j, (j-1), (j-2), ..., -(j-2), -(j-1), -j$.
+
+
+So, although we still haven't explicitly looked the 4 eigenstates of $J^2$ above, we can say that the eigenstates can be uniquely described by 2 numbers $|j, m \rangle$, namely:
+
+- $|0, 0 \rangle$
+- $|1, -1 \rangle$
+- $|1, 0 \rangle$
+- $|1, 1 \rangle$
+
+The specific $j$ and $m$ numbers come from adding up the angular momentum for many single TSS (with $j=1/2$) like vectors of the same length but different (quantised) orientations. The details are somewhat tedious - often involving [formidable lookup tables](http://pdg.lbl.gov/2019/reviews/rpp2019-rev-clebsch-gordan-coefs.pdf). Luckily for us, QuTiP, has some convenient functions (that are somewhat hidden inside of [`qutip.cy.piqs`](https://github.com/qutip/qutip/blob/85632bc66fdcd45be51e1c280ea7577f04761a67/qutip/cy/piqs.pyx)) to help us.
+- [`j_vals(N)`](https://github.com/qutip/qutip/blob/85632bc66fdcd45be51e1c280ea7577f04761a67/qutip/cy/piqs.pyx#L130) - tells us the different $j$ values for $N$ TSS.
+- [`m_vals(j)`](https://github.com/qutip/qutip/blob/85632bc66fdcd45be51e1c280ea7577f04761a67/qutip/cy/piqs.pyx#L147) tells us the $m$ values for a given $j$
+
+```python
+j_vals(2)
+```
+
+```python
+m_vals(1)
+```
+
+Let's now take a look at the eigenstates in the |±, ±> basis and see if we can match them to the corresponding $|j, m \rangle$.
+
 ```python
 prettify_states(eketsJ, mm_list)
 ```
 
+Keeping in mind that ± corresponds to $m= ±1/2$ we have:
+
+- $\mathbf{0} = 0.7|+, - \rangle - 0.7|-, + \rangle = |0, 0 \rangle$ ($m=0$ because + and - cancel out, $j=0$ because of anti-parallel addition of states)
+- $\mathbf{1} = \ \ \ \ \  |+,+ \rangle \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ = |1, 1 \rangle$ 
+- $\mathbf{2} = 0.7|+, - \rangle + 0.7|-, + \rangle = |1, 0 \rangle$ ($m=0$ because + and - cancel out, $j=1$ because of parallel addition of states)
+- $\mathbf{3} =  \ \ \ \ \  |-,- \rangle \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \  = |1, -1 \rangle$ 
+
+
+You might have also noticed that these eigenstates are identical to the mysterious entangled basis that we encountered earlier. This implication is that we might do a better job of describing many TSS interacting with some field by working in a basis corresponding to states of constant "angular momentum".
+
+Let's have a go and running a simulation using this basis (often called the [Dicke basis](https://journals.aps.org/pr/pdf/10.1103/PhysRev.93.99) - see also [here](http://dx.doi.org/10.1002/qute.201800043)) and see what we find.
+
+
+## Simulation in the Dicke basis
+
+
+We've already found the stationary states for a static perturbation. Let's proceed as we did in [tutorial 2](https://nbviewer.jupyter.org/github/project-ida/two-state-quantum-systems/blob/master/02-perturbing-a-two-state-system.ipynb#2.2-Time-dependent-perturbation) and introduce a resonant time dependent perturbation. Specifically, the Hamiltonian will be:
+
+$$
+H = A J_{z} + \delta J_{x} \cos(\omega t)
+$$
+
+with $\omega = A$.
+
+The idea is to start the system off in a stationary state of the unperturbed ($\delta=0$) system and then see what happens when we make $\delta= 0.001$. When the system depends explicitly on time, the energy of the system in not conserved and so the system will evolve away from where it started.  Although $\delta$ is small, we know from our previous experience in tutorial 2 that because the time-dependence is resonant, we can expect the changes in time to be significant.
+
+QuTiP has an easy way for us to create $J$ operators in the Dicke basis . We have used it already [`jspin`](http://qutip.org/docs/latest/apidoc/functions.html#qutip.piqs.jspin) - this time we won't need to use the "basis" parameter.
+
 ```python
 J = jspin(2)
 ```
+
+In this Dicke basis, the states are odered from high to low in $|j, m\rangle$. We can therefore write the ordered list of states `jm_list` as:
 
 ```python
 jm_list = []
@@ -368,65 +441,130 @@ for j in js:
 print(jm_list)
 ```
 
-```python
+Because we have a time dependent Hamiltonian, we need to use QuTiP's ["string based method"](http://qutip.org/docs/latest/guide/dynamics/dynamics-time.html#string-format-method) to evolve the system (as we did in tutorial 2).
 
+```python
 delta = 0.001
 A = 0.1
 
-H0 = -A*J[2]
+H0 = A*J[2]  # Unperturbed system
 
-
-evals, ekets = H0.eigenstates()
-
-H1 =  delta*J[0]
-
+H1 =  delta*J[0] # Perturbation
 
 H_list = [H0,[H1,'cos(w*t)']]
 
 times = np.linspace(0.0, 20000.0, 1000) 
 
-psi0 = ekets[0]
+evals, ekets = H0.eigenstates()  # Find stationary states of unperturbed system
+
+psi0 = ekets[3] # Start the system in the highest energy state i.e. level_3
 
 result = sesolve(H_list, psi0, times, args={'w':A})
 ```
 
-```python
-num_states = result.states[0].shape[0]
-psi = np.zeros([num_states,times.size], dtype="complex128")
-P = np.zeros([num_states,times.size], dtype="complex128")
+As in tutorials 1 and 2, we need to do some post processing of the results of `sesolve` in order to calculate the probabilities from the state vector and also make things easier to plot.
 
-for i, state in enumerate(result.states):
-    transformed_state = state.transform(ekets)
-    psi[:,i] = np.transpose(transformed_state)
-    P[:,i] = np.abs(psi[:,i]*np.conj(psi[:,i]))
+In addition, we need to transform the state vector into the basis consisting of stationary states of $H_0$ in order to see how the system is moving from one energy state to another.
+
+We'll create a function for this so that we might re-use it later.
+
+```python
+def make_p_psi_arrays(states, basis=None):
+    
+    # Create empty numpy arrays to hold psi and P
+    num_states = states[0].shape[0]
+    num_psi = len(states)
+    psi = np.zeros([num_psi, num_states], dtype="complex128")
+    P = np.zeros([num_psi, num_states])
+    
+    # If we add a list of basis states then psi will be transformed into that state before the
+    # probabilities are calculated
+    if basis is None:
+        for i, state in enumerate(states):
+            psi[i,:] = np.transpose(state)
+            P[i,:] = np.abs(psi[i,:]*np.conj(psi[i,:]))
+    else:
+        for i, state in enumerate(states):
+            transformed_state = state.transform(basis)
+            psi[i,:] = np.transpose(transformed_state)
+            P[i,:] = np.abs(psi[i,:]*np.conj(psi[i,:]))
+
+    return  psi, P
+        
 ```
 
 ```python
-plt.figure(figsize=(10,8))
-for i in range(0,P.shape[0]):
-    plt.plot(times, P[i,:], label=f"E_level_{i}")
-plt.ylabel("Probability")
+psi, P = make_p_psi_arrays(result.states, ekets) # ekets are the stationary states of H_0
+```
+
+Let's put the probability array inside a dataframe to make it easier to plot.
+
+```python
+df = pd.DataFrame(P, index=times)
+```
+
+```python
+df.plot(figsize=(10,8), 
+        title = "$H =A \ J_z + \delta \ J_x \  \cos (\omega t)$     (A=0.1, $\omega = 0.1$, $\delta=0.001$)   (Fig 4)")
 plt.xlabel("Time")
-plt.legend(loc="right")
-plt.title("$H =A \ J_x + \delta \ J_z \  \cos (\omega t)$     (A=0.1, $\omega = 0.1$, $\delta=0.001$)   (Fig 5)")
-plt.show();
+plt.ylabel("Probability");
 ```
+
+Fig 4 shows us that the system evolves away from the highest energy level 3 and towards the lowest energy level 0 with a high chance (50%) of finding the system in a state of zero energy (level 1) part way through - nothing controversial there.
+
+Fig 4 also shows us that energy level 2 is never occupied - this is unexpected. To understand that's going on, we need to look at the stationary states of the unperturbed system in the Dicke basis.
 
 ```python
 prettify_states(ekets,jm_list)
 ```
 
-```python
-J2 = J[0]*J[0] + J[1]*J[1] + J[2]*J[2]
-```
+We can see that the stationary states of the unperturbed system are the same as the Dicke basis states i.e. the states of constant energy and constant angular momentum [share a common basis](https://ocw.mit.edu/courses/physics/8-04-quantum-physics-i-spring-2013/study-materials/MIT8_04S13_OnCommEigenbas.pdf). This is only possible if the commutator between the operators is zero - let's check.
 
 ```python
+H = H0 + H1
+J2 = J[0]*J[0] + J[1]*J[1] + J[2]*J[2]
 commutator(H,J2)
 ```
 
+The zero commutator of $J^2$ with the Hamiltonian means something more - it means that angular momentum is conserved over time, i.e. if we start in a state of a particular $j$ then we can't move to a new $j$. This explains the flat line in Fig 4. We started the simulation in energy level 3 (aka $|1, 1 \rangle$) but the system is incapable of going level 2 (aka $|0, 0 \rangle$) because it has a different angular momentum $j$.
+
+We can confirm this by starting the system off instead in level 2:
+
 ```python
-J2*basis(4,0)
+delta = 0.001
+A = 0.1
+
+H0 = A*J[2]  # Unperturbed system
+
+H1 =  delta*J[0] # Perturbation
+
+H_list = [H0,[H1,'cos(w*t)']]
+
+times = np.linspace(0.0, 20000.0, 1000) 
+
+evals, ekets = H0.eigenstates()  # Find stationary states of unperturbed system
+
+psi0 = ekets[2] 
+
+result = sesolve(H_list, psi0, times, args={'w':A})
 ```
+
+```python
+psi, P = make_p_psi_arrays(result.states, ekets) # ekets are the stationary states of H_0
+```
+
+```python
+df = pd.DataFrame(P, index=times)
+```
+
+```python
+df.plot(figsize=(10,8), 
+        title = "$H =A \ J_z + \delta \ J_x \  \cos (\omega t)$     (A=0.1, $\omega = 0.1$, $\delta=0.001$)   (Fig 5)")
+plt.xlabel("Time")
+plt.ylabel("Probability");
+```
+
+Fig 5 shows that the system doesn't change in time. This is because there is only 1 state with $j=0$, namely |0,0> and so there is nowhere for the state to evolve to without violating the conservation of "angular momentum". I put this i quotation marks to remind us that it's not really angular momentum, but something that is mathematically equivalent. Some people call $j$ the Dicke cooperation number to remind us of this distinction.
 
 ```python
 
