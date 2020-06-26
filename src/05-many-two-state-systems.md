@@ -694,6 +694,8 @@ plt.xlabel("Time")
 plt.ylabel("Probability");
 ```
 
-```python
+Fig 7 shows something new. The system of 6 TSS, that is coupled to some external field with frequency/energy $\omega$, can raise/lower it's energy by a much greater amount, $6\omega$. It is able to do this by sequentially moving from one energy level to the next, each with a transition energy of $\omega$. 
 
-```
+We might imagine that when we re-introduce the fully quantised field back into the picture that we could see some kind of step-wise down conversion, where many small energy bosons are created as a system of many TSS makes transitions to a state that is much lower in energy than an individual boson. 
+
+You'll have to wait until next time to find out.
