@@ -13,6 +13,14 @@ jupyter:
     name: python3
 ---
 
+<a href="https://colab.research.google.com/github/project-ida/two-state-quantum-systems/blob/master/05-many-two-state-systems.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <a href="https://nbviewer.jupyter.org/github/project-ida/two-state-quantum-systems/blob/master/05-many-two-state-systems.ipynb" target="_parent"><img src="https://nbviewer.jupyter.org/static/img/nav_logo.svg" alt="Open In nbviewer" width="100"/></a>
+
+
+# 5 - Many two state systems
+
+
+> TODO: Intro
+
 ```python
 # Libraries
 %matplotlib inline
@@ -53,7 +61,7 @@ def prettify_states(states, mm_list=None):
 ## The states of 2 TSS
 
 <!-- #region -->
-As soon as we start adding more than one TSS things get quite complicated. In order to give us an intuition for how such systems behave, we will take inspiration from Tutorials 1 and 2.
+As soon as we start adding more than one TSS things get quite complicated. In order to give us an intuition for how such systems behave, we will take a small step back and remove the quantised field (don't worry, we'll bring it back in the next tutorial).
 
 
 Let's start simple and look at 2 TSS. We can describe this system by the different possible combinations of the higher (+) and lower (-) energy states of the individual TSS namely:
@@ -62,7 +70,7 @@ Let's start simple and look at 2 TSS. We can describe this system by the differe
 - |-,+>
 - |-,->
 
-So, 2 TSS is actually a 4 state system. Mathematically these 4 states can be represented as vectors of length 4 using the following basis:
+We can see that 2 TSS is actually a 4 state system. Mathematically these 4 states can be represented as vectors of length 4 using the following basis:
 
 $$
 |+, +> = \begin{bmatrix}
@@ -91,9 +99,9 @@ $$
 \end{bmatrix}
 $$
 
-How to we create these states in QuTiP?
+How do we create these states in QuTiP?
 
-In [Tutorial 3](https://nbviewer.jupyter.org/github/project-ida/two-state-quantum-systems/blob/master/03-a-two-state-system-in-a-quantised-field.ipynb#3.5---Describing-coupled-systems-in-QuTiP) we learnt to describe such states| by using the tensor product. For example, we would create the |+,-> state by doing:
+In [Tutorial 3](https://nbviewer.jupyter.org/github/project-ida/two-state-quantum-systems/blob/master/03-a-two-state-system-in-a-quantised-field.ipynb#3.5---Describing-coupled-systems-in-QuTiP) we learnt to describe such states by using the tensor product. For example, we would create the |+,-> state by doing:
 <!-- #endregion -->
 
 ```python
@@ -101,7 +109,7 @@ pm = tensor(basis(2,0), basis(2,1))
 pm
 ```
 
-and we can keep track of which basis states corresponds to which row by using the `product` function that we introduced in the previous tutorial. Specifically:
+and we can keep track of which basis states corresponds to which row of the vector by using the `product` function that we introduced in the previous tutorial. Specifically:
 
 ```python
 possible_ms = ["+","-"]
@@ -120,7 +128,7 @@ How does such a system behave?
 
 ## TSS Recap
 
-<!-- #region -->
+
 We have previously looked at a TSS whose states are allowed to couple to each other with strength $A$. This coupling resulted in a splitting of the states of constant energy. When we perturbed the energy of those states by an amount $\pm \delta$ we found (in [tutorial 02](https://github.com/project-ida/two-state-quantum-systems/blob/master/02-perturbing-a-two-state-system.ipynb)) that a natural way to represent the Hamiltonian is
 
 $$
@@ -158,14 +166,12 @@ H = A S_{z} + \delta S_{x}
 $$
 
 
-QuTiP has a nice function to generate the J operators for any given number of TSS.
-<!-- #endregion -->
 
 ## Describing independent TSS
 
 <!-- #region -->
 
-A natural starting point for the Hamiltonian of $N$ independent TSS each interacting with a perturbing "field" $\delta$ is:
+A natural starting point for the Hamiltonian of $N$ independent TSS each interacting with a perturbing "field" of strength $\delta$ is:
 
 $$
 H = A \overset{N}{\underset{n=1}{\Sigma}} S_{n z} +  \delta \overset{N}{\underset{n=1}{\Sigma}} S_{n x} 
@@ -178,36 +184,27 @@ H = A J_{z} +  \delta J_{x}
 $$
 
 
-QuTiP has a nice function, [`jspin`](http://qutip.org/docs/latest/apidoc/functions.html#qutip.piqs.jspin),  to generate the J operators for any given number of TSS (note, you must import [`qutip.piqs`](http://qutip.org/docs/latest/apidoc/functions.html#module-qutip.piqs) to use this)
+QuTiP has a nice function, [`jspin`](http://qutip.org/docs/latest/apidoc/functions.html#qutip.piqs.jspin),  to generate the $J$ operators for any given number of TSS (note, you must import [`qutip.piqs`](http://qutip.org/docs/latest/apidoc/functions.html#module-qutip.piqs) to use this)
 <!-- #endregion -->
 
 ```python
-# number of TSS
-N = 2
-```
-
-```python
-J = jspin(N, basis="uncoupled")
+J = jspin(2, basis="uncoupled")
 ```
 
 Let's see how the $J_z$ operator acts on the |+,-> state we created earlier.
 
 ```python
-J[2]*tensor(basis(2,0), basis(2,0))
-```
-
-```python
 J[2]*pm
 ```
 
-We get zero because $J_z$ is essentially a running total of the number of "spin ups" ($n_+$) and "spin downs" ($n_-$), weighted by a factor of half, i.e. $J_z = \frac{1}{2}(n_+-n_-)$. For |+, -> we have 1 up and 1 down and so we get zero.
+We get zero because $J_z$ is in essence creating a running total of the number of "spin ups" (+)  minus the "spin downs" (-). For |+, -> we have 1 up and 1 down and so we get zero.
 
 <!-- #region -->
 
 
 We proceed as we have done several times by looking for the stationary states of the system. When the system is in one of these states it will remain there for all time. Such states are described by a single constant energy.
 
-To find the states of constant energy, we'll follow what we did in Tutorial 2. Specifically, we will calculate the eigenvalues of the Hamiltonian (i.e the energies) and see how they depend on the the perturbation strength $\delta$.
+To find the states of constant energy, we'll follow what we did in Tutorial 2. Specifically, we will calculate the eigenvalues and eigenvectors of the Hamiltonian and see how they depend on the the perturbation strength $\delta$.
 
 Let's see what we find.
 <!-- #endregion -->
@@ -215,11 +212,15 @@ Let's see what we find.
 ## Stationary states
 
 ```python
-df = make_df_for_energy_scan("$\delta$/A", -4,4, 100, J[0].shape[0]) 
+num_deltas = 100
 ```
 
 ```python
-vec = np.zeros([J[0].shape[0], J[0].shape[0],100])
+df = make_df_for_energy_scan("$\delta$/A", -4,4, num_deltas, J[0].shape[0]) 
+```
+
+```python
+vec = np.zeros([J[0].shape[0], J[0].shape[0],num_deltas])
 ```
 
 ```python
@@ -232,23 +233,24 @@ for i, row in df.iterrows():
     evals, ekets = H.eigenstates()
     df.iloc[i,1:] = evals
     for j, ket in enumerate(ekets):
-        s = np.transpose(ket)
-        vec[j,:,i] = np.abs(s*np.conj(s))
-```
-
-```python
-bra_labels, ket_labels = make_braket_labels(mm_list)
+        ket = np.transpose(ket)
+        vec[j,:,i] = np.abs(ket*np.conj(ket))
 ```
 
 ```python
 df.plot(x="$\delta$/A",figsize=(10,8),legend=True, 
-        title="Stationary states for 2 TSS,   $H=-AJ_{z} + \delta J_{x}$   (A=0.1)     (Fig 1)");
+        title="Stationary states for 2 TSS,   $H=AJ_{z} + \delta J_{x}$   (A=0.1)     (Fig 1)");
 plt.ylabel("Energy");
 ```
 
 Superficially, Fig 1 resembles Fig 3 of [Tutorial 2](https://nbviewer.jupyter.org/github/project-ida/two-state-quantum-systems/blob/master/02-perturbing-a-two-state-system.ipynb#2.1-Static-perturbation) in that we see an avoided crossing when there is no perturbation. 
 
 What is most interesting is that there are 2 levels with the same energy (aka [degenerate](https://en.wikipedia.org/wiki/Degenerate_energy_levels) levels) whose value does not show any dependence on $\delta$. Let's explore what the eigenstates look like as we change $\delta$.
+
+```python
+# Create the bra and ket labels for making nice labels for plots
+bra_labels, ket_labels = make_braket_labels(mm_list)
+```
 
 ```python
 fig, axes = plt.subplots(nrows=1, ncols=4, figsize=(15,6), sharey=True)
@@ -260,11 +262,11 @@ for i in range(0,vec.shape[0]):
 axes[0].set_ylabel("Probability")
 axes[0].legend(loc='lower right')
 
-fig.suptitle('Fig 2');
+fig.suptitle('Eigenstates for 2 TSS,   $H=AJ_{z} + \delta J_{x}$   (A=0.1)     (Fig 2)');
 ```
 
 <!-- #region -->
-Fig 2 shows us how much of each basis state makes up each eigenstate (which corresponds to a particular energy level) as we change $\delta$. For example, level_0 with $\delta/A = -0.4$, is made up of:
+Fig 2 shows us how much of each basis state makes up each eigenstate (which corresponds to a particular energy level) as we change $\delta$. For example, level_0 with $\delta/A = -0.4$, is made up of roughly:
 - 40% |-,-> (red)
 - 20% |-,+> (green)
 - 25% |+,-> (orange)
@@ -292,10 +294,9 @@ for i in range(0,vec.shape[0]):
     axes[i].set_xlabel("$\delta$/A")
     axes[i].set_title(f"level_{i}")
 axes[0].set_ylabel("Probability")
-
 axes[0].legend(loc='lower right')
 
-fig.suptitle('Fig 3');
+fig.suptitle('Eigenstates for 2 TSS,   $H=AJ_{z} + \delta J_{x}$   (A=0.1)     (Fig 3)');
 ```
 
 Much better. There is a lot to say about Fig 3:
@@ -303,7 +304,7 @@ Much better. There is a lot to say about Fig 3:
 2. The eigenstate corresponding to level_1 has no dependency on the perturbation $\delta$
 3. As $\delta \rightarrow 0$, the level_2 eigenstate approaches the same as level_1 (within a phase factor)
 
-In order to solve the mystery of indifference of level_1 to $\delta$ we need to first understand another puzzle. Let's look at the numerical values of the eigenstates for a very small $\delta=0.001$
+In order to solve the mystery of the indifference of level_1 to $\delta$, we need to first understand another puzzle. Let's look at the numerical values of the eigenstates for a very small $\delta=0.001$.
 
 ```python
 delta = 0.001
@@ -312,6 +313,7 @@ evals, ekets = H.eigenstates()
 ```
 
 ```python
+# We created a function to make states nicer to look at (see top of notebook)
 prettify_states(ekets, mm_list)
 ```
 
@@ -330,7 +332,7 @@ prettify_states(ekets0, mm_list)
 
 The reason for the discontinuity in the eigenstates for $\delta \ll 1$ vs $\delta=0$ is because both basis states are equally valid ways to represent the states of constant energy.
 
-But, there is clearly something important to understand about the basis made up of entangled states - even when we have a tiny perturbation this is the apparently the appropriate basis for describing the stationary states.
+However, there is clearly something important to understand about the basis made up of entangled states - even when we have a tiny perturbation this is the apparently the appropriate basis for describing the stationary states.
 
 What makes the entangled basis special? It has to do with angular momentum.
 
@@ -338,7 +340,7 @@ What makes the entangled basis special? It has to do with angular momentum.
 ## Angular momentum
 
 
-Although we are not dealing explicitly with the physics of spin angular momentum, we are using the same mathematics. For example, we are already using the x and z "components" of the total angular momentum operator $J_x$ and $J_z$. What can we learn from other operators, e.g. what about the "magnitude" of the total angular momentum operator operator? 
+Although we are not dealing explicitly with the physics of spin angular momentum, we are using the same mathematics. For example, we are already using the x and z "components" of the total angular momentum operator $J_x$ and $J_z$. What can we learn from other operators, e.g. what about the "magnitude" of the total angular momentum operator? 
 
 I use quote marks around "component" and "magnitude" because this is vector language which is not obviously applicable to operators. It turns out, however, that we can treat the angular momentum operator as a vector in some sense (see [spinors](https://en.wikipedia.org/wiki/Spinors_in_three_dimensions)). We can create the squared magnitude of the total angular momentum operator ($J^2$) much like we would a vector - we sum of the squares of the components.
 
@@ -360,7 +362,7 @@ evalsJ, eketsJ = J2.eigenstates()
 evalsJ
 ```
 
-Although not immediately obvious, the eigenvalues of $J^2$ always have the form $j(j+1)$, where $j$ is a number that characterises the angular momentum of the system with $2j$ being an integer. Therefore, even without explicitly looking at the eigenstates of $J^2$ above, we know they must correspond to:
+Although not immediately obvious, the eigenvalues of $J^2$ always have the form $j(j+1)$, where $j$ is a number that characterises the angular momentum of the system with $2j$ being an integer. Therefore, even without explicitly looking at the eigenstates of $J^2$, we know they must correspond to:
 - j=0 - one state
 - j=1 - three states
 
@@ -372,7 +374,7 @@ But, where do these $j$ numbers come from, and what does it mean to have many st
 In quantum mechanics, it has been found experimentally that [angular momentum is quantised](https://www.feynmanlectures.caltech.edu/II_34.html#Ch34-S7) in the sense that when its z component is measured it can only take values $m\hbar$ where $m = j, (j-1), (j-2), ..., -(j-2), -(j-1), -j$.
 
 
-So, although we still haven't explicitly looked the 4 eigenstates of $J^2$ above, we can say that the eigenstates can be uniquely described by 2 numbers $|j, m \rangle$, namely:
+So, although we still haven't explicitly looked the 4 eigenstates of $J^2$, we can say that the eigenstates can be uniquely described by 2 numbers $|j, m \rangle$, namely:
 
 - $|0, 0 \rangle$
 - $|1, -1 \rangle$
@@ -383,6 +385,8 @@ The specific $j$ and $m$ numbers come from adding up the angular momentum for ma
 - [`j_vals(N)`](https://github.com/qutip/qutip/blob/85632bc66fdcd45be51e1c280ea7577f04761a67/qutip/cy/piqs.pyx#L130) - tells us the different $j$ values for $N$ TSS.
 - [`m_vals(j)`](https://github.com/qutip/qutip/blob/85632bc66fdcd45be51e1c280ea7577f04761a67/qutip/cy/piqs.pyx#L147) tells us the $m$ values for a given $j$
 
+e.g.
+
 ```python
 j_vals(2)
 ```
@@ -391,7 +395,7 @@ j_vals(2)
 m_vals(1)
 ```
 
-Let's now take a look at the eigenstates in the |±, ±> basis and see if we can match them to the corresponding $|j, m \rangle$.
+Let's now take a look at the eigenstates in the |±, ±> basis and see if we can match them to the corresponding $|j, m \rangle$ that we've just motivated.
 
 ```python
 prettify_states(eketsJ, mm_list)
@@ -405,7 +409,7 @@ Keeping in mind that ± corresponds to $m= ±1/2$ we have:
 - $\mathbf{3} =  \ \ \ \ \  |-,- \rangle \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \  = |1, -1 \rangle$ 
 
 
-You might have also noticed that these eigenstates are identical to the mysterious entangled basis that we encountered earlier. This implication is that we might do a better job of describing many TSS interacting with some field by working in a basis corresponding to states of constant "angular momentum".
+You might have also noticed that these eigenstates are identical to the mysterious entangled basis states that we encountered earlier. This implication is that we might do a better job of describing many TSS interacting with some field by working in a basis corresponding to states of constant "angular momentum".
 
 Let's have a go and running a simulation using this basis (often called the [Dicke basis](https://journals.aps.org/pr/pdf/10.1103/PhysRev.93.99) - see also [here](http://dx.doi.org/10.1002/qute.201800043)) and see what we find.
 
@@ -421,7 +425,7 @@ $$
 
 with $\omega = A$.
 
-The idea is to start the system off in a stationary state of the unperturbed ($\delta=0$) system and then see what happens when we make $\delta= 0.001$. When the system depends explicitly on time, the energy of the system in not conserved and so the system will evolve away from where it started.  Although $\delta$ is small, we know from our previous experience in tutorial 2 that because the time-dependence is resonant, we can expect the changes in time to be significant.
+The idea is to start the system off in a stationary state of the unperturbed ($\delta=0$) system and then see what happens when we make $\delta= 0.001$. When the system depends explicitly on time, the energy in not conserved and so the system will evolve away from where it started.  Although $\delta$ is small, we know from our previous experience in tutorial 2 that because the time-dependence is resonant, we can expect the changes in time to be significant.
 
 QuTiP has an easy way for us to create $J$ operators in the Dicke basis . We have used it already [`jspin`](http://qutip.org/docs/latest/apidoc/functions.html#qutip.piqs.jspin) - this time we won't need to use the "basis" parameter.
 
@@ -466,7 +470,7 @@ As in tutorials 1 and 2, we need to do some post processing of the results of `s
 
 In addition, we need to transform the state vector into the basis consisting of stationary states of $H_0$ in order to see how the system is moving from one energy state to another.
 
-We'll create a function for this so that we might re-use it later.
+We'll create a function for this so that we might re-use it.
 
 ```python
 def make_p_psi_arrays(states, basis=None):
@@ -512,7 +516,7 @@ plt.ylabel("Probability");
 
 Fig 4 shows us that the system evolves away from the highest energy level 3 and towards the lowest energy level 0 with a high chance (50%) of finding the system in a state of zero energy (level 1) part way through - nothing controversial there.
 
-Fig 4 also shows us that energy level 2 is never occupied - this is unexpected. To understand that's going on, we need to look at the stationary states of the unperturbed system in the Dicke basis.
+Fig 4 also shows us that energy level 2 is never occupied - this is unexpected. To understand what's going on, we need to look at the stationary states of the unperturbed system in the Dicke basis.
 
 ```python
 prettify_states(ekets,jm_list)
@@ -528,7 +532,7 @@ commutator(H,J2)
 
 The zero commutator of $J^2$ with the Hamiltonian means something more - it means that angular momentum is conserved over time, i.e. if we start in a state of a particular $j$ then we can't move to a new $j$. This explains the flat line in Fig 4. We started the simulation in energy level 3 (aka $|1, 1 \rangle$) but the system is incapable of going level 2 (aka $|0, 0 \rangle$) because it has a different angular momentum $j$.
 
-We can confirm this by starting the system off instead in level 2:
+We can confirm this by starting the system off in level 2 instead of level 3:
 
 ```python
 delta = 0.001
@@ -564,8 +568,14 @@ plt.xlabel("Time")
 plt.ylabel("Probability");
 ```
 
-Fig 5 shows that the system doesn't change in time. This is because there is only 1 state with $j=0$, namely |0,0> and so there is nowhere for the state to evolve to without violating the conservation of "angular momentum". I put this i quotation marks to remind us that it's not really angular momentum, but something that is mathematically equivalent. Some people call $j$ the Dicke cooperation number to remind us of this distinction.
+Fig 5 shows that the system doesn't change in time. This is because there is only 1 state with $j=0$, namely |0,0> and so there is nowhere for the state to evolve to without violating the conservation of "angular momentum". 
 
-```python
+I use quotation marks around "angular momentum" to remind us that it's not really angular momentum, but something that is mathematically equivalent. Some people call $j$ the Dicke cooperation number to remind us of this distinction.
 
-```
+What does the conservation of $j$ mean for the simulation of many TSS?
+
+
+# Isolated $j$ universes
+
+
+
