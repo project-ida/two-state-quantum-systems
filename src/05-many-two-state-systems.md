@@ -447,23 +447,34 @@ print(jm_list)
 
 Because we have a time dependent Hamiltonian, we need to use QuTiP's ["string based method"](http://qutip.org/docs/latest/guide/dynamics/dynamics-time.html#string-format-method) to evolve the system (as we did in tutorial 2).
 
+We'll create a function to set up and run the simulation because we'll be doing several of them.
+
 ```python
-delta = 0.001
-A = 0.1
+def simulate(e_level):
+    
+    delta = 0.001
+    A = 0.1
 
-H0 = A*J[2]  # Unperturbed system
+    H0 = A*J[2]  # Unperturbed system
 
-H1 =  delta*J[0] # Perturbation
+    H1 =  delta*J[0] # Perturbation
 
-H_list = [H0,[H1,'cos(w*t)']]
+    H_list = [H0,[H1,'cos(w*t)']]
 
-times = np.linspace(0.0, 20000.0, 1000) 
+    times = np.linspace(0.0, 20000.0, 1000) 
 
-evals, ekets = H0.eigenstates()  # Find stationary states of unperturbed system
+    evals, ekets = H0.eigenstates()  # Find stationary states of unperturbed system
 
-psi0 = ekets[3] # Start the system in the highest energy state i.e. level_3
+    psi0 = ekets[e_level] 
 
-result = sesolve(H_list, psi0, times, args={'w':A})
+    result = sesolve(H_list, psi0, times, args={'w':A})
+    
+    return result, ekets
+```
+
+```python
+# We'll start the system in the highest energy state i.e. level_0
+result, ekets = simulate(0)
 ```
 
 As in tutorials 1 and 2, we need to do some post processing of the results of `sesolve` in order to calculate the probabilities from the state vector and also make things easier to plot.
@@ -514,7 +525,7 @@ plt.xlabel("Time")
 plt.ylabel("Probability");
 ```
 
-Fig 4 shows us that the system evolves away from the highest energy level 3 and towards the lowest energy level 0 with a high chance (50%) of finding the system in a state of zero energy (level 1) part way through - nothing controversial there.
+Fig 4 shows us that the system evolves away from the lowest energy level 0 and towards the highest energy level 3 with a high chance (50%) of finding the system in a state of zero energy (level 1) part way through - nothing controversial there.
 
 Fig 4 also shows us that energy level 2 is never occupied - this is unexpected. To understand what's going on, we need to look at the stationary states of the unperturbed system in the Dicke basis.
 
@@ -525,36 +536,21 @@ prettify_states(ekets,jm_list)
 We can see that the stationary states of the unperturbed system are the same as the Dicke basis states i.e. the states of constant energy and constant angular momentum [share a common basis](https://ocw.mit.edu/courses/physics/8-04-quantum-physics-i-spring-2013/study-materials/MIT8_04S13_OnCommEigenbas.pdf). This is only possible if the commutator between the operators is zero - let's check.
 
 ```python
-H = H0 + H1
+H = A*J[2] + delta*J[0]
 J2 = J[0]*J[0] + J[1]*J[1] + J[2]*J[2]
 commutator(H,J2)
 ```
 
-The zero commutator of $J^2$ with the Hamiltonian means something more - it means that angular momentum is conserved over time, i.e. if we start in a state of a particular $j$ then we can't move to a new $j$. This explains the flat line in Fig 4. We started the simulation in energy level 3 (aka $|1, 1 \rangle$) but the system is incapable of going level 2 (aka $|0, 0 \rangle$) because it has a different angular momentum $j$.
+The zero commutator of $J^2$ with the Hamiltonian means something more - it means that angular momentum is conserved over time, i.e. if we start in a state of a particular $j$ then we can't move to a new $j$. This explains the flat line in Fig 4. We started the simulation in energy level 0 (aka $|1, -1 \rangle$) but the system is incapable of going level 2 (aka $|0, 0 \rangle$) because it has a different angular momentum $j$.
 
-We can confirm this by starting the system off in level 2 instead of level 3:
+We can confirm this by starting the system off in level 2 instead of level 0:
 
 ```python
-delta = 0.001
-A = 0.1
-
-H0 = A*J[2]  # Unperturbed system
-
-H1 =  delta*J[0] # Perturbation
-
-H_list = [H0,[H1,'cos(w*t)']]
-
-times = np.linspace(0.0, 20000.0, 1000) 
-
-evals, ekets = H0.eigenstates()  # Find stationary states of unperturbed system
-
-psi0 = ekets[2] 
-
-result = sesolve(H_list, psi0, times, args={'w':A})
+result, ekets = simulate(2)
 ```
 
 ```python
-psi, P = make_p_psi_arrays(result.states, ekets) # ekets are the stationary states of H_0
+psi, P = make_p_psi_arrays(result.states, ekets) 
 ```
 
 ```python
@@ -578,4 +574,126 @@ What does the conservation of $j$ mean for the simulation of many TSS?
 # Isolated $j$ universes
 
 
+When we began this tutorial, we described the states of 2 TSS in the |±, ±> basis because it felt natural. For $N$ TSS, such a description creates a very large number of states to consider - specifically $2^{N}$.
 
+Now that we have learnt about the conservation of $j$, not all of the $2^{N}$ states need to be considered in every simulation. Each value of $j$ lives in its own universe (much like [parity in tutorial 4](https://nbviewer.jupyter.org/github/project-ida/two-state-quantum-systems/blob/master/04-spin-boson-model.ipynb#4.4---Parity)) The largest number of states comes when we have maximum $j$, i.e. $j_{\text{max}} = \frac{1}{2} N$. In this case, the number of possible $m$ values is $2j+1 = N+1$ - this grows linear with $N$ rather than exponentially.
+
+
+Much like in tutorial 3, we can use the [`extract_states`](http://qutip.org/docs/latest/apidoc/classes.html?highlight=extract_states#qutip.Qobj.extract_states) function to only select the relevant $j$'s from the Hamiltonian. To do this, we need to keep track of where the different $j$'s live. We'll create a function for this.
+
+```python
+def j_states_list(num_tss):
+    i=0
+    
+    jm_list = []
+    j_index = {}
+
+    js = j_vals(num_tss)[::-1]
+    
+    for j in js:
+        j_index[j] = []
+        ms = m_vals(j)[::-1]
+        for m in ms:
+            j_index[j].append(i)
+            jm_list.append((j,m))
+            i+=1
+    return j_index, jm_list
+```
+
+Let's try and simulate the $N=2$ case with $j=1$.
+
+```python
+j_index, jm_list = j_states_list(2)
+j_index
+```
+
+This says that the first rows/columns 0,1,2 of the Hamiltonian are what we are interest in.
+
+We'll make a function to automate the process of making the various operators required the make the Hamiltonian 
+
+```python
+def make_operators(num_tss, j):
+    
+    j_index, jm_list = j_states_list(num_tss)
+    
+    try:
+        j_index[j]
+    except:
+        raise Exception(f"j needs to be one of {j_vals(num_tss)}")
+    
+    Js = jspin(num_tss)
+    Jx = Js[0]
+    Jy = Js[1]
+    Jz = Js[2]
+    
+    num_ms = len(m_vals(j))
+    Jz = Jz.extract_states(j_index[j])
+    Jy = Jy.extract_states(j_index[j])
+    Jx = Jx.extract_states(j_index[j])
+    jm_list = [jm_list[i] for i in j_index[j]]
+    
+    
+    return [Jx, Jy, Jz], jm_list
+```
+
+Let's try this out and re-run the simulation that created Fig 4
+
+```python
+J, jm_list = make_operators(2, 1)
+```
+
+```python
+result, ekets = simulate(0)
+```
+
+```python
+psi, P = make_p_psi_arrays(result.states, ekets) 
+```
+
+```python
+df = pd.DataFrame(P, index=times)
+```
+
+```python
+df.plot(figsize=(10,8), 
+        title = "$H =A \ J_z + \delta \ J_x \  \cos (\omega t)$     (A=0.1, $\omega = 0.1$, $\delta=0.001$, $N=2$, $j=1$)   (Fig 6)")
+plt.xlabel("Time")
+plt.ylabel("Probability");
+```
+
+We can see in Fig 6 that we have successfully removed the $j=0$ part from our simulation with no changes to the evolution of the other states - as we would expect.
+
+We've done a lot of work, but now we can reap the rewards by using our functions for an arbitrary number of TSS.
+
+Let's try $N=6$.
+
+```python
+j_vals(6)
+```
+
+```python
+J, jm_list = make_operators(6, 1)
+```
+
+```python
+result, ekets = simulate(0)
+```
+
+```python
+psi, P = make_p_psi_arrays(result.states, ekets)
+```
+
+```python
+df = pd.DataFrame(P, index=times)
+```
+
+```python
+df.plot(figsize=(10,8), 
+        title = "$H =A \ J_z + \delta \ J_x \  \cos (\omega t)$     (A=0.1, $\omega = 0.1$, $\delta=0.001$, $N=6$, $j=3$)   (Fig 7)")
+plt.xlabel("Time")
+plt.ylabel("Probability");
+```
+
+```python
+
+```
