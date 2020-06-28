@@ -55,3 +55,9 @@ def expectation(operator, states):
         e = np.conj(states[:,i])@ (operator @ states[:,i])
         operator_expect.append(e)
     return operator_expect
+
+
+def make_braket_labels(nm_list):
+    bra_labels = ["$\langle$"+', '.join(map(str,nm))+'>'+" |" for nm in nm_list]
+    ket_labels = ["| "+', '.join(map(str,nm))+"$\\rangle$" for nm in nm_list]
+    return bra_labels, ket_labels
