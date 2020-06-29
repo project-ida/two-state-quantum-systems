@@ -348,14 +348,14 @@ evals0, ekets0 = H0.eigenstates()
 prettify_states(ekets0, mm_list)
 ```
 
-This difference persists even down to the tiniest values of $\delta$. This suggests that there might be a "better" way to represent the states of our system than the one we chose in section 5.1. Specifically, the results are suggesting a basis made up those entangled states from above -  something like this (ignoring normalisation factors):
+This difference persists even down to the tiniest values of $\delta$. This suggests that there might be a "better" way to represent the states of our system than the one we chose in section 5.1. Specifically, the results are suggesting we use a basis made up those entangled states from above -  something like this (ignoring normalisation factors):
 
 - $|+,+\rangle$
 - $|+,-\rangle$ + $|-,+\rangle$
 - $|+,-\rangle$ - $|+,+\rangle$
 - $|-,-\rangle$
 
-Although our original basis was perfectly fine to use, there is clearly something important to understand about this basis made up of entangled states.
+Although our original basis was perfectly fine to use, there is clearly something important to understand about this entangled basis.
 
 What makes the entangled basis special? It has to do with angular momentum.
 
@@ -365,7 +365,7 @@ What makes the entangled basis special? It has to do with angular momentum.
 
 Although we are not dealing explicitly with the physics of spin angular momentum, we are using the same mathematics. For example, we are already using the x and z "components" of the total angular momentum operator $J_x$ and $J_z$. What can we learn from other operators, e.g. what about the "magnitude" of the total angular momentum operator? 
 
-I use quote marks around "component" and "magnitude" because this is vector language which is not obviously applicable to operators. It turns out, however, that we can treat the angular momentum operator as a vector in some sense (see [spinors](https://en.wikipedia.org/wiki/Spinors_in_three_dimensions)). We can create the squared magnitude of the total angular momentum operator ($J^2$) much like we would a vector - we sum of the squares of the components.
+I use quote marks around "component" and "magnitude" because this is vector language which is not obviously applicable to operators. It turns out, however, that we can (in some sense) treat the angular momentum operator as a vector (see [spinors](https://en.wikipedia.org/wiki/Spinors_in_three_dimensions)). We can create the squared magnitude of the total angular momentum operator ($J^2$) much like we would a vector - we sum of the squares of the components.
 
 ```python
 J2 = J[0]*J[0] + J[1]*J[1] + J[2]*J[2]
@@ -385,9 +385,9 @@ evalsJ, eketsJ = J2.eigenstates()
 evalsJ
 ```
 
-Although not immediately obvious, the eigenvalues of $J^2$ always have the form $j(j+1)$, where $j$ is a number that characterises the angular momentum of the system with $2j$ being an integer. Therefore, even without explicitly looking at the eigenstates of $J^2$, we know they must correspond to:
-- j=0 - one state
-- j=1 - three states
+Although not immediately obvious, the eigenvalues of $J^2$ [always have the form $j(j+1)$](https://www.feynmanlectures.caltech.edu/II_34.html#Ch34-S7), where $j$ is a number that characterises the angular momentum of the system with $2j$ being an integer. Therefore, even without explicitly looking at the eigenstates of $J^2$, we know they must correspond to:
+- $j=0$ - one state
+- $j=1$ - three states
 
 
 But, where do these $j$ numbers come from, and what does it mean to have many states with the same value of $j$?
@@ -397,7 +397,7 @@ But, where do these $j$ numbers come from, and what does it mean to have many st
 In quantum mechanics, it has been found experimentally that [angular momentum is quantised](https://www.feynmanlectures.caltech.edu/II_34.html#Ch34-S7) in the sense that when its z component is measured it can only take values $m\hbar$ where $m = j, (j-1), (j-2), ..., -(j-2), -(j-1), -j$.
 
 
-So, although we still haven't explicitly looked the 4 eigenstates of $J^2$, we can say that the eigenstates can be uniquely described by 2 numbers $|j, m \rangle$, namely:
+So although we still haven't explicitly looked the 4 eigenstates of $J^2$, we can say that they can be uniquely described by 2 numbers $|j, m \rangle$, namely:
 
 - $|0, 0 \rangle$
 - $|1, -1 \rangle$
@@ -418,7 +418,7 @@ j_vals(2)
 m_vals(1)
 ```
 
-Let's now take a look at the eigenstates in the |±, ±> basis and see if we can match them to the corresponding $|j, m \rangle$ that we've just motivated.
+Let's now take a look at the angular momentum eigenstates in the $|±, ± \rangle$ basis and see if we can match them to the corresponding $|j, m \rangle$ that we've just motivated.
 
 ```python
 prettify_states(eketsJ, mm_list)
@@ -432,7 +432,7 @@ Keeping in mind that ± corresponds to $m= ±1/2$ we have:
 - $\mathbf{3} =  \ \ \ \ \  |-,- \rangle \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \  = |1, -1 \rangle$ 
 
 
-You might have also noticed that these eigenstates are identical to the mysterious entangled basis states that we encountered earlier. This implication is that we might do a better job of describing many TSS interacting with some field by working in a basis corresponding to states of constant "angular momentum".
+You might have noticed that these eigenstates are identical to the mysterious entangled basis states that we encountered earlier. The implication is that we might do a better job of describing many TSS interacting with some field by working in a basis corresponding to states of constant "angular momentum".
 
 Let's have a go and running a simulation using this basis (often called the [Dicke basis](https://journals.aps.org/pr/pdf/10.1103/PhysRev.93.99) - see also [here](http://dx.doi.org/10.1002/qute.201800043)) and see what we find.
 
