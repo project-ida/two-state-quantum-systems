@@ -440,7 +440,7 @@ Let's have a go and running a simulation using this basis (often called the [Dic
 ## 5.6 - Simulation in the Dicke basis
 
 
-We've already found the stationary states for a static perturbation. Let's proceed as we did in [tutorial 2](https://nbviewer.jupyter.org/github/project-ida/two-state-quantum-systems/blob/master/02-perturbing-a-two-state-system.ipynb#2.2-Time-dependent-perturbation) and introduce a resonant time dependent perturbation. Specifically, the Hamiltonian will be:
+We've already found the stationary states for a static perturbation above in section 5.4. Let's now proceed as we did in [tutorial 2](https://nbviewer.jupyter.org/github/project-ida/two-state-quantum-systems/blob/master/02-perturbing-a-two-state-system.ipynb#2.2-Time-dependent-perturbation) and introduce a resonant time dependent perturbation. Specifically, the Hamiltonian will now be:
 
 $$
 H = A J_{z} + \delta J_{x} \cos(\omega t)
@@ -450,7 +450,7 @@ with $\omega = A$.
 
 The idea is to start the system off in a stationary state of the unperturbed ($\delta=0$) system and then see what happens when we make $\delta= 0.001$. When the system depends explicitly on time, the energy in not conserved and so the system will evolve away from where it started.  Although $\delta$ is small, we know from our previous experience in tutorial 2 that because the time-dependence is resonant, we can expect the changes in time to be significant.
 
-QuTiP has an easy way for us to create $J$ operators in the Dicke basis . We have used it already [`jspin`](http://qutip.org/docs/latest/apidoc/functions.html#qutip.piqs.jspin) - this time we won't need to use the "basis" parameter.
+QuTiP has an easy way for us to create $J$ operators in the Dicke basis . We have used it already, [`jspin`](http://qutip.org/docs/latest/apidoc/functions.html#qutip.piqs.jspin), - this time we won't need to use the "basis" parameter.
 
 ```python
 J = jspin(2)
@@ -460,8 +460,10 @@ In this Dicke basis, the states are odered from high to low in $|j, m\rangle$. W
 
 ```python
 jm_list = []
+# Get the j values for 2 TSS
 js = j_vals(2)[::-1]
 for j in js:
+    # for each j value get the different possible m's
     ms = m_vals(j)[::-1]
     for m in ms:
         jm_list.append((j,m))      
@@ -470,7 +472,7 @@ print(jm_list)
 
 Because we have a time dependent Hamiltonian, we need to use QuTiP's ["string based method"](http://qutip.org/docs/latest/guide/dynamics/dynamics-time.html#string-format-method) to evolve the system (as we did in tutorial 2).
 
-We'll create a function to set up and run the simulation because we'll be doing several of them.
+We'll create a function to set up and run the simulation because we'll be doing it several times.
 
 ```python
 def simulate(A, delta, times, e_level):
@@ -483,7 +485,7 @@ def simulate(A, delta, times, e_level):
 
     evals, ekets = H0.eigenstates()  # Find stationary states of unperturbed system
 
-    psi0 = ekets[e_level] 
+    psi0 = ekets[e_level] # Start the system off in a stationary state of the unperturbed system
 
     result = sesolve(H_list, psi0, times, args={'w':A})
     
@@ -497,7 +499,7 @@ A = 0.1
 ```
 
 ```python
-# We'll start the system in the highest energy state i.e. level_0, so we put 0 in the last argument
+# We'll start the system in the lowest energy state i.e. level_0, so we put 0 in the last argument
 result, ekets = simulate(A, delta, times, 0)
 ```
 
@@ -505,7 +507,7 @@ As in tutorials 1 and 2, we need to do some post processing of the results of `s
 
 In addition, we need to transform the state vector into the basis consisting of stationary states of $H_0$ in order to see how the system is moving from one energy state to another.
 
-We'll create a function for this so that we might re-use it.
+We'll create a function for this because we'll need to do this several times.
 
 ```python
 def make_p_psi_arrays(states, basis=None):
@@ -516,7 +518,7 @@ def make_p_psi_arrays(states, basis=None):
     psi = np.zeros([num_psi, num_states], dtype="complex128")
     P = np.zeros([num_psi, num_states])
     
-    # If we add a list of basis states then psi will be transformed into that state before the
+    # If we add a list of basis states as the second argument then psi will be transformed into that basis before the
     # probabilities are calculated
     if basis is None:
         for i, state in enumerate(states):
@@ -544,12 +546,12 @@ df = pd.DataFrame(P, index=times)
 
 ```python
 df.plot(figsize=(10,8), 
-        title = "$H =A \ J_z + \delta \ J_x \  \cos (\omega t)$     (A=0.1, $\omega = 0.1$, $\delta=0.001$)   (Fig 4)")
+        title = "2 TSS,   $H =A \ J_z + \delta \ J_x \  \cos (\omega t)$     (A=0.1, $\omega = 0.1$, $\delta=0.001$)   (Fig 4)")
 plt.xlabel("Time")
 plt.ylabel("Probability");
 ```
 
-Fig 4 shows us that the system evolves away from the lowest energy level 0 and towards the highest energy level 3 with a high chance (50%) of finding the system in a state of zero energy (level 1) part way through - nothing controversial there.
+Fig 4 shows us that the system evolves away from the lowest energy level 0 and towards the highest energy level 3 with a high chance (50%) of finding the system in a state of zero energy (level 1) part way through - nothing controversial here.
 
 Fig 4 also shows us that energy level 2 is never occupied - this is unexpected. To understand what's going on, we need to look at the stationary states of the unperturbed system in the Dicke basis.
 
@@ -567,7 +569,7 @@ commutator(H,J2)
 
 The zero commutator of $J^2$ with the Hamiltonian means something more - it means that angular momentum is conserved over time, i.e. if we start in a state of a particular $j$ then we can't move to a new $j$. This explains the flat line in Fig 4. We started the simulation in energy level 0 (aka $|1, -1 \rangle$) but the system is incapable of going level 2 (aka $|0, 0 \rangle$) because it has a different angular momentum $j$.
 
-We can confirm this by starting the system off in level 2 instead of level 0:
+We can confirm these ideas by starting the system off in level 2 instead of level 0:
 
 ```python
 result, ekets = simulate(A, delta, times, 2)
@@ -583,12 +585,12 @@ df = pd.DataFrame(P, index=times)
 
 ```python
 df.plot(figsize=(10,8), 
-        title = "$H =A \ J_z + \delta \ J_x \  \cos (\omega t)$     (A=0.1, $\omega = 0.1$, $\delta=0.001$)   (Fig 5)")
+        title = "2 TSS,   $H =A \ J_z + \delta \ J_x \  \cos (\omega t)$     (A=0.1, $\omega = 0.1$, $\delta=0.001$)   (Fig 5)")
 plt.xlabel("Time")
 plt.ylabel("Probability");
 ```
 
-Fig 5 shows that the system doesn't change in time. This is because there is only 1 state with $j=0$, namely |0,0> and so there is nowhere for the state to evolve to without violating the conservation of "angular momentum". 
+Fig 5 shows that the system doesn't change over time. This is because there is only 1 state with $j=0$, namely $|0,0\rangle$, and so there is nowhere for the state to evolve to without violating the conservation of "angular momentum". 
 
 I use quotation marks around "angular momentum" to remind us that it's not really angular momentum, but something that is mathematically equivalent. Some people call $j$ the Dicke cooperation number to remind us of this distinction.
 
