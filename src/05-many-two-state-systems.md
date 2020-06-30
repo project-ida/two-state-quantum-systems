@@ -283,14 +283,6 @@ bra_labels, ket_labels = make_braket_labels(mm_list)
 ```
 
 ```python
-make_braket_labels([("+","-"),("-","+")])
-```
-
-```python
-bra_labels
-```
-
-```python
 fig, axes = plt.subplots(nrows=1, ncols=4, figsize=(15,6), sharey=True)
 
 for i in range(0,vec.shape[0]):
