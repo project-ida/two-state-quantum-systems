@@ -19,7 +19,7 @@ jupyter:
 # 5 - Many two state systems
 
 
-We have already seen the interesting physics that can arise from the interaction of a single two-state system (TSS) with a quantised field. Although there is still more that we can explore there, it's even more interesting to start thinking about what happens when we start to include many TSS.
+We have already seen the interesting physics that can arise from the interaction of a single two-state system (TSS) with a quantised field in the spin boson model. Although there is still more that we can explore there, it's even more interesting to start thinking about what happens when we start to include many TSS.
 
 As soon as we start adding more than one TSS things get quite complicated. In order to give us an intuition for how such systems behave, we will take a small step back in this tutorial and remove the quantised field (don't worry, we'll bring it back in the next tutorial).
 
@@ -33,7 +33,8 @@ This tutorial is split up into the following sections
 7. Isolated universes
 
 ```python
-# Libraries
+# Libraries and helper functions
+
 %matplotlib inline
 import matplotlib.pyplot as plt
 
@@ -47,11 +48,24 @@ from qutip import *
 from qutip.piqs import *
 from qutip.cy.piqs import j_min, j_vals, m_vals
 
-# The helper file below brings in the following functions
+# The helper file below brings functions created in previous tutorials
 # make_df_for_energy_scan - we made this in tutorial 4
 # make_braket_labels - we made this in tutorial 4
-# prettify_states
 from libs.helper_05_tutorial import *
+
+# This function takes a list of QuTiP states and puts them in a dataframe to make them easier to visually compare
+def prettify_states(states, mm_list=None):
+    pretty_states = np.zeros([states[0].shape[0],len(states)], dtype="object")
+    
+    for j, state in enumerate(states):
+        for i, val in enumerate(state):
+            pretty_states[i,j] = f"{val[0,0]:.1f}"
+    if (mm_list == None):
+        df = pd.DataFrame(data=pretty_states)
+    else:
+        df = pd.DataFrame(data=pretty_states, index=mm_list)
+            
+    return df
 ```
 
 ## 5.1 - Describing the states
@@ -269,6 +283,14 @@ bra_labels, ket_labels = make_braket_labels(mm_list)
 ```
 
 ```python
+make_braket_labels([("+","-"),("-","+")])
+```
+
+```python
+bra_labels
+```
+
+```python
 fig, axes = plt.subplots(nrows=1, ncols=4, figsize=(15,6), sharey=True)
 
 for i in range(0,vec.shape[0]):
@@ -329,7 +351,7 @@ evals, ekets = H.eigenstates()
 ```
 
 ```python
-# prettify_states - imported from helper (see top of notebook)
+# prettify_states - function created at the top of the notebook
 prettify_states(ekets, mm_list)
 ```
 
@@ -456,14 +478,14 @@ QuTiP has an easy way for us to create $J$ operators in the Dicke basis . We hav
 J = jspin(2)
 ```
 
-In this Dicke basis, the states are odered from high to low in $|j, m\rangle$. We can therefore write the ordered list of states `jm_list` as:
+In this Dicke basis, the states are odered from high to low in $|j, m\rangle$. We can write this ordered list of states `jm_list` as:
 
 ```python
 jm_list = []
-# Get the j values for 2 TSS
+# Get the j values for 2 TSS and order them high to low
 js = j_vals(2)[::-1]
 for j in js:
-    # for each j value get the different possible m's
+    # for each j value get the different possible m's and order them high to low
     ms = m_vals(j)[::-1]
     for m in ms:
         jm_list.append((j,m))      
@@ -475,7 +497,7 @@ Because we have a time dependent Hamiltonian, we need to use QuTiP's ["string ba
 We'll create a function to set up and run the simulation because we'll be doing it several times.
 
 ```python
-def simulate(A, delta, times, e_level):
+def simulate(A, delta, J, times, e_level):
 
     H0 = A*J[2]  # Unperturbed system
 
@@ -496,18 +518,22 @@ def simulate(A, delta, times, e_level):
 times = np.linspace(0.0, 20000.0, 1000) 
 delta = 0.001
 A = 0.1
+J = jspin(2)
 ```
 
 ```python
 # We'll start the system in the lowest energy state i.e. level_0, so we put 0 in the last argument
-result, ekets = simulate(A, delta, times, 0)
+result, ekets = simulate(A, delta, J, times, 0)
 ```
 
 As in tutorials 1 and 2, we need to do some post processing of the results of `sesolve` in order to calculate the probabilities from the state vector and also make things easier to plot.
 
 In addition, we need to transform the state vector into the basis consisting of stationary states of $H_0$ in order to see how the system is moving from one energy state to another.
 
-We'll create a function for this because we'll need to do this several times.
+We'll create a function for this because we'll need to do this several times. It's arguments will be:
+1. A list of states that come our of QuTiP's `sesolve` function
+2. A optional list of states that will be used as a new basis to transform into
+
 
 ```python
 def make_p_psi_arrays(states, basis=None):
@@ -572,7 +598,7 @@ The zero commutator of $J^2$ with the Hamiltonian means something more - it mean
 We can confirm these ideas by starting the system off in level 2 instead of level 0:
 
 ```python
-result, ekets = simulate(A, delta, times, 2)
+result, ekets = simulate(A, delta, J, times, 2)
 ```
 
 ```python
@@ -592,9 +618,11 @@ plt.ylabel("Probability");
 
 Fig 5 shows that the system doesn't change over time. This is because there is only 1 state with $j=0$, namely $|0,0\rangle$, and so there is nowhere for the state to evolve to without violating the conservation of "angular momentum". 
 
-I use quotation marks around "angular momentum" to remind us that it's not really angular momentum, but something that is mathematically equivalent. Some people call $j$ the Dicke cooperation number to remind us of this distinction.
+We can now also solve the mystery of why level 1 in fig 1 appears to different to the others - it's because it has a different angular "angular momentum" ($j=0$ for level 1, $j=1$ for the others).
 
-What does the conservation of $j$ mean for the simulation of many TSS?
+> I use quotation marks around "angular momentum" to remind us that it's not really angular momentum, but something that is mathematically equivalent. Some people call $j$ the Dicke cooperation number to remind us of this distinction.
+
+Conservation of $j$ allows to hugely reduce the computationally resources required for simulating many TSS. Let's see how this works before we finish up.
 
 
 # 5.7 - Isolated universes
@@ -602,22 +630,28 @@ What does the conservation of $j$ mean for the simulation of many TSS?
 
 When we began this tutorial, we described the states of 2 TSS in the |±, ±> basis because it felt natural. For $N$ TSS, such a description creates a very large number of states to consider - specifically $2^{N}$.
 
-Now that we have learnt about the conservation of $j$, not all of the $2^{N}$ states need to be considered in every simulation. Each value of $j$ lives in its own universe (much like [parity in tutorial 4](https://nbviewer.jupyter.org/github/project-ida/two-state-quantum-systems/blob/master/04-spin-boson-model.ipynb#4.4---Parity)) The largest number of states comes when we have maximum $j$, i.e. $j_{\text{max}} = \frac{1}{2} N$. In this case, the number of possible $m$ values is $2j+1 = N+1$ - this grows linear with $N$ rather than exponentially.
+Now that we have learnt about the conservation of $j$, not all of the $2^{N}$ states need to be considered in every simulation. Each value of $j$ lives in its own universe (much like [parity in tutorial 4](https://nbviewer.jupyter.org/github/project-ida/two-state-quantum-systems/blob/master/04-spin-boson-model.ipynb#4.4---Parity)) and is disconnected from the others. The largest number of states that we need to consider comes when we have maximum $j$, i.e. $j_{\text{max}} = \frac{1}{2} N$. In this case, the number of possible $m$ values is $2j+1 = N+1$ - this grows linear with $N$ rather than exponentially so is much more favourable for doing simulations for large $N$.
+
+> ADVANCED: In general, there are some subtleties to consider when doing this. There can be many degenerate $j$ universes which might need to be considered depending on the problem at hand (see last paragraph of [Permutational Invariant Quantum Solver](http://qutip.org/docs/latest/guide/dynamics/dynamics-piqs.html)). For now, we don't need to worry about this so we will put a pin in this advanced topic and return to it in a later tutorial.
 
 
-Much like in tutorial 3, we can use the [`extract_states`](http://qutip.org/docs/latest/apidoc/classes.html?highlight=extract_states#qutip.Qobj.extract_states) function to only select the relevant $j$'s from the Hamiltonian. To do this, we need to keep track of where the different $j$'s live. We'll create a function for this.
+How do we simulate specific $j$ universe?
+
+Much like in tutorial 4, we can use the [`extract_states`](http://qutip.org/docs/latest/apidoc/classes.html?highlight=extract_states#qutip.Qobj.extract_states) function to only select the relevant $j$'s from the Hamiltonian. To do this, we need to keep track of where the different $j$'s live. We'll create a function for this.
 
 ```python
 def j_states_list(num_tss):
     i=0
     
-    jm_list = []
-    j_index = {}
+    jm_list = []   # This will be the ordered list of the basis states
+    j_index = {}   # This will be a python doctionary to allow us to easily find the rows/columns for a specific j
 
+    # Get the j values for 2 TSS and order them high to low
     js = j_vals(num_tss)[::-1]
     
     for j in js:
         j_index[j] = []
+        # for each j value get the different possible m's and order them high to low
         ms = m_vals(j)[::-1]
         for m in ms:
             j_index[j].append(i)
@@ -626,50 +660,58 @@ def j_states_list(num_tss):
     return j_index, jm_list
 ```
 
-Let's try and simulate the $N=2$ case with $j=1$.
+Let's get ready to re-run the simulation that created Fig 4 but this time only looking at $j=1$ universe.
+
+For $N=2$ what does our `j_states_list` function tell us?
 
 ```python
 j_index, jm_list = j_states_list(2)
-j_index
 ```
 
-This says that the first rows/columns 0,1,2 of the Hamiltonian are what we are interest in.
+We are interested in $j=1$, this corresponds to the following rows/columns in the Hamiltonian:
 
-We'll make a function to automate the process of making the various operators required the make the Hamiltonian 
+```python
+j_index[1]
+```
+
+Again much like tutorial 4, the next step is to extract the states in rows/columns `[0,1,2]` from the operators that make up the Hamiltonian (i.e. the $J$'s).
+
+
+We'll make a function to automate this process. It takes two arguments:
+1. The number of TSS we want to simulate
+2. The value of $j$ we want to simulate
 
 ```python
 def make_operators(num_tss, j):
     
     j_index, jm_list = j_states_list(num_tss)
     
+    # Check that the j we want to simulate is a valid j for this number of TSS.
+    # If we don't choose a valid j then return a helpful list of valid options
     try:
         j_index[j]
     except:
         raise Exception(f"j needs to be one of {j_vals(num_tss)}")
     
-    Js = jspin(num_tss)
-    Jx = Js[0]
-    Jy = Js[1]
-    Jz = Js[2]
+    # Create the J operator for the number of TSS we have specified
+    J = jspin(num_tss)
     
-    num_ms = len(m_vals(j))
-    Jz = Jz.extract_states(j_index[j])
-    Jy = Jy.extract_states(j_index[j])
-    Jx = Jx.extract_states(j_index[j])
-    jm_list = [jm_list[i] for i in j_index[j]]
+    # Now we extract only the states (and labels for those states) for the j we have specified 
+    J = [Ji.extract_states(j_index[j]) for Ji in J]  # Loops through the 3 J components and does `extract` for each one
+    jm_list = [jm_list[j] for i in j_index[j]]  
     
     
-    return [Jx, Jy, Jz], jm_list
+    return J, jm_list
 ```
 
-Let's try this out and re-run the simulation that created Fig 4
+We are ready. Let's re-simulate fig 4.
 
 ```python
 J, jm_list = make_operators(2, 1)
 ```
 
 ```python
-result, ekets = simulate(A, delta, times, 0)
+result, ekets = simulate(A, delta, J, times, 0)
 ```
 
 ```python
@@ -687,22 +729,24 @@ plt.xlabel("Time")
 plt.ylabel("Probability");
 ```
 
-We can see in Fig 6 that we have successfully removed the $j=0$ part from our simulation with no changes to the evolution of the other states - as we would expect.
+We can see in Fig 6 that we have successfully removed the flat line, corresponding to $j=0$, from our simulation with no changes to the evolution of the other states - as we would expect.
 
-We've done a lot of work, but now we can reap the rewards by using our functions for an arbitrary number of TSS.
+Great! Now we are able to simulate an arbitrary number of TSS but just chaging a couple of numbers in our functions. Let's try it out with $N=6$.
 
-Let's try $N=6$.
+What $j$ values can we have for 6 TSS?
 
 ```python
 j_vals(6)
 ```
 
+Let's simulate the $j=3$ universe.
+
 ```python
-J, jm_list = make_operators(6, 1)
+J, jm_list = make_operators(6, 3)
 ```
 
 ```python
-result, ekets = simulate(A, delta, times, 0)
+result, ekets = simulate(A, delta, J, times, 0)
 ```
 
 ```python
@@ -720,19 +764,13 @@ plt.xlabel("Time")
 plt.ylabel("Probability");
 ```
 
-Fig 7 shows something new. The system of 6 TSS, that is coupled to some external field with frequency/energy $\omega$, can raise/lower it's energy by a much greater amount, $6\omega$. It is able to do this by sequentially moving from one energy level to the next, each with a transition energy of $\omega$. 
+Fig 7 shows us something new. A system of 6 TSS can raise/lower its energy by an amount that is much greater than the individual TSS transition energy $\omega$. We see that the energy can changed by $6\omega$. It is able to do this by sequentially moving from one energy level to the next, each with a transition energy of $\omega$.
 
-We might imagine that when we re-introduce the fully quantised field back into the picture that we could see some kind of step-wise down conversion, where many small energy bosons are created as a system of many TSS makes transitions to a state that is much lower in energy than an individual boson. 
+We can imagine that when we re-introduce the quantised field back into the picture we might get a similar step-wise release/absorption of of energy through a process creation/destruction of many small energy bosons.
 
-You'll have to wait until next time to find out.
+You'll have to wait and see.
 
 
-> TODO, link back to fig 3 on the indifference of state to delta.
+## Next up...
 
-```python
-
-```
-
-```python
-
-```
+Now that we've got all the tools needed to simulate an arbitrary number of TSS, we can get back into discovery mode and start playing with a spin boson model with more than 1 TSS - often referred to as the [Dicke model](http://dx.doi.org/10.1002/qute.201800043).
