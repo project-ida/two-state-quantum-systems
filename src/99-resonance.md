@@ -452,7 +452,8 @@ gif.save(frames, "anti-crossing-approach.gif", duration=500)
 ```
 
 ```python
-Image(filename="./anti-crossing-approach.gif")
+print("               Delta_E = 11 hbar omega")
+Image(filename="./anti-crossing-approach-finest-coupling.gif")
 ```
 
 ```python

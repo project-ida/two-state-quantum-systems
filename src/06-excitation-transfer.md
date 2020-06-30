@@ -112,7 +112,7 @@ def make_operators(num_tss, max_bosons, j, parity=0):
         P = 1j*(1j*np.pi*M).expm()*(1j*np.pi*number).expm() 
     
     
-    # map from QuTiP number states to |n,±, ±> states
+    # map from QuTiP number states to |n,J, M> states
     possible_ns = range(0, max_bosons+1)
     njm_list = [(n,j,m) for (n,(j,m)) in product(possible_ns, jm_list)]
     
@@ -130,6 +130,24 @@ def make_operators(num_tss, max_bosons, j, parity=0):
     
     
     return Jz, bosons, interaction, number, njm_list, P
+```
+
+```python
+J= 3, M = 3
+
++++
+
+J= 4, M = 4
+
+++++
+```
+
+```python
+
+```
+
+```python
+
 ```
 
 ```python

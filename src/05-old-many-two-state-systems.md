@@ -722,13 +722,10 @@ def make_operators(num_tss, j):
     Jx = Js[0]
     Jz = Js[2]
     
-
-    
     num_ms = len(m_vals(j))
     Jz = Jz.extract_states(j_index[j])
     Jx = Jx.extract_states(j_index[j])
     jm_list = [jm_list[i] for i in j_index[j]]
-    
     
     
     return Jz, Jx, jm_list
