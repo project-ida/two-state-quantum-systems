@@ -13,62 +13,315 @@ jupyter:
     name: python3
 ---
 
-<a href="https://colab.research.google.com/github/project-ida/two-state-quantum-systems/blob/master/05-excitation-transfer.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <a href="https://nbviewer.jupyter.org/github/project-ida/two-state-quantum-systems/blob/master/05-excitation-transfer.ipynb" target="_parent"><img src="https://nbviewer.jupyter.org/static/img/nav_logo.svg" alt="Open In nbviewer" width="100"/></a>
+<a href="https://colab.research.google.com/github/project-ida/two-state-quantum-systems/blob/master/06-excitation-transfer.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <a href="https://nbviewer.jupyter.org/github/project-ida/two-state-quantum-systems/blob/master/06-excitation-transfer.ipynb" target="_parent"><img src="https://nbviewer.jupyter.org/static/img/nav_logo.svg" alt="Open In nbviewer" width="100"/></a>
 
 
-# 5 - Excitation transfer
+# 6 - Excitation transfer
 
 
-> TODO: Description
+> TODO: Intro
 
 ```python
-# Libraries
+# Libraries and helper functions
+
 %matplotlib inline
 import matplotlib.pyplot as plt
-import matplotlib.ticker as ticker
 from IPython.display import Image
 import gif
+
 import numpy as np
+from itertools import product
 import pandas as pd
+import warnings
+import os
+from fractions import Fraction
+warnings.filterwarnings('ignore')
+
 from qutip import *
 from qutip.piqs import *
 from qutip.cy.piqs import j_min, j_vals, m_vals
-import warnings
-warnings.filterwarnings('ignore')
-from itertools import product
-import os
-from fractions import Fraction
-# Functions created in 04 tutorial
 
-from libs.helper_05_tutorial import *
-```
-
-> TODO: Need to motivate how the `make_operators`function needs to be modified
-
-```python
-def j_states_list(num_tss):
-    i=0
-    
-    jm_list = []
-    j_index = {}
-
-    js = j_vals(num_tss)[::-1]
-    
-    for j in js:
-        j_index[j] = []
-        ms = m_vals(j)[::-1]
-        for m in ms:
-            j_index[j].append(i)
-            jm_list.append((j,m))
-            i+=1
-    return j_index, jm_list
+# The helper file below brings functions created in previous tutorials
+# make_df_for_energy_scan - we made this in tutorial 4
+# make_braket_labels - we made this in tutorial 4
+# j_states_list
+# 
+from libs.helper_06_tutorial import *
 ```
 
 ```python
-def make_braket_labels(njm_list):
-    bra_labels = ["$\langle$"+str(n)+", "+str(Fraction(j))+", "+str(Fraction(m))+" |" for (n,j,m) in njm_list]
-    ket_labels = ["| "+str(n)+", "+str(Fraction(j))+", "+str(Fraction(m))+"$\\rangle$" for (n,j,m) in njm_list]
-    return bra_labels, ket_labels
+
+```
+
+## Bringing back the quantised field
+
+
+> TODO: Hamiltonian
+
+
+> TODO: Tensor product
+
+```python
+def make_operators(num_tss, j, max_bosons):
+    
+    j_index, jm_list = j_states_list(num_tss)
+        
+    try:
+        j_index[j]
+    except:
+        raise Exception(f"j needs to be one of {j_vals(num_tss)}")
+
+    
+    num_ms = len(m_vals(j)) # number of states in this j universe
+    
+     # Create the J operator for the number of TSS we have specified
+    J = jspin(num_tss)
+    
+    
+    # Now we extract only the states (and labels for those states) for the j we have specified 
+    J = [Ji.extract_states(j_index[j]) for Ji in J]  # Loops through the 3 J components and does `extract` for each one
+    jm_list = [jm_list[i] for i in j_index[j]]  
+    
+    # map from QuTiP number states to |n, j, m> states
+    possible_ns = range(0, max_bosons+1)
+    njm_list = [(n,j,m) for (n,(j,m)) in product(possible_ns, jm_list)]
+
+    
+    a        = tensor(destroy(max_bosons+1), qeye(num_ms))     # tensorised boson destruction operator
+    number   = tensor(num(max_bosons+1), qeye(num_ms))         # tensorised boson number operator
+    Jz       = tensor(qeye(max_bosons+1), J[2])                  # tensorised sigma_x operator 1
+    Jx       = tensor(qeye(max_bosons+1), J[0])                  # tensorised sigma_x operator 1
+    
+    bosons         =   (number+0.5)                                # boson energy operator
+    interaction  =    (a.dag() + a) * 2*Jx                        # interaction energy operator
+    
+    if(num_ms==1):
+        interaction.dims = [[max_bosons+1,1],[max_bosons+1,1]]
+        
+    return Jz, bosons, interaction, number, njm_list
+```
+
+### Energy level landscape $U=0$
+
+
+We will only look at the $j=1$ universe because we know that the $j=0$ universe is static and unchanging.
+
+```python
+Jz, bosons, interaction, number, njm_list = make_operators(2,1,4)
+```
+
+```python
+df = make_df_for_energy_scan("$\Delta E$", -4,4, 201, Jz.shape[0])
+```
+
+```python
+for i, row in df.iterrows():
+    H =  row["$\Delta E$"]*Jz + 1*bosons
+    evals, ekets = H.eigenstates()
+    df.iloc[i,1:] = evals
+```
+
+```python
+df.plot(x="$\Delta E$",figsize=(10,8),ylim=[-0.5,5.5],legend=False, 
+        title="Stationary states ($\omega=1$, $U=0$)     (Fig 1)");
+plt.ylabel("Energy");
+```
+
+### Crossings and anti-crossings
+
+
+```python
+df = make_df_for_energy_scan("$\Delta E$", -4,4, 201, Jz.shape[0])
+
+for i, row in df.iterrows():
+    H =  row["$\Delta E$"]*Jz + 1*bosons + 0.2*interaction
+    evals, ekets = H.eigenstates()
+    df.iloc[i,1:] = evals
+```
+
+```python
+df.plot(x="$\Delta E$",figsize=(10,8),ylim=[-0.5,5.5],legend=False, 
+        title="Stationary states ($\omega=1$, $U=0.2$)     (Fig 2)");
+plt.ylabel("Energy");
+```
+
+## Parity
+
+```python
+def make_operators(num_tss, j, max_bosons, parity=0):
+    
+    j_index, jm_list = j_states_list(num_tss)
+        
+    try:
+        j_index[j]
+    except:
+        raise Exception(f"j needs to be one of {j_vals(num_tss)}")
+
+    
+    num_ms = len(m_vals(j)) # number of states in this j universe
+    
+     # Create the J operator for the number of TSS we have specified
+    J = jspin(num_tss)
+    
+    
+    # Now we extract only the states (and labels for those states) for the j we have specified 
+    J = [Ji.extract_states(j_index[j]) for Ji in J]  # Loops through the 3 J components and does `extract` for each one
+    jm_list = [jm_list[i] for i in j_index[j]]  
+    
+    # map from QuTiP number states to |n, j, m> states
+    possible_ns = range(0, max_bosons+1)
+    njm_list = [(n,j,m) for (n,(j,m)) in product(possible_ns, jm_list)]
+
+    
+    a        = tensor(destroy(max_bosons+1), qeye(num_ms))     # tensorised boson destruction operator
+    number   = tensor(num(max_bosons+1), qeye(num_ms))         # tensorised boson number operator
+    Jz       = tensor(qeye(max_bosons+1), J[2])                  # tensorised sigma_x operator 1
+    Jx       = tensor(qeye(max_bosons+1), J[0])                  # tensorised sigma_x operator 1
+    
+    bosons         =   (number+0.5)                                # boson energy operator
+    interaction  =    (a.dag() + a) * 2*Jx                        # interaction energy operator
+    
+    if(num_ms==1):
+        interaction.dims = [[max_bosons+1,1],[max_bosons+1,1]]
+        
+    # PARITY STUFF
+    
+    M = tensor(qeye(max_bosons+1),qdiags(m_vals(j)[::-1],0))             # M operator
+    
+    if((2*j)%2==0):
+        P = (1j*np.pi*M).expm()*(1j*np.pi*number).expm()                  # parity operator 
+    else:
+        P = 1j*(1j*np.pi*M).expm()*(1j*np.pi*number).expm() 
+    
+    
+    # only do parity extraction if a valid parity is being used
+    if (parity==1) | (parity==-1):
+        p           = np.where(P.diag()==parity)[0]
+        
+        Jz     = Jz.extract_states(p)
+        Jx     = Jx.extract_states(p)
+        bosons          = bosons.extract_states(p)
+        number          = number.extract_states(p)
+        interaction   = interaction.extract_states(p)
+        P               = P.extract_states(p)
+        njm_list         = [njm_list[i] for i in p]
+        
+    return Jz, bosons, interaction, number, njm_list, P
+```
+
+```python
+# ODD PARITY
+
+Jz, bosons, interaction, number, njm_list, P = make_operators(num_tss=2, j=1, max_bosons=4, parity=-1)
+
+df_odd = make_df_for_energy_scan("$\Delta E$", -4,4, 201, Jz.shape[0])
+
+for i, row in df_odd.iterrows():
+    H =  row["$\Delta E$"]*Jz + 1*bosons + 0.2*interaction
+    evals, ekets = H.eigenstates()
+    df_odd.iloc[i,1:] = evals 
+```
+
+```python
+# EVEN PARITY
+
+Jz, bosons, interaction, number, njm_list, P = make_operators(num_tss=2, j=1, max_bosons=4, parity=1)
+
+df_even = make_df_for_energy_scan("$\Delta E$", -4,4, 201, Jz.shape[0])
+
+for i, row in df_even.iterrows():
+    H =  row["$\Delta E$"]*Jz + 1*bosons + 0.2*interaction
+    evals, ekets = H.eigenstates()
+    df_even.iloc[i,1:] = evals 
+```
+
+```python
+ fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(15,6), sharey=True)
+
+
+df_odd.plot(x="$\Delta E$",ylim=[-0.5,5.5],legend=False, 
+        title="Odd stationary states ($\omega=1$, $U=0.2$)     (Fig 4)",  ax=axes[0]);
+
+df_even.plot(x="$\Delta E$",ylim=[-0.5,5.5],legend=False, 
+        title="Even stationary states ($\omega=1$, $U=0.2$)     (Fig 5)",  ax=axes[1]);
+
+axes[0].set_ylabel("Energy");
+```
+
+## Excitation transfer
+
+```python
+Jz, bosons, interaction, number, njm_list, P = make_operators(num_tss=2, j=1, max_bosons=4, parity=0)
+```
+
+```python
+psi0 = basis(len(njm_list), 0)
+```
+
+```python
+bra_labels, ket_labels = make_braket_labels(njm_list)
+```
+
+```python
+H =  3*Jz + 1*bosons + 0.001*interaction
+```
+
+```python
+times = np.linspace(0.0, 20000000.0, 10000) # simulation time
+P, psi = simulate(H, psi0, times)
+```
+
+```python
+plt.figure(figsize=(10,8))
+for i in range(0,P.shape[0]):
+    plt.plot(times, P[i,:], label=f"{ket_labels[i]}")
+plt.ylabel("Probability")
+plt.xlabel("Time")
+plt.legend(loc="right")
+plt.title("($\Delta E=3$, $\omega=1$, $U=0.001$)     (Fig 12)")
+plt.show();
+```
+
+```python
+
+```
+
+```python
+
+```
+
+```python
+
+```
+
+```python
+
+```
+
+```python
+
+```
+
+```python
+
+```
+
+```python
+
+```
+
+```python
+
+```
+
+---
+
+```python
+j_index, jm_list = j_states_list(3)
+```
+
+```python
+jm_list
 ```
 
 ```python
@@ -80,23 +333,22 @@ def make_operators(num_tss, max_bosons, j, parity=0):
         j_index[j]
     except:
         raise Exception(f"j needs to be one of {j_vals(num_tss)}")
-    
-    Js = jspin(num_tss)
-    Jx = Js[0]
-    Jz = Js[2]
-    
 
     
+     # Create the J operator for the number of TSS we have specified
+    J = jspin(num_tss)
+    
     num_ms = len(m_vals(j))
-    Jz = Jz.extract_states(j_index[j])
-    Jx = Jx.extract_states(j_index[j])
-    jm_list = [jm_list[i] for i in j_index[j]]
+    
+    # Now we extract only the states (and labels for those states) for the j we have specified 
+    J = [Ji.extract_states(j_index[j]) for Ji in J]  # Loops through the 3 J components and does `extract` for each one
+    jm_list = [jm_list[j] for i in j_index[j]]  
     
     
     a        = tensor(destroy(max_bosons+1), qeye(num_ms))     # tensorised boson destruction operator
     number   = tensor(num(max_bosons+1), qeye(num_ms))         # tensorised boson number operator
-    Jz       = tensor(qeye(max_bosons+1), Jz)                  # tensorised sigma_x operator 1
-    Jx       = tensor(qeye(max_bosons+1), Jx)                  # tensorised sigma_x operator 1
+    Jz       = tensor(qeye(max_bosons+1), J[2])                  # tensorised sigma_x operator 1
+    Jx       = tensor(qeye(max_bosons+1), J[0])                  # tensorised sigma_x operator 1
     
     bosons         =   (number+0.5)                                # boson energy operator
     interaction  =    (a.dag() + a) * 2*Jx                        # interaction energy operator
@@ -130,16 +382,6 @@ def make_operators(num_tss, max_bosons, j, parity=0):
     
     
     return Jz, bosons, interaction, number, njm_list, P
-```
-
-```python
-J= 3, M = 3
-
-+++
-
-J= 4, M = 4
-
-++++
 ```
 
 ```python
