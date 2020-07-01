@@ -690,7 +690,7 @@ def make_operators(num_tss, j):
     
     # Now we extract only the states (and labels for those states) for the j we have specified 
     J = [Ji.extract_states(j_index[j]) for Ji in J]  # Loops through the 3 J components and does `extract` for each one
-    jm_list = [jm_list[j] for i in j_index[j]]  
+    jm_list = [jm_list[i] for i in j_index[j]]  
     
     
     return J, jm_list
