@@ -366,7 +366,7 @@ This difference persists even down to the tiniest values of $\delta$. This sugge
 
 - $|+,+\rangle$
 - $|+,-\rangle$ + $|-,+\rangle$
-- $|+,-\rangle$ - $|+,+\rangle$
+- $|+,-\rangle$ - $|-,+\rangle$
 - $|-,-\rangle$
 
 Although our original basis was perfectly fine to use, there is clearly something important to understand about this entangled basis.
