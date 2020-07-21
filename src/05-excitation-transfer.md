@@ -677,17 +677,11 @@ plt.show();
 
 ```
 
-```python
+As you can see, Fig 12 shows how excitation can be transfered from one TSS to another without bosons having any significant chance of being emitted.
 
-```
+How is it possible to have energy transfer without radiation? We can't do the topic justice in a single notebook, but what we can point to is the physics of wireless/inductive charging of devices. Energy gets transfered from one device to another but the energy isn't being radiation in the sense that we recognise from things like radio stations. In the context of quantum mechanics, such transfers of energy are made by virtual bosons.
 
-```python
-
-```
-
-```python
-
-```
+In the context of our energy level diagrams, what we have the following:
 
 ```python
 # EVEN PARITY
@@ -695,254 +689,34 @@ plt.show();
 two_state_1, two_state_2, bosons, interaction_1, interaction_2, number, nmm_list = make_operators(
     max_bosons=6, parity=1)
 
-df_even = make_df_for_energy_scan("$\Delta E$", 2.965, 2.9654, 201, two_state_1.shape[0])
+df_even = make_df_for_energy_scan("$\Delta E$", 2.5, 2.6, 201, two_state_1.shape[0])
 
 for i, row in df_even.iterrows():
-    H =  row["$\Delta E$"]*two_state_1+ row["$\Delta E$"]*two_state_2 + 1*bosons + 0.1*interaction_1 + 0.1*interaction_2
+    H =  row["$\Delta E$"]*two_state_1+ row["$\Delta E$"]*two_state_2 + 1*bosons + 0.01*interaction_1 + 0.01*interaction_2
     evals, ekets = H.eigenstates()
     df_even.iloc[i,1:] = evals 
 ```
 
 ```python
-df_even.plot(x="$\Delta E$",figsize=(10,8),ylim=[3.474,3.476],legend=True, 
-        title="Zoom in of energy levels $H = \Delta E /2 (\sigma_{z1} + \sigma_{z2}) + \hbar\omega(a^{{\dagger}}a +1/2) + U( a^{{\dagger}} + a )(\sigma_{x1} +\sigma_{x2} )$   ($\omega=1$, $U=0.001$)   ");
+df_even.plot(x="$\Delta E$",ylim=[1.499,1.501],legend=True, 
+        title=f"Even stationary states for {H_latex}   ($\omega=1$, $U=0.1$)    (Fig 13)",
+             figsize=(10,8));
+
 plt.ylabel("Energy");
-
-
 ```
 
-```python
-H = 2.96518*two_state_1 + 2.96518*two_state_2 + 1*bosons + 0.1*interaction_1 + 0.1*interaction_2
-```
+When we set our system up in the $|1,+,-\rangle$ state we are actually setting the system up in a state that's a mixture of levels 2 and 3. Although these levels don't interact with each other their energies are very close. As we cam to understand in Tutorial 1, when energies and therefore frequencies are close we can have beatings. The beat frequency is what's being manifested in Fig 12.
+
+We can check period:
 
 ```python
-times = np.linspace(0.0, 50000.0, 1000)
-P, psi = simulate(H, psi0, times)
-```
+delta = df_even.loc[0]["level_3"] - df_even.loc[0]["level_2"]
 
-```python
-plt.figure(figsize=(10,8))
-for i in range(0,P.shape[0]):
-    plt.plot(times, P[i,:], label=f"{ket_labels[i]}")
-plt.ylabel("Probability")
-plt.xlabel("Time")
-plt.legend(loc="right")
-plt.title("2 TSS with $H = \Delta E /2 (\sigma_{z1} + \sigma_{z2}) + \hbar\omega(a^{{\dagger}}a +1/2) + U( a^{{\dagger}} + a )(\sigma_{x1} +\sigma_{x2} )$   ($\Delta E = 1$, $\omega=1$, $U=0.001$)   (Fig 2)")
-plt.show();
-
-
-
+2*np.pi / delta
 ```
 
 ```python
 
-```
-
-```python
-
-```
-
-```python
-# EVEN PARITY
-
-two_state_1, two_state_2, bosons, interaction_1, interaction_2, number, nmm_list = make_operators(
-    max_bosons=4, parity=1)
-
-df_even = make_df_for_energy_scan("$\Delta E$", 0.7, 1.3, 201, two_state_1.shape[0])
-
-for i, row in df_even.iterrows():
-    H =  row["$\Delta E$"]*two_state_1+ row["$\Delta E$"]*two_state_2 + 1*bosons + 0.1*interaction_1 + 0.1*interaction_2
-    evals, ekets = H.eigenstates()
-    df_even.iloc[i,1:] = evals 
-```
-
-```python
-df_even.plot(x="$\Delta E$",figsize=(10,8),ylim=[1,2],legend=True, 
-        title="Zoom in of energy levels $H = \Delta E /2 (\sigma_{z1} + \sigma_{z2}) + \hbar\omega(a^{{\dagger}}a +1/2) + U( a^{{\dagger}} + a )(\sigma_{x1} +\sigma_{x2} )$   ($\omega=1$, $U=0.001$)   ");
-plt.ylabel("Energy");
-
-
-```
-
-```python
-
-```
-
-```python
-
-```
-
-```python
-
-```
-
-```python
-
-```
-
-```python
-
-```
-
-```python
-
-```
-
-```python
-# EVEN PARITY
-
-two_state_1, two_state_2, bosons, interaction_1, interaction_2, number, nmm_list = make_operators(
-    max_bosons=3, parity=1)
-
-df_even = make_df_for_energy_scan("$\Delta E$", 0.995, 1.005, 201, two_state_1.shape[0])
-
-for i, row in df_even.iterrows():
-    H =  row["$\Delta E$"]*two_state_1+ row["$\Delta E$"]*two_state_2 + 1*bosons + 0.001*interaction_1 + 0.001*interaction_2
-    evals, ekets = H.eigenstates()
-    df_even.iloc[i,1:] = evals 
-```
-
-```python
-
-```
-
-```python
-df_even.plot(x="$\Delta E$",figsize=(10,8),ylim=[1.495,1.504],legend=True, 
-        title="Zoom in of energy levels $H = \Delta E /2 (\sigma_{z1} + \sigma_{z2}) + \hbar\omega(a^{{\dagger}}a +1/2) + U( a^{{\dagger}} + a )(\sigma_{x1} +\sigma_{x2} )$   ($\omega=1$, $U=0.001$)   ");
-plt.ylabel("Energy");
-
-
-```
-
-```python
-
-```
-
-```python
-
-```
-
-```python
-
-```
-
-```python
-
-```
-
----
-
-
-## Dicke basis
-
-```python
-def make_operators(num_tss, j, max_bosons, parity=0):
-    
-    j_index, jm_list = j_states_list(num_tss)
-        
-    try:
-        j_index[j]
-    except:
-        raise Exception(f"j needs to be one of {j_vals(num_tss)}")
-
-    
-    num_ms = len(m_vals(j)) # number of states in this j universe
-    
-     # Create the J operator for the number of TSS we have specified
-    J = jspin(num_tss)
-    
-    
-    # Now we extract only the states (and labels for those states) for the j we have specified 
-    J = [Ji.extract_states(j_index[j]) for Ji in J]  # Loops through the 3 J components and does `extract` for each one
-    jm_list = [jm_list[i] for i in j_index[j]]  
-    
-    # map from QuTiP number states to |n, j, m> states
-    possible_ns = range(0, max_bosons+1)
-    njm_list = [(n,j,m) for (n,(j,m)) in product(possible_ns, jm_list)]
-
-    
-    a        = tensor(destroy(max_bosons+1), qeye(num_ms))     # tensorised boson destruction operator
-    number   = tensor(num(max_bosons+1), qeye(num_ms))         # tensorised boson number operator
-    Jz       = tensor(qeye(max_bosons+1), J[2])                  # tensorised sigma_x operator 1
-    Jx       = tensor(qeye(max_bosons+1), J[0])                  # tensorised sigma_x operator 1
-    Jy       = tensor(qeye(max_bosons+1), J[1])                  # tensorised sigma_x operator 1
-    J2 = Jx*Jx + Jy*Jy + Jz*Jz
-    
-    bosons         =   (number+0.5)                                # boson energy operator
-    interaction  =    (a.dag() + a) *2*Jx                        # interaction energy operator
-    
-    if(num_ms==1):
-        interaction.dims = [[max_bosons+1,1],[max_bosons+1,1]]
-        
-    # PARITY STUFF
-    
-    M = tensor(qeye(max_bosons+1),qdiags(m_vals(j)[::-1],0))             # M operator
-    
-    if((2*j)%2==0):
-        P = (1j*np.pi*M).expm()*(1j*np.pi*number).expm()                  # parity operator 
-    else:
-        P = 1j*(1j*np.pi*M).expm()*(1j*np.pi*number).expm() 
-    
-    
-    # only do parity extraction if a valid parity is being used
-    if (parity==1) | (parity==-1):
-        p           = np.where(P.diag()==parity)[0]
-        
-        Jz     = Jz.extract_states(p)
-        Jx     = Jx.extract_states(p)
-        Jy     = Jy.extract_states(p)
-        J2     = J2.extract_states(p)
-        bosons          = bosons.extract_states(p)
-        number          = number.extract_states(p)
-        interaction   = interaction.extract_states(p)
-        P               = P.extract_states(p)
-        njm_list         = [njm_list[i] for i in p]
-        
-    
-        
-    return [Jx,Jy,Jz], bosons, interaction, number, njm_list, P, J2
-```
-
-```python
-# ODD PARITY
-
-J, bosons, interaction, number, njm_list, P, J2 = make_operators(num_tss=2, j=1, max_bosons=3, parity=-1)
-
-df_odd = make_df_for_energy_scan("$\Delta E$", -4,4, 201, J[2].shape[0])
-
-for i, row in df_odd.iterrows():
-    H =  row["$\Delta E$"]*J[2] + 1*bosons + 0.2*interaction
-    evals, ekets = H.eigenstates()
-    df_odd.iloc[i,1:] = evals 
-    
-```
-
-```python
-# EVEN PARITY
-
-J, bosons, interaction, number, njm_list, P, J2 = make_operators(num_tss=2, j=1, max_bosons=3, parity=1)
-
-df_even = make_df_for_energy_scan("$\Delta E$", -4,4, 201, J[2].shape[0])
-
-for i, row in df_even.iterrows():
-    H =  row["$\Delta E$"]*J[2] + 1*bosons + 0.2*interaction
-    evals, ekets = H.eigenstates()
-    df_even.iloc[i,1:] = evals 
-```
-
-```python
-fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(15,6), sharey=True)
-
-fig.suptitle("Stationary states for $j=1$, $H=\Delta E J_{z} +\hbar\omega(a^{{\dagger}}a +1/2)  +  2U( a^{{\dagger}} + a )J_{x}$    ($\omega=1$, $U=0.2$)")
-
-
-df_odd.plot(x="$\Delta E$",ylim=[-0.5,5.5],legend=False, 
-        title="Odd parity     (Fig 3)",  ax=axes[0]);
-
-df_even.plot(x="$\Delta E$",ylim=[-0.5,5.5],legend=False, 
-        title="Even parity     (Fig 4) ",  ax=axes[1]);
-
-axes[0].set_ylabel("Energy");
 ```
 
 ```python
