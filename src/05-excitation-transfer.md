@@ -13,6 +13,11 @@ jupyter:
     name: python3
 ---
 
+<a href="https://colab.research.google.com/github/project-ida/two-state-quantum-systems/blob/master/05-excitation-transfer.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <a href="https://nbviewer.jupyter.org/github/project-ida/two-state-quantum-systems/blob/master/05-excitation-transfer.ipynb" target="_parent"><img src="https://nbviewer.jupyter.org/static/img/nav_logo.svg" alt="Open In nbviewer" width="100"/></a>
+
+
+# 5 - Excitation transfer
+
 ```python
 # Libraries and helper functions
 
@@ -540,20 +545,17 @@ Why is it that changing plus to minus in $|1,+,-\rangle  \pm |1,-,+\rangle$ make
 
 > For those who just can't wait that long, it has to do with angular momentum and spin
 
-For now, what we can confidently say is that when we see a 4 level anti-crossing it's actually only 3 levels that are interacting to produce the energy splitting - the other level is a non-interacting one of the form $|n,+,-\rangle  - |n,-,+\rangle$.
+For now, what we can confidently say is that when we see a 4 level anti-crossing it's actually only 3 levels that are interacting to produce the energy splitting - the other level is a non-interacting one of the form $|n,+,-\rangle  - |n,-,+\rangle$. With that said, let's take a look at these unfamiliar many level anti-crossings.
 
 
 ## 5.9 - Beyond simple anti-crossings
 
 
-The "anti-crossing" around $\Delta E = 1$ looks like it could be related to the $|0,+, + \rangle \rightarrow |2,-, - \rangle$ transition that we spoke of earlier which is mediated by the staes $|1,+, - \rangle$ and $|1,-, + \rangle$. Let's zoom in a take a closer look.
+In fig 7, there is a 4 level "anti-crossing" around $\Delta E = 1$. Because $\Delta E = \omega$ at this point, we suspect that the transition $|0,+, + \rangle \rightarrow |2,-, - \rangle$ (that we spoke of during exploration of the Hinton diagram) might be active here. 
+
+Let's zoom in a take a closer look before we head straight into simulation.
 
 ```python
-# EVEN PARITY
-
-two_state_1, two_state_2, bosons, interaction_1, interaction_2, number, nmm_list = make_operators(
-    max_bosons=6, parity=1)
-
 df_even = make_df_for_energy_scan("$\Delta E$", 0.7, 1.3, 201, two_state_1.shape[0])
 
 for i, row in df_even.iterrows():
@@ -564,23 +566,25 @@ for i, row in df_even.iterrows():
 
 ```python
 df_even.plot(x="$\Delta E$",ylim=[1,2],legend=True, 
-        title=f"Even stationary states for {H_latex}   ($\omega=1$, $U=0.1$)    (Fig 9)",
+        title=f"Even energy levels for {H_latex}   ($\omega=1$, $U=0.1$)    (Fig 9)",
              figsize=(10,8));
 
 plt.ylabel("Energy");
 ```
 
-When we look at levels 2 and 3 in Fig 9, we should try and ignore the horizontal part (the non interactive level) and instead imagine the "S" looking curve is a single energy level - let's call it level S.
+When looking at levels 2 and 3 in fig 9, we should try and ignore the horizontal part (the non interactive level) and instead imagine the elongated "S" looking shape is a single energy level - let's call it level S.
 
-We can immediately see that the notion of an anti-crossing is now somewhat ill defined because things don't look very symmetric. In particular:
+We can immediately see from fig 9 that the notion of an anti-crossing is now somewhat ill defined because things don't look very symmetric. In particular:
 - The extrema of the upper (purple) and lower (orange) levels don't occur at the same $\Delta E$
-- The upper and lower levels come closest to the middle level S at $\Delta E$ that does not coincide with their extrema
+- The upper and lower levels come closest to the middle level S at a $\Delta E$ that doesn't not coincide with their extrema
 
-This makes it difficult to choose an appropriate $\Delta E$ for the simulation. We know that as $U \rightarrow 0$, all the levels come together at $\Delta E=1 $, so let's reduce $U$ by a factor of 10 to $U=0.01$ and set $\Delta E=1 $ for this simulation and see how we get on.
+It is therefore difficult to choose an appropriate $\Delta E$ for a simulation. We do know that as $U \rightarrow 0$, all the levels come together at $\Delta E=1 $ (as we saw in fig 6), so let's reduce $U$ by a factor of 10 to $U=0.01$ and set $\Delta E=1 $ for this simulation and see how we go.
 
 ```python
 H = 1*two_state_1 + 1*two_state_2 + 1*bosons + 0.01*interaction_1 + 0.01*interaction_2
 ```
+
+We'll again start in the $|0,+, + \rangle$ state.
 
 ```python
 psi0 = basis(len(nmm_list), 0)
@@ -605,9 +609,17 @@ plt.show();
 
 ```
 
-Fig 10 shows the emission of a single boson from each TSS as we predicted when we explored the Hinton diagram.
+Fig 10 indeed shows the emission of a single boson from each TSS as we predicted when we explored the Hinton diagram.
 
->As an aside, you might be wondering why we don't see a full oscillation in probability from 1 to 0 for $|0,+,+ \rangle$ and $|2,-,- \rangle$. We saw in Tutorial 4, that as the boson number increased the separation in levels at anti-crossings also increased - this tells us that the boson number is involved in the amount of coupling between any two levels. Because $|0,+,+ \rangle \rightarrow |2,-,- \rangle$ involves the coupling of 3 levels of different boson number (the third being the intermediate level $|1,+,-\rangle + |1,-,+\rangle$), an asymmetry develops and is then reflected in the time evolution of Fig 10.
+>As an aside, you might be wondering why we don't see a full oscillation in probability from 1 to 0 for $|0,+,+ \rangle$ and $|2,-,- \rangle$. We saw in Tutorial 4 (fig 2), that as the boson number increased the separation in levels at anti-crossings also increased - this tells us that the boson number is involved in the amount of coupling between any two levels. Because $|0,+,+ \rangle \rightarrow |2,-,- \rangle$ involves the coupling of 3 levels of different boson number (the third being the intermediate level $|1,+,-\rangle + |1,-,+\rangle$), an asymmetry develops between the intermediate state and the upper/lower states. This asymmetry is then reflected in the time evolution of Fig 10.
+
+
+Things here are not quite as simple as a two level anti-crossing, but our intuition from looking at both the Hinton diagram and the energy levels still gave us the right idea.
+
+What about the novel feature we found in the Hinton diagram - the suggestion of something we termed excitation transfer?
+
+
+## 5.10 - Excitation transfer
 
 
 Let's see if we can simulate the excitation transfer that we also discussed during our exploration of the Hinton diagram, i.e. the transition $|1,+, - \rangle \rightarrow  |1,-, + \rangle$. We should just be able to re run the above simulation with a different starting condition corresponding to $|1,+, - \rangle$ - which state is this in QuTiP?
@@ -628,7 +640,7 @@ times = np.linspace(0.0, 1000.0, 10000)
 P, psi = simulate(H, psi0, times)
 ```
 
-```python
+```python jupyter={"outputs_hidden": true}
 plt.figure(figsize=(10,8))
 for i in range(0,P.shape[0]):
     plt.plot(times, P[i,:], label=f"{ket_labels[i]}")

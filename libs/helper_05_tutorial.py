@@ -116,3 +116,18 @@ def simulate(H, psi0, times):
         psi[k,:] = amp
         P[k,:] = amp*np.conj(amp)
     return P, psi
+
+
+# This function takes a list of QuTiP states and puts them in a dataframe to make them easier to visually compare
+def prettify_states(states, mm_list=None):
+    pretty_states = np.zeros([states[0].shape[0],len(states)], dtype="object")
+    
+    for j, state in enumerate(states):
+        for i, val in enumerate(state):
+            pretty_states[i,j] = f"{val[0,0]:.1f}"
+    if (mm_list == None):
+        df = pd.DataFrame(data=pretty_states)
+    else:
+        df = pd.DataFrame(data=pretty_states, index=mm_list)
+            
+    return df
