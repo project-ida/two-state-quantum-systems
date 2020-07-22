@@ -19,6 +19,10 @@ jupyter:
 # 5 - Excitation transfer
 
 
+[Last time](https://nbviewer.jupyter.org/github/project-ida/two-state-quantum-systems/blob/master/04-spin-boson-model.ipynb), we explored the spin boson model and found the surprising physics of down conversion - where many bosons are emitted/absorbed when a two state system (TSS) makes a transition. This is not what's usually taught to be possible in introductory quantum mechanics courses.
+
+Today, we are going to extend the spin boson model by adding another another TSS into the mix. What new lessons does mother nature have for us...the clue is in the name of the tutorial 😉 .
+
 This tutorial is split up into the following sections:
 1. Recap
 2. Adding more two state systems
@@ -52,20 +56,6 @@ from scipy.optimize import minimize_scalar
 # simulate - we made this in tutorial 4
 # 
 from libs.helper_05_tutorial import *
-
-
-```
-
-```python
-
-```
-
-```python
-
-```
-
-```python
-
 ```
 
 ## 5.1 - Recap
@@ -784,6 +774,18 @@ delta = df_even.loc[0]["level_3"] - df_even.loc[0]["level_2"]
 
 This time matches up with the excitation transfer period we observed in fig 12.
 
-```python
+So, although this non-radiative excitation transfer might seem a surprising, we can at least begin the process of understand it in terms of concepts that we introduced at the start of our quantum journey. 
 
-```
+
+## Next up
+
+As always, this is only the beginning. There are so many more questions to ask, details to dig into, avenues to explore...
+- What causes the non interacting sub-universes?
+- Does excitation transfer still work with a spectrum of modes?
+- Can we have excitation transfer when the TSS don't have the same energy? 
+- What happens when we add more TSS?
+- Can we learn more about virtual particles through some simple extensions to our model?
+- Can we transfer extremely large quanta of energy using modes with very low frequencies?
+- ...
+
+Until next time 👋
