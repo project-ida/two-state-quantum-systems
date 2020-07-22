@@ -333,7 +333,7 @@ for i, row in df_even.iterrows():
 ```python
 fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(15,6), sharey=True)
 
-fig.suptitle("Stationary states for $H = \Delta E /2 (\sigma_{z1} + \sigma_{z2}) + \hbar\omega(a^{{\dagger}}a +1/2) $  ($\omega=1$)")
+fig.suptitle("Energy levels for $H = \Delta E /2 (\sigma_{z1} + \sigma_{z2}) + \hbar\omega(a^{{\dagger}}a +1/2) $  ($\omega=1$)")
 
 
 df_odd.plot(x="$\Delta E$",ylim=[-0.5,5.5],legend=False, 
@@ -380,16 +380,13 @@ From now on we'll continue our exploration with even parity, i.e Fig 6.
 Let's switch on the coupling and see if there are any surprises.
 
 
-## Crossings and anti-crossings
+## 5.6 - Crossings and anti-crossings
+
+
+We'll create a relatively strong coupling to start with i.e. $U=0.1$. This way we can easily spot the changes in the energy level diagram.
 
 ```python
-# EVEN PARITY
-
-two_state_1, two_state_2, bosons, interaction_1, interaction_2, number, nmm_list = make_operators(
-    max_bosons=6, parity=1)
-
-df_even = make_df_for_energy_scan("$\Delta E$", -4, 4, 201, two_state_1.shape[0])
-
+# We re-use operators that made Fig 6 (these had even parity) and just add the interaction terms
 for i, row in df_even.iterrows():
     H =  row["$\Delta E$"]*two_state_1+ row["$\Delta E$"]*two_state_2 + 1*bosons + 0.1*interaction_1 + 0.1*interaction_2
     evals, ekets = H.eigenstates()
@@ -398,27 +395,26 @@ for i, row in df_even.iterrows():
 
 ```python
 df_even.plot(x="$\Delta E$",ylim=[-0.5,5.5],legend=True, 
-        title=f"Even stationary states for {H_latex}   ($\omega=1$, $U=0.1$)   (Fig 7)",
+        title=f"Even energy levels for {H_latex}   ($\omega=1$, $U=0.1$)   (Fig 7)",
              figsize=(10,8));
 
 plt.ylabel("Energy");
 
 ```
 
-There are many things we can see from Fig 7:
-1. Where 2 levels have come together we see an anti-crossing as we have come to expect from interacting levels, e.g. levels 4 and 5.
-2. The horizontal levels of Fig 6 have split into 2 levels as we suspected. This reveals that 4 levels are indeed coming together at some anti-crossings, e.g. levels 1,2,3,4
-3. One of the previously horizontal levels appears to remain horizontal, i.e. it is unaffected by the coupling
-4. There appear to still be genuine crossings between some levels, most strikingly seen at the intersection of levels 2 and 3 - this indicates there might be non interacting sub-universes with each parity universe 🤯
+There are many things we can see is Fig 7:
+1. Where 2 levels have come together (e.g. levels 4 and 5) we see an anti-crossings as we have come to expect from interacting levels
+2. The horizontal levels of Fig 6 have split into 2 levels as we suspected. This confirms that we do indeed have 4 levels coming together at some anti-crossings, e.g. levels 1,2,3,4
+3. There appear to still be genuine crossings between some levels, most strikingly seen at the intersection of levels 2 and 3 - this indicates there might be non interacting sub-universes with each parity universe 🤯
 
-There is a lot to explore and understand, let's start with point 1, i.e. two levels anti-crossing - this is the most familiar to us, then move onto looking at 3 and 4 in States with no overall excitation before returning to 2 in "Beyond two level anti-crossings"
+There is a lot to explore and understand here. We'll start with point 1, i.e. two levels anti-crossing, as this is the most familiar to us, we'll then take a look at point 3 i.e. the mystery crossing between the states with no overall excitation. Then we'll finish off with point 2, i.e. the unfamiliar 4 level anti-crossing.
 
 
-### Two Level anti-crossing
+## 5.7 - Two Level anti-crossing
 
-Levels 4 an 5 anti-cross at around $\Delta E = 2\omega$. This anti-crossing looks like it could be linked to the $|0,+, + \rangle \rightarrow |4,-, - \rangle$ down conversion that we talked about when we explored the Hinton diagram.
+In fig 7, levels 4 an 5 anti-cross at around $\Delta E = 2$. This anti-crossing looks like it could be linked to the $|0,+, + \rangle \rightarrow |4,-, - \rangle$ down conversion that we talked about when we explored the Hinton diagram. Let's see if we can confirm this down conversion via simulation (just as we did in [Fig 12 of tutorial 4](https://nbviewer.jupyter.org/github/project-ida/two-state-quantum-systems/blob/master/04-spin-boson-model.ipynb#4.5---Down-conversion)). 
 
-Let's see if we can simulation such down conversion just as we did in Fig 12 of tutorial 4. Rather than manually zoom in on the anti-crossing to get a more precise value of $\Delta E$ to use in the simulation, we will automate the process using [`minimize_scalar`](https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize_scalar.html) from [`scipy`](https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize_scalar.html)
+Rather than manually zoom in on the anti-crossing to get a more precise value of $\Delta E$ to use in the simulation, we will automate the process using [`minimize_scalar`](https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize_scalar.html) from [`scipy`](https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize_scalar.html).
 
 
 How will we use `minimize_scalar`? We first need to provide a function that calculates the difference in the energies of two levels.
@@ -428,10 +424,9 @@ def level_difference(DeltaE, omega, U, level_number):
     H = DeltaE*two_state_1 + DeltaE*two_state_2 + omega*bosons + U*interaction_1 + U*interaction_2
     evals, ekets = H.eigenstates()
     return np.abs(evals[level_number] - evals[level_number-1])
-
 ```
 
-We can now pass this `level_difference` to `minimise_scalar` where the first argument will be used by `minimize_scalar` as a variable and the rest will be considered as "arguments" (i.e. fixed constants). Finally, we must specify $\Delta E$ `bounds` in which we expect to find the anti-crossing.
+We then pass this `level_difference` function to `minimise_scalar`. The first argument of `level_difference` (i.e. `DeltaE`) will be used by `minimize_scalar` as a variable and the rest will be considered as "arguments" (i.e. fixed constants). Finally, we must specify `bounds` (i.e. min and max `DeltaE`) inside of which we expect to find the anti-crossing.
 
 Let's give it a go using:
 - `omega = 1`
@@ -450,20 +445,20 @@ anti_crossing = minimize_scalar(level_difference, args=(1, 0.1, 5), method="Boun
 anti_crossing
 ```
 
-We see that the true anti-crossing occurs at $\Delta E = 1.9328593467366724$. Let's now use this value to create the Hamiltonian for our simulation.
+We see that the true anti-crossing occurs at $\Delta E = 1.9328593467366724$.
+
+We can now use this value to create the Hamiltonian for our simulation.
+
+> Also feel free to adjust the value of  $\Delta E$ and see how sensitive the results are to the precise value of the anti-crossing.
 
 ```python
 H = anti_crossing.x*two_state_1 + anti_crossing.x*two_state_2 + 1*bosons + 0.1*interaction_1 + 0.1*interaction_2
 ```
 
-We want to start the system off in the $|0,+, + \rangle$ state - this should be the first state in the state list, let's check
+We want to start the system off in the $|0,+, + \rangle$ state - this should be the first state in the state list, let's check.
 
 ```python
 nmm_list[0]
-```
-
-```python
-nmm_list
 ```
 
 Great. We can now set up the initial state by using the `basis` function as we have done before.
@@ -475,13 +470,11 @@ psi0 = basis(len(nmm_list), 0)
 Now we are ready to simulate
 
 ```python
-np.linspace(0,1).shape
-```
-
-```python
 times = np.linspace(0.0, 100000.0, 10000)
 P, psi = simulate(H, psi0, times)
 ```
+
+We need to recreate the bra-ket labels because we are now working only with even parity states.
 
 ```python
 bra_labels, ket_labels = make_braket_labels(nmm_list)
@@ -494,16 +487,14 @@ for i in range(0,P.shape[0]):
 plt.ylabel("Probability")
 plt.xlabel("Time")
 plt.legend(loc="right")
-plt.title(f"2 TSS with {H_latex}  ($\Delta E = 1$, $\omega=1$, $U=0.001$)   (Fig 8)")
+plt.title(f"2 TSS with {H_latex}  ($\Delta E \\approx 1.9328$, $\omega=1$, $U=0.1$)   (Fig 8)")
 plt.show();
-
-
 ```
 
-Fig 8 does indeed show down conversion that we expected to see, i.e. both TSS transition from + to - giving of 2 bosons in the process, i.e. $|0,+, + \rangle \rightarrow |4,-, - \rangle$.
+Fig 8 shows exactly what we expected i.e. both TSS transition from "+" to "-" each giving of 2 bosons in the process, i.e. $|0,+, + \rangle \rightarrow |4,-, - \rangle$.
 
 
-### States with no overall excitation
+## 5.8 - Mystery crossings
 
 
 From fig xx, we found something unexpected for the energy levels corresponding to no overall excitation, i.e. those consisting of equal number of + and -. 
@@ -551,7 +542,7 @@ So, it seems to be true that the state $|1,+,-\rangle  - |1,-,+\rangle$ (and oth
 We can now be quite confident that when we see an anti-crossing where 4 levels come together it's actually only 3 levels that are interacting to produce the energy splitting and the other level is just a non interacting level of the form $|n,+,-\rangle  - |n,-,+\rangle$.
 
 
-## Beyond simple anti-crossings
+## 5.9 - Beyond simple anti-crossings
 
 
 The "anti-crossing" around $\Delta E = 1$ looks like it could be related to the $|0,+, + \rangle \rightarrow |2,-, - \rangle$ transition that we spoke of earlier which is mediated by the staes $|1,+, - \rangle$ and $|1,-, + \rangle$. Let's zoom in a take a closer look.
