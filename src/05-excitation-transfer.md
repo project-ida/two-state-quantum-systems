@@ -19,66 +19,46 @@ jupyter:
 %matplotlib inline
 import matplotlib.pyplot as plt
 from IPython.display import Image
-import gif
 
 import numpy as np
 from itertools import product
 import pandas as pd
 import warnings
-import os
-from fractions import Fraction
 warnings.filterwarnings('ignore')
 
 from qutip import *
 from qutip.piqs import *
-from qutip.cy.piqs import j_min, j_vals, m_vals
 
 from scipy.optimize import minimize_scalar
 
 # The helper file below brings functions created in previous tutorials
 # make_df_for_energy_scan - we made this in tutorial 4
 # make_braket_labels - we made this in tutorial 4
-# j_states_list
+# simulate - we made this in tutorial 4
 # 
-from libs.helper_06_tutorial import *
-
-
-def simulate(H, psi0, times):
-    num_states = H.shape[0]
-    
-    # create placeholder for values of amplitudes for different states
-    psi = np.zeros([num_states,times.size], dtype="complex128")
-     # create placeholder for values of occupation probabilities for different states
-    P = np.zeros([num_states,times.size], dtype="complex128")
-    
-    evals, ekets = H.eigenstates()
-    psi0_in_H_basis = psi0.transform(ekets)
-
-    for k in range(0,num_states):
-        amp = 0
-        for i in range(0,num_states):
-            amp +=  psi0_in_H_basis[i][0][0]*np.exp(-1j*evals[i]*times)*ekets[i][k][0][0]
-        psi[k,:] = amp
-        P[k,:] = amp*np.conj(amp)
-    return P, psi
+from libs.helper_05_tutorial import *
 ```
 
-## Recap
+## 5.1 - Recap
+
+Let's remind ourselves of the Hamiltonian that we used in the last tutorial ([Tutorial 4](https://nbviewer.jupyter.org/github/project-ida/two-state-quantum-systems/blob/master/04-spin-boson-model.ipynb))
 
 $$H =  \frac{\Delta E}{2} \sigma_z + \hbar\omega\left(a^{\dagger}a +\frac{1}{2}\right) + U\left( a^{\dagger} + a \right)\sigma_x$$
 
-States described as $|n,\pm \rangle$
+where we recognise $\Delta E$ as the transition energy of the TSS, $\hbar\omega$ the energy of a single boson and $U$ as the strength of the interaction of the TSS with the boson field.
 
-For example, if we only allow `max_bosons=4`
+We described the states of the system above using the notation $|n,\pm \rangle$.
+
+To help us transition to systems with many TSS, let's enumerate the states for the Hamiltonian above using an example where we only allow `max_bosons=4`.
 
 ```python
 max_bosons=4
 ```
 
-We can enumerate the states as
+We [previously](https://nbviewer.jupyter.org/github/project-ida/two-state-quantum-systems/blob/master/04-spin-boson-model.ipynb#4.3---Structure-of-the-Hamiltonian) enumerated the states by doing:
 
 ```python
-# map from QuTiP number states to |n,±, ±> states
+# map from QuTiP number states to |n,±> states
 possible_ns = range(0, max_bosons+1)
 possible_ms = ["+","-"]
 nm_list = [(n,m1) for (n,m1) in product(possible_ns, possible_ms)]
@@ -88,21 +68,17 @@ nm_list = [(n,m1) for (n,m1) in product(possible_ns, possible_ms)]
 nm_list
 ```
 
-and we can represent e.g. $|1, +\rangle$ using the tensor product that we learnt about in [Tutorial 3](https://nbviewer.jupyter.org/github/project-ida/two-state-quantum-systems/blob/master/03-a-two-state-system-in-a-quantised-field.ipynb#3.5---Describing-coupled-systems-in-QuTiP) and 4.
+and we represented these states in QuTiP using the tensor product (see [Tutorial 3](https://nbviewer.jupyter.org/github/project-ida/two-state-quantum-systems/blob/master/03-a-two-state-system-in-a-quantised-field.ipynb#3.5---Describing-coupled-systems-in-QuTiP)). For example, the state $|1, +\rangle$ can be represented in QuTiP by:
 
 ```python
-#        bosons,                TSS1, 
+#         bosons,                TSS1, 
 tensor(basis(max_bosons+1,1), basis(2,0))
 ```
 
-<!-- #region -->
-We did similar things with the operators that make up the Hamiltonian
-
-
+We also used tensor products for the operators that make up the Hamiltonian (See [Tutorial 4](https://nbviewer.jupyter.org/github/project-ida/two-state-quantum-systems/blob/master/04-spin-boson-model.ipynb#4.2---Stationary-states)). Specifically:
 - `two_state` = $\frac{1}{2}\sigma_z$
 - `bosons` = $a^{\dagger}a +\frac{1}{2}$
 - `interaction`= $\left( a^{\dagger} + a \right)\sigma_x$
-<!-- #endregion -->
 
 ```python
 a  = tensor(destroy(max_bosons+1), qeye(2))     # tensorised boson destruction operator
@@ -115,25 +91,26 @@ number        = a.dag()*a                       # boson number operator         
 interaction  = (a.dag() + a) * sx               # interaction energy operator        (𝑎†+𝑎)𝜎𝑥  
 ```
 
-We can extend these tensor products to include extra TSS easily. Let's see
+Now, we have recalled what we did before, we are in a good place to extend these ideas to include an extra TSS.
 
 
-## 2 TSS
+## 5.2 - Adding more TSS 
+
+For this tutorial we will consider 2 identical TSS (`TSS_1` and `TSS_2`) whose interaction with the boson field is also identical. In this case, we can extend the single TSS Hamiltonian in the following way:
 
 $$H =  \frac{\Delta E}{2} (\sigma_{z1} + \sigma_{z2}) + \hbar\omega\left(a^{\dagger}a +\frac{1}{2}\right) + U\left( a^{\dagger} + a \right)(\sigma_{x1} + \sigma_{x2})$$
 
-States described as $|n,\pm, \pm \rangle$
+where subscripts 1 and 2 refer to `TSS_1` and `TSS_2` respectively.
 
-Again, if we only allow `max_bosons=4`, then we can enumerate the states in a very similar way to a single TSS
-
+We will be referring to this Hamiltonian a lot in figure titles so we'll create a Latex variable so that it's easy to refer back to later.
 
 ```python
 H_latex = "$H = \Delta E /2 (\sigma_{z1} + \sigma_{z2}) + \hbar\omega(a^{{\dagger}}a +1/2) + U( a^{{\dagger}} + a )(\sigma_{x1} +\sigma_{x2} )$ "
 ```
 
-```python
-max_bosons=4
-```
+How shall we describe the states of the system above? We can add another $\pm$ "index" to make the state notation $|n,\pm, \pm \rangle$.
+
+Let's enumerate the states for the Hamiltonian above (again using `max_bosons=4`) by extending the ideas that we used for the single TSS - we just need to add an extra argument to the `product` function.
 
 ```python
 # map from QuTiP number states to |n,±, ±> states
@@ -146,14 +123,14 @@ nmm_list = [(n,m1,m2) for (n,m1,m2) in product(possible_ns, possible_ms, possibl
 nmm_list
 ```
 
-the state  $|1,+, + \rangle$ is then represented by:
+The tensor products can also be extended by adding an extra argument. For example, the state  $|1,+, + \rangle$ is represented by:
 
 ```python
-#           bosons,             TSS1,        TSS2
+#           bosons,             TSS_1,        TSS_2
 tensor(basis(max_bosons+1,1), basis(2,0), basis(2,0))
 ```
 
-Now for the operators.
+Now we do the same for the operators:
 
 - `two_state_1` = $\frac{1}{2}\sigma_{z1}$
 - `two_state_2` = $\frac{1}{2}\sigma_{z2}$
@@ -168,21 +145,25 @@ sx2   = tensor(qeye(max_bosons+1), qeye(2), sigmax())       # tensorised 𝜎�
 sz1   = tensor(qeye(max_bosons+1), sigmaz(), qeye(2))       # tensorised 𝜎z1 operator 
 sz2   = tensor(qeye(max_bosons+1), qeye(2), sigmaz())       # tensorised 𝜎z2 operator 
 
-two_state_1     =  1/2*sz1                             # two state system energy operator   𝜎𝑧1/2
-two_state_2     =  1/2*sz2                             # two state system energy operator   𝜎𝑧2/2
+two_state_1     =  1/2*sz1                             # two_state_1 energy operator        𝜎𝑧1/2
+two_state_2     =  1/2*sz2                             # two_state_2 energy operator        𝜎𝑧2/2
 bosons          = (a.dag()*a+0.5)                      # boson energy operator              𝑎†𝑎+1/2
 number          = a.dag()*a                            # boson number operator              𝑎†𝑎
-interaction_1   = (a.dag() + a) * sx1                  # interaction energy operator       (𝑎†+𝑎)𝜎𝑥1  
-interaction_2   = (a.dag() + a) * sx2                  # interaction energy operator       (𝑎†+𝑎)𝜎𝑥2 
+interaction_1   = (a.dag() + a) * sx1                  # interaction_1 energy operator      (𝑎†+𝑎)𝜎𝑥1  
+interaction_2   = (a.dag() + a) * sx2                  # interaction_2 energy operator      (𝑎†+𝑎)𝜎𝑥2 
 ```
 
-In tutorial 4, we learnt a lot from looking at the Hinton diagram of the Hamiltonian. Let's do the same here.
+## 5.3  - Structure of the Hamiltonian
 
-Let's use example Hamiltonian with $\Delta E = \omega = U = 1$ for this test.
+In [tutorial 4](https://nbviewer.jupyter.org/github/project-ida/two-state-quantum-systems/blob/master/04-spin-boson-model.ipynb#4.3---Structure-of-the-Hamiltonian), we learnt a lot from looking at the Hinton diagram of the Hamiltonian. What we we learn this time?
+
+Let's use an example Hamiltonian with $\Delta E = \omega = U = 1$ for this visual exploration.
 
 ```python
 H = 1*two_state_1 + 1*two_state_2 + 1*bosons + 1*interaction_1 + 1*interaction_2
 ```
+
+Let's not forget to make the pretty bra-ket labels for plotting. We are making use of the `make_braket_labels` function that we created last time and have imported from a helper file at the top of the notebook.
 
 ```python
 bra_labels, ket_labels = make_braket_labels(nmm_list)
@@ -192,68 +173,75 @@ bra_labels, ket_labels = make_braket_labels(nmm_list)
 f, ax = hinton(H, xlabels=ket_labels, ylabels=bra_labels)
 ax.tick_params(axis='x',labelrotation=90,)
 ax.set_title("Matrix elements of H     (Fig 1)");
-
 ```
 
-As we might have imagined the Hinton diagram is more complicated than for a single TSS. Each state is connected to twice as many states as previously. For example, $|0,+, + \rangle$ is directly coupled to the following 2 states:
+As we might have guessed, the Hinton diagram is more complicated than for a single TSS. Each state is connected to twice as many states as previously. For example, $|0,+, + \rangle$ is directly coupled to the following 2 states:
 - $|1,+, - \rangle$
 - $|1,-, + \rangle$
 
-Just like the last tutorial, we can start to draw a sequence of horizontal and vertical line to see how the states are connected. There are many more paths now that we have an extra TSS. Let's look at one such path.
+Just as in the last tutorial, we can draw indirect paths connecting different states to get a feeling for what dynamics might be possible. There are many more paths compared to a single TSS - we'll just look at a few.
 
->TODO: draw path Fig 2
+For example:
+
+```python
+print("                Matrix elements of H     (Fig 2)")
+Image(filename='./img/05-hinton-01.png') 
+```
+
+In Fig 2, we imagine that we start in the state $|0,+, + \rangle $. Similar to the previous tutorial, we find that we are indirectly connected to many states with different numbers of bosons:
 
 $|0,+, + \rangle \rightarrow |1,+, - \rangle \rightarrow |2,-, - \rangle \rightarrow |3,+, - \rangle \rightarrow |4,-, - \rangle$
 
-We can expect that the indirect path from $|0,+, + \rangle \rightarrow |2,-, - \rangle$ could be realised by setting $\Delta E = \omega$ so that a boson would be emitted by each TSS as they transition from + to -. We've seen similar physics from a single TSS - nothing controversial here.
+What can we learn from this pathway?
 
-We can also expect (similarly to the previous tutorial) that the indirect path from $|0,+, + \rangle \rightarrow |4,-, - \rangle$ could be realised by setting $\Delta E = 2\omega$ so that 2 bosons would be emitted by each TSS as they transition from + to -.  This is another example of down conversion that we found last time.
+We can expect that the indirect path from $|0,+, + \rangle \rightarrow |2,-, - \rangle$ could be physically realised by each TSS emitting a single boson whose energy matches the TSS transision energy, i.e. $\Delta E = \omega$. We've seen similar physics for single TSS - nothing new here.
+
+We can also expect that the indirect path from $|0,+, + \rangle \rightarrow |4,-, - \rangle$ could be physically realised by each TSS emitting a 2 bosons whose energy is half the TSS transision energy, i.e. $\Delta E = 2\omega$. This is another example of down conversion that we found last time - again nothing new here.
 
 
-We can make also paths like below
+We can also draw quite different pathways like the one below.
 
->TODO: draw paths  Fig 3
+```python
+print("                Matrix elements of H     (Fig 3)")
+Image(filename='./img/05-hinton-02.png') 
+```
+
+In Fig 3 above, we imagine that we start in the state $|1,+, - \rangle $ and then through indirect connections to states with a different number of bosons we end up back with 1 boson but the "+" and "-" switch places, i.e.
 
 $|1,+, - \rangle \rightarrow |0,+, + \rangle \rightarrow |1,-, + \rangle$
 
-This is something different to what we encountered before - how would we describe such paths? We could call the indirect path from $|1,+, - \rangle \rightarrow |1,-, + \rangle$   excitation transfer because the "excitation" (i.e. the +) moves from one TSS to the other.
+We could describe such an indirect path from $|1,+, - \rangle \rightarrow |1,-, + \rangle$ as **excitation transfer** because the "excitation" (i.e. the +) moves from one TSS to another - this is something that we've not encountered before and we'd like to explore this in more detail through simulation.
+
+Before we are able to simulate, we need to also extend the ideas of party that we [introduced last time](https://nbviewer.jupyter.org/github/project-ida/two-state-quantum-systems/blob/master/04-spin-boson-model.ipynb#4.4---Parity) and bring everything together in a convenient function that we can use again and again.
 
 
 
----
-In tutorial 4 we discovered that two distinct parity universes existed which can be treated in isolation
+## 5.4 - Parity
+In [tutorial 4](https://nbviewer.jupyter.org/github/project-ida/two-state-quantum-systems/blob/master/04-spin-boson-model.ipynb#4.4---Parity) we discovered that two distinct parity universes co-existed inside the Hamiltonian and that each universe could be be treated in isolation.
 
-We could distinguish the parity using the operator $\sigma_z e^{i\pi n}$ where $n$ is the boson number operator.
+We calculated parity using the operator $\sigma_z e^{i\pi n}$ where $n$ is the boson number operator.
 
-A simple extension of this idea for 2 TSS is simply  $\sigma_{z1}\sigma_{z2} e^{i\pi n}$. Let's see what it looks like
+We can guess at how to extend this idea to 2 TSS - let's try  $\sigma_{z1}\sigma_{z2} e^{i\pi n}$.
 
 ```python
 P = sz1*sz2*(1j*np.pi*number).expm()              # parity operator
 ```
 
 ```python
-bra_labels, ket_labels = make_braket_labels(nmm_list)
-```
-
-```python
 f, ax = hinton(P, xlabels=ket_labels, ylabels=bra_labels)
 ax.tick_params(axis='x',labelrotation=90)
-ax.set_title("Matrix elements of H     (Fig 4)");
+ax.set_title("Matrix elements of Parity     (Fig 4)");
 ```
 
-It takes on a binary $\pm 1$ as we saw in the last tutorial. The most important question is, does it commute with the Hamiltonian - if it does that we have a well defined parity operator that we can use to split the universes.
-
-Let's use example Hamiltonian with $\Delta E = \omega = U = 1$ for this test.
-
-```python
-H = 1*two_state_1 + 1*two_state_2 + 1*bosons + 1*interaction_1 + 1*interaction_2
-```
+Fig 4 shows us that our guess at parity creates a binary $\pm 1$ similar to what we saw in the last tutorial - so far so good. The most important question is, does our guess at parity commute with the Hamiltonian - if it does then it is conserved and we therefore have a well defined parity operator that we can use to split the universes.
 
 ```python
 commutator(H,P).full
 ```
 
-Great! We are now ready to put this all together in much the same way we did in the last tutorial, i.e. we create a function.
+We have zero commutator - this is exactly what we need.
+
+We are now ready to put this all together in much the same way we did in the last tutorial, i.e. create a function that can extract the even parity universe (+1) or the odd parity universe (-1).
 
 ```python
 def make_operators(max_bosons, parity=0):
@@ -294,16 +282,31 @@ def make_operators(max_bosons, parity=0):
     return two_state_1, two_state_2, bosons, interaction_1, interaction_2, number, nmm_list
 ```
 
-### Energy level landscape $U=0$
+So, we've got the parity universes under control and we've also got an idea of what dynamics might be possible from exploring the Hinton diagram. Let's now see if we can connect these dynamics up with features in the energy level diagrams just as we did in the last tutorial. This will put us in the best place to be able to interpret the simulations we will make.
+
+We start without any coupling between the TSS and the field, i.e. $U=0$ to get a sense of the landscape.
+
+
+### 5.5 - Energy level landscape $U=0$
+
+
+We will work with $\omega = 1$ throughout the rest of the tutorial and we will also allow up to 6 bosons in our simulations, i.e. `max_bosons=6`.
+
+Let's take a look at the energy levels for odd and even parity universes when there is no couping between the TSS and the boson field.
+
+Note, we will make use of the function `make_df_for_energy_scan` that we created in the last tutorial and is imported from the helper file at the top of the notebook.
 
 ```python
 # ODD PARITY
 
+# make the operators
 two_state_1, two_state_2, bosons, interaction_1, interaction_2, number, nmm_list = make_operators(
     max_bosons=6, parity=-1)
 
+# prepare data structure for the energy level scan
 df_odd = make_df_for_energy_scan("$\Delta E$", -4, 4, 201, two_state_1.shape[0])
 
+# fill the data structure with eigevalues of the Hamiltonian i.e. the energy levels
 for i, row in df_odd.iterrows():
     H =  row["$\Delta E$"]*two_state_1+ row["$\Delta E$"]*two_state_2 + 1*bosons 
     evals, ekets = H.eigenstates()
@@ -313,11 +316,14 @@ for i, row in df_odd.iterrows():
 ```python
 # EVEN PARITY
 
+# make the operators
 two_state_1, two_state_2, bosons, interaction_1, interaction_2, number, nmm_list = make_operators(
     max_bosons=6, parity=1)
 
+# prepare data structure for the energy level scan
 df_even = make_df_for_energy_scan("$\Delta E$", -4, 4, 201, two_state_1.shape[0])
 
+# fill the data structure with eigevalues of the Hamiltonian i.e. the energy levels
 for i, row in df_even.iterrows():
     H =  row["$\Delta E$"]*two_state_1+ row["$\Delta E$"]*two_state_2 + 1*bosons 
     evals, ekets = H.eigenstates()
@@ -341,29 +347,38 @@ axes[0].set_ylabel("Energy");
 
 ```
 
-<!-- #region -->
-What can we say about Figs 5 and 6?
+What can we say about th energy levels in Figs 5 and 6?
 
-Compared to Fig 1 of tutorial 3, we have some similarities and some differences:
-- Similarity - levels that trend up and down with $\Delta E$. These correspond to states like $|n,+,+\rangle$ and $|n,-,-\rangle$
-- Difference - horizontal levels. These correspond to combinations of $|n,+,-\rangle$ and $|n,-,+\rangle$ which give is no overall "excitation" i.e. equal amounts of + and -. This kind of combination of basis states is often referred to as an [entangled state](https://en.wikipedia.org/wiki/Quantum_entanglement#Pure_states). 
- >The subject of quantum entanglement deserves at least a whole tutorial, so we'll come back to it another time.
+Compared to [Fig 1 of tutorial 4](https://nbviewer.jupyter.org/github/project-ida/two-state-quantum-systems/blob/master/04-spin-boson-model.ipynb#4.2.1---Spin-boson-landscape-$U=0$), we have some similarities and some differences:
+- Similarity - levels that trend up and down with changing $\Delta E$. These correspond to states like $|n,+,+\rangle$ and $|n,-,-\rangle$. For example in Fig 6 for small positive $\Delta E$ (referring to blue squares in Fig 4 for even parity states) we have:
+  - $|0,-,-\rangle$ - blue
+  - $|0,+,+\rangle$ - orange 
+  - $|2,-,-\rangle$ - purple  
+  - $|2,+,+\rangle$ - brown 
+  - $|4,-,-\rangle$ - yellow 
+  - $|4,+,+\rangle$ - sky-blue 
+- Difference - horizontal levels. These correspond to combinations of $|n,+,-\rangle$ and $|n,-,+\rangle$ which give is no overall "excitation" i.e. equal amounts of + and -. This kind of combination of basis states is often referred to as an [entangled state](https://en.wikipedia.org/wiki/Quantum_entanglement#Pure_states). The subject of quantum entanglement deserves at least a whole tutorial, so we'll come back to it another time.
 
 
-Thinking now more carefully about the horizontal levels, there are 2 ways we can combine these states together for a given $n$:
+Thinking more carefully about these unfamiliar horizontal levels, there are 2 ways we can combine $|n,+,-\rangle$ and $|n,-,+\rangle$ together:
 - $|n,+,-\rangle + |n,-,+\rangle$ 
 - $|n,+,-\rangle  - |n,-,+\rangle$ 
 
-These states are reminiscent of the "in phase" and "out of phase" states that we described back in tutorial 1.  The two combinations give us an expectation that each horizontal line is in fact 2 horizontal lines on top of each other.
+These states are reminiscent of the "in phase" and "out of phase" states that we described [back in tutorial 1](https://nbviewer.jupyter.org/github/project-ida/two-state-quantum-systems/blob/master/01-an-isolated-two-state-system.ipynb#1.2-Coupling-between-two-states-of-the-same-energy).  The two combinations create an expectation that each horizontal line in 6 is in fact 2 horizontal lines on top of each other, i.e
+
+ - $|1,+,-\rangle \pm |1,-,+\rangle $ - green/red
+ - $|3,+,-\rangle \pm |3,-,+\rangle $ - pink/grey
 
 What else can we say?
 
-When looking at where the levels appear to cross, we now suspect that there are two different situations:
-- 2 levels come together - we've seen this before and we expect these to form anti-crossings when we switch the coupling on
-- 4 levels come together - we've not encountered this before so we need to explore it.
+When looking at where the levels cross, there appear to be two different situations:
+- 2 levels come together - we've seen this before and we expect these to form anti-crossings when we switch the coupling on (i.e. $U\neq 0$)
+- 4 levels come together - we've not encountered this before so we need to explore it further
 
-Let's focus on even parity for now, i.e Fig 6, and switch on the coupling.
-<!-- #endregion -->
+From now on we'll continue our exploration with even parity, i.e Fig 6. 
+
+Let's switch on the coupling and see if there are any surprises.
+
 
 ## Crossings and anti-crossings
 
@@ -458,6 +473,10 @@ psi0 = basis(len(nmm_list), 0)
 ```
 
 Now we are ready to simulate
+
+```python
+np.linspace(0,1).shape
+```
 
 ```python
 times = np.linspace(0.0, 100000.0, 10000)
