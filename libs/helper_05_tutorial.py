@@ -120,6 +120,21 @@ def simulate(H, psi0, times):
 
 # This function takes a list of QuTiP states and puts them in a dataframe to make them easier to visually compare
 def prettify_states(states, mm_list=None):
+    """
+    Takes an array of QuTiP states and returns a pandas dataframe that makes it easier to compare the states side by side 
+    
+    
+    Parameters
+    ----------
+    states     :  Numpy array of QuTiP objects
+    mm_list    :  list strings, or list of tuples containing strings, these will become row labels to label basis states
+
+    
+    Returns
+    -------
+    df   : pandas dataframe
+    
+    """
     pretty_states = np.zeros([states[0].shape[0],len(states)], dtype="object")
     
     for j, state in enumerate(states):
