@@ -434,7 +434,7 @@ plt.ylabel("Energy");
 There are many things we can see is Fig 7:
 1. Where 2 levels have come together (e.g. levels 4 and 5) we see an anti-crossings as we have come to expect from interacting levels
 2. The horizontal levels of Fig 6 have split into 2 levels as we suspected. This confirms that we do indeed have 4 levels coming together at some anti-crossings, e.g. levels 1,2,3,4
-3. There appear to still be genuine crossings between some levels, most strikingly seen at the intersection of levels 2 and 3 - this indicates there might be non interacting sub-universes with each parity universe 🤯
+3. There appear to still be genuine crossings between some levels, most strikingly seen at the intersection of levels 2 and 3 - this indicates there might be non interacting sub-universes with each parity universe 🤔
 
 There is a lot to explore and understand here. We'll start with point 1, i.e. two levels anti-crossing, as this is the most familiar to us, we'll then take a look at point 3 i.e. the mystery crossing between the states with no overall excitation. Then we'll finish off with point 2, i.e. the unfamiliar 4 level anti-crossing.
 
@@ -624,7 +624,7 @@ for i in range(0,P.shape[0]):
 plt.ylabel("Probability")
 plt.xlabel("Time")
 plt.legend(loc="right")
-plt.title(f"2 TSS with {H_latex}  ($\Delta E = 1$, $\omega=1$, $U=0.001$)   (Fig 10)")
+plt.title(f"2 TSS with {H_latex}  ($\Delta E = 1$, $\omega=1$, $U=0.01$)   (Fig 10)")
 plt.show();
 
 
@@ -644,7 +644,9 @@ What about the novel feature we found in the Hinton diagram - the suggestion of 
 ## 5.7 - Excitation transfer
 
 
-Let's see if we can simulate the excitation transfer that we also discussed during our exploration of the Hinton diagram, i.e. the transition $|1,+, - \rangle \rightarrow  |1,-, + \rangle$. We should just be able to re run the above simulation with a different starting condition corresponding to $|1,+, - \rangle$ - which state is this in QuTiP?
+The Hinton diagram in fig 3 hinted at an indirect transition of the form $|1,+, - \rangle \rightarrow |1,-, + \rangle$. Since this transition appears to be mediated by  $ |0,+, + \rangle$ (among others), which has one less boson, we should be able simulate excitation transfer by re-running the last simulation with the starting condition $|1,+, - \rangle$ instead of $|0,+, + \rangle$.
+
+What does $|1,+, - \rangle$ correspond to in QuTiP?
 
 ```python
 nmm_list
@@ -662,20 +664,22 @@ times = np.linspace(0.0, 1000.0, 10000)
 P, psi = simulate(H, psi0, times)
 ```
 
-```python jupyter={"outputs_hidden": true}
+```python
 plt.figure(figsize=(10,8))
 for i in range(0,P.shape[0]):
     plt.plot(times, P[i,:], label=f"{ket_labels[i]}")
 plt.ylabel("Probability")
 plt.xlabel("Time")
 plt.legend(loc="right")
-plt.title(f"2 TSS with {H_latex}  ($\Delta E = 1$, $\omega=1$, $U=0.001$)   (Fig 11)")
+plt.title(f"2 TSS with {H_latex}  ($\Delta E = 1$, $\omega=1$, $U=0.01$)   (Fig 11)")
 plt.show();
 
 
 ```
 
 <!-- #region -->
+Success, we do indeed see the system move from $|1,+, - \rangle \rightarrow |1,-, + \rangle$ as we predicted.
+
 We can interpret the excitation transfer in Fig 11 in the following ways:
 1. 
 
@@ -690,22 +694,26 @@ We can interpret the excitation transfer in Fig 11 in the following ways:
   - TSS_1 (the one initially in "+" state) emits a boson taking the field from 0 to 1 boson
   
  
-This mechanics as described above leads us to a mental model of excitation transfer as simply the exchange of bosons between one TSS and another - each boson transmitting the entire transition energy of the TSS. This is indeed one way that excitation transfer can occur, but it's not the only way. The entire transition energy $\Delta E$ can be conferred from one TSS to another without a single boson being emitted 🤯. Skeptical...you should be. Let's see it in action and then try and understand it.
+This mechanics as described above leads us to a mental model of excitation transfer as simply the exchange of bosons between one TSS and another - each boson carrying the entire transition energy of the TSS. This is indeed one way that excitation transfer can occur, but it's not the only way. The entire transition energy $\Delta E$ can be conferred from one TSS to another without a single boson being emitted 🤯 . 
+
+Skeptical...you should be. Let's see it in action and then try and understand it.
 <!-- #endregion -->
 
-## Non radiative excitation transfer 
+### Non radiative excitation transfer
 
-
-We're going to perform a simulation with $\Delta E = 2.5\omega$ - it's not possible for an integer number of bosons to transmit the transition energy for our TSS. 
-
-We'll again start the system in the state $|1,+,- \rangle$.
+We're now going to perform the same simulation as above but this time we will set $\Delta E = 2.5\omega$. It is now not possible for an integer number of bosons to transmit the transition energy $\Delta E$ from TSS_1 to TSS_2.
 
 ```python
 H = 2.5*two_state_1 + 2.5*two_state_2 + 1*bosons + 0.01*interaction_1 + 0.01*interaction_2
 ```
 
+We'll again start the system in the state $|1,+,- \rangle$.
+
 ```python
 psi0 = basis(len(nmm_list), 2)
+```
+
+```python
 times = np.linspace(0.0, 100000.0, 10000)
 P, psi = simulate(H, psi0, times)
 ```
@@ -717,23 +725,20 @@ for i in range(0,P.shape[0]):
 plt.ylabel("Probability")
 plt.xlabel("Time")
 plt.legend(loc="right")
-plt.title(f"2 TSS with {H_latex}  ($\Delta E = 1$, $\omega=1$, $U=0.001$)   (Fig 12)")
+plt.title(f"2 TSS with {H_latex}  ($\Delta E = 2.5$, $\omega=1$, $U=0.01$)   (Fig 12)")
 plt.show();
 
 ```
 
-As you can see, Fig 12 shows how excitation can be transfered from one TSS to another without bosons having any significant chance of being emitted.
+As you can see, Fig 12 shows that excitation can be transfered from one TSS_1 to TSS_2 without bosons having any significant chance of being emitted.
 
-How is it possible to have energy transfer without radiation? We can't do the topic justice in a single notebook, but what we can point to is the physics of wireless/inductive charging of devices. Energy gets transfered from one device to another but the energy isn't being radiation in the sense that we recognise from things like radio stations. In the context of quantum mechanics, such transfers of energy are made by virtual bosons.
+How is it possible to transfer energy quantum mechanically without radiation of bosons? We can't do the topic justice in a single notebook, but we can point to similar phenomenon in classical physics. Specifically, the [near field](https://en.wikipedia.org/wiki/Near_and_far_field) is the non-radiative part of the electromagnetic field that can be used to e.g. [transfer power wirelessly](https://en.wikipedia.org/wiki/Wireless_power_transfer) from one device to another without radiating the power in all directions (as we would associate with something like radio transmitter). 
 
-In the context of our energy level diagrams, what we have the following:
+In the context of quantum mechanics, in systems more physically realistic than what we describe in this notebook, such non radiative transfers of energy are made by something called virtual bosons. In general, [virtual particles](https://profmattstrassler.com/articles-and-posts/particle-physics-basics/virtual-particles-what-are-they) are quite a complicated business so we will return to them in a later tutorial. We can however say that their application to the mature area of [Resonance Energy Transfer](https://www.frontiersin.org/articles/10.3389/fphy.2019.00100/full) (used to explain certain dynamics of photosynthesis in plants among other things) is common place.
+
+We have made a most striking observation, but let's not get too carried away with the surprise of it all. We should make the connection back to the energy level diagram as we always try to do. Let's zoom in in the area around $\Delta E = 2.5$.
 
 ```python
-# EVEN PARITY
-
-two_state_1, two_state_2, bosons, interaction_1, interaction_2, number, nmm_list = make_operators(
-    max_bosons=6, parity=1)
-
 df_even = make_df_for_energy_scan("$\Delta E$", 2.5, 2.6, 201, two_state_1.shape[0])
 
 for i, row in df_even.iterrows():
@@ -743,16 +748,33 @@ for i, row in df_even.iterrows():
 ```
 
 ```python
-df_even.plot(x="$\Delta E$",ylim=[1.499,1.501],legend=True, 
-        title=f"Even stationary states for {H_latex}   ($\omega=1$, $U=0.1$)    (Fig 13)",
+ax = df_even.plot(x="$\Delta E$",ylim=[1.499,1.501],legend=True, 
+        title=f"Even energy levels for {H_latex}   ($\omega=1$, $U=0.01$)    (Fig 13)",
              figsize=(10,8));
 
-plt.ylabel("Energy");
+plt.ylabel("Energy")
+plt.legend(loc="right")
+
+# Use the following to remove the y-offset from the yaxis if you find there is one
+ax.yaxis.get_major_formatter().set_useOffset(False);
 ```
 
-When we set our system up in the $|1,+,-\rangle$ state we are actually setting the system up in a state that's a mixture of levels 2 and 3. Although these levels don't interact with each other their energies are very close. As we cam to understand in Tutorial 1, when energies and therefore frequencies are close we can have beatings. The beat frequency is what's being manifested in Fig 12.
+In fig 13 we have:
+- Level 2 (green) $ = |1,+,-\rangle - |1,-,+\rangle$. Non-interacting, living in its own sub-universe  
+- Level 3 (red) $ \approx |1,+,-\rangle + |1,-,+\rangle$. 
 
-We can check period:
+We observe a small difference in energy between these two levels and it is this difference that creates the Rabi like oscillations that give us 
+the excitation transfer of fig 12. 
+
+> As an aside, the energy difference has not arisen due to a coupling between the levels themselves (that would be the usual explanation). Indeed, it is not the case that levels 2 and 3 have been split apart - one moving up in energy while the other moves down. Instead, the non-interacting level 2 has maintained its energy of 1.5 while level 3 has shifted up due to its interaction with other levels around it (not seen at this zoom level).
+
+Why does the this energy difference create the oscillations? We set up our system in the $|1,+,-\rangle$ state, but we could also think of this initial state as a mixture of level 2 and 3. Specifically (ignoring normalisations):
+
+$|1,+,-\rangle \approx \text{level_2} + \text{level_3}$
+
+Because these levels have different energies they have different frequencies and we therefore get the same [beat frequency](https://en.wikipedia.org/wiki/Beat_(acoustics%29) phenomenon that we first encountered all the way back in [tutorial 1](https://nbviewer.jupyter.org/github/project-ida/two-state-quantum-systems/blob/master/01-an-isolated-two-state-system.ipynb#1.2-Coupling-between-two-states-of-the-same-energy).
+
+Let's check this by calculating the oscillation period based on this energy difference.
 
 ```python
 delta = df_even.loc[0]["level_3"] - df_even.loc[0]["level_2"]
@@ -760,9 +782,7 @@ delta = df_even.loc[0]["level_3"] - df_even.loc[0]["level_2"]
 2*np.pi / delta
 ```
 
-```python
-
-```
+This time matches up with the excitation transfer period we observed in fig 12.
 
 ```python
 
