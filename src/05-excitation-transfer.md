@@ -37,6 +37,8 @@ from scipy.optimize import minimize_scalar
 # simulate - we made this in tutorial 4
 # 
 from libs.helper_05_tutorial import *
+
+
 ```
 
 ## 5.1 - Recap
@@ -497,13 +499,9 @@ Fig 8 shows exactly what we expected i.e. both TSS transition from "+" to "-" ea
 ## 5.8 - Mystery crossings
 
 
-From fig xx, we found something unexpected for the energy levels corresponding to no overall excitation, i.e. those consisting of equal number of + and -. 
-- It seemed like one of the levels remains horizontal even though we turned the coupling on.
-- It seems like the energy levels with no overall excitation can actually cross 
+In fig 7, we found something unexpected for the energy levels corresponding to no overall excitation, i.e. those consisting of equal number of "+" and "-" for the TSS. We found that e.g. levels 2 and 3 appeared to cross each other. Considering that we are in an even parity universe, the expectation is that all levels can interact with each other and create anti-crossings in the process - so why don't levels 2 and 3 do this?
 
-What are these observations telling us?
-
-We'll first set $\Delta E = 0$ and inspect levels 2 and 3
+To dig a little deeper, we'll set $\Delta E = 0$ and inspect levels 2 and 3 in more detail - specifically we'll look at the corresponding eigenstates.
 
 ```python
 DeltaE = 0
@@ -517,29 +515,32 @@ H = DeltaE*two_state_1 + DeltaE*two_state_2 + 1*bosons + 0.1*interaction_1 + 0.1
 evals, ekets = H.eigenstates()
 ```
 
-Let's look at the energy of levels 2 and 3
+Let's first look at the energy of levels 2 and 3
 
 ```python
-evals[2:4]
+print(f"Energy of level 2 = {evals[2]}")
+print(f"Energy of level 3 = {evals[3]}")
 ```
 
-level 3 is exactly 1.5 as it was when we didn't have any coupling between the TSS and the boson field.
+How intriguing, the energy of level 3 is exactly 1.5 - just as as it was when we didn't have any coupling between the TSS and the boson field.
+
+Now let's look at the corresponding eigenstates using a helper function `prettify_states` that we imported from the helper file.
 
 ```python
 prettify_states(ekets, nmm_list)[[2,3]]
 ```
 
-We can see that levels 2 and 3 are normlaised versions of: 
-- level 2 = $|1,+,-\rangle  + |1,-,+\rangle$ +  other states with boson number different from 1
-- level 3 = $|1,+,-\rangle  - |1,-,+\rangle$ 
+We can see that the eigenstates corresponding to levels 2 and 3 are normalised versions of: 
+- Level 2 = $|1,+,-\rangle  + |1,-,+\rangle$ +  other states with boson number different from 1
+- Level 3 = $|1,+,-\rangle  - |1,-,+\rangle$ 
 
-This pattern persists as we change $\Delta E$, i.e. there is always a level corresponding to  $|1,+,-\rangle  - |1,-,+\rangle$ and it's energy is always 1.5 - try it out for yourself by changing the $\Delta E$ in the above Hamiltonian.
+This pattern persists for all $\Delta E$ - try it out for yourself by changing the $\Delta E$ in the above Hamiltonian. There is always a horizontal level corresponding to  $|1,+,-\rangle  - |1,-,+\rangle$ with energy 1.5. This level (and others like it with different boson number) does not couple to others and so does indeed live in its own sub-universe.
 
-So, it seems to be true that the state $|1,+,-\rangle  - |1,-,+\rangle$ (and others like it with different boson number) live in their own independent sub-universe and don't interact with the other states. What is the physics behind this? Why is it that changing plus to minus in $|1,+,-\rangle  \pm |1,-,+\rangle$ makes such a difference? It's an important question but one that takes us somewhat away from the primary mission of this tutorial. We'll come back to this in the next tutorial.
+Why is it that changing plus to minus in $|1,+,-\rangle  \pm |1,-,+\rangle$ makes such a difference? What is the nature of this other sub-universe? They are important questions but they take us somewhat away from the primary mission of this tutorial. We'll come back to this in the next tutorial.
 
 > For those who just can't wait that long, it has to do with angular momentum and spin
 
-We can now be quite confident that when we see an anti-crossing where 4 levels come together it's actually only 3 levels that are interacting to produce the energy splitting and the other level is just a non interacting level of the form $|n,+,-\rangle  - |n,-,+\rangle$.
+For now, what we can confidently say is that when we see a 4 level anti-crossing it's actually only 3 levels that are interacting to produce the energy splitting - the other level is a non-interacting one of the form $|n,+,-\rangle  - |n,-,+\rangle$.
 
 
 ## 5.9 - Beyond simple anti-crossings
