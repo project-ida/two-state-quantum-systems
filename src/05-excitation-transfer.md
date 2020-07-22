@@ -18,6 +18,16 @@ jupyter:
 
 # 5 - Excitation transfer
 
+
+This tutorial is split up into the following sections:
+1. Recap
+2. Adding more two state systems
+3. Structure of the Hamiltonian
+4. Parity
+5. Energy level landscape $U=0$
+6. Crossings and anti-crossings
+7. Excitation transfer
+
 ```python
 # Libraries and helper functions
 
@@ -43,6 +53,18 @@ from scipy.optimize import minimize_scalar
 # 
 from libs.helper_05_tutorial import *
 
+
+```
+
+```python
+
+```
+
+```python
+
+```
+
+```python
 
 ```
 
@@ -101,7 +123,7 @@ interaction  = (a.dag() + a) * sx               # interaction energy operator   
 Now, we have recalled what we did before, we are in a good place to extend these ideas to include an extra TSS.
 
 
-## 5.2 - Adding more TSS 
+## 5.2 - Adding more two state systems
 
 For this tutorial we will consider 2 identical TSS (`TSS_1` and `TSS_2`) whose interaction with the boson field is also identical. In this case, we can extend the single TSS Hamiltonian in the following way:
 
@@ -417,7 +439,7 @@ There are many things we can see is Fig 7:
 There is a lot to explore and understand here. We'll start with point 1, i.e. two levels anti-crossing, as this is the most familiar to us, we'll then take a look at point 3 i.e. the mystery crossing between the states with no overall excitation. Then we'll finish off with point 2, i.e. the unfamiliar 4 level anti-crossing.
 
 
-## 5.7 - Two Level anti-crossing
+### 5.6.1 - Two Level anti-crossing
 
 In fig 7, levels 4 an 5 anti-cross at around $\Delta E = 2$. This anti-crossing looks like it could be linked to the $|0,+, + \rangle \rightarrow |4,-, - \rangle$ down conversion that we talked about when we explored the Hinton diagram. Let's see if we can confirm this down conversion via simulation (just as we did in [Fig 12 of tutorial 4](https://nbviewer.jupyter.org/github/project-ida/two-state-quantum-systems/blob/master/04-spin-boson-model.ipynb#4.5---Down-conversion)). 
 
@@ -501,7 +523,7 @@ plt.show();
 Fig 8 shows exactly what we expected i.e. both TSS transition from "+" to "-" each giving of 2 bosons in the process, i.e. $|0,+, + \rangle \rightarrow |4,-, - \rangle$.
 
 
-## 5.8 - Mystery crossings
+### 5.6.2 - Mystery crossings
 
 
 In fig 7, we found something unexpected for the energy levels corresponding to no overall excitation, i.e. those consisting of equal number of "+" and "-" for the TSS. We found that e.g. levels 2 and 3 appeared to cross each other. Considering that we are in an even parity universe, the expectation is that all levels can interact with each other and create anti-crossings in the process - so why don't levels 2 and 3 do this?
@@ -548,7 +570,7 @@ Why is it that changing plus to minus in $|1,+,-\rangle  \pm |1,-,+\rangle$ make
 For now, what we can confidently say is that when we see a 4 level anti-crossing it's actually only 3 levels that are interacting to produce the energy splitting - the other level is a non-interacting one of the form $|n,+,-\rangle  - |n,-,+\rangle$. With that said, let's take a look at these unfamiliar many level anti-crossings.
 
 
-## 5.9 - Beyond simple anti-crossings
+### 5.6.3 - Beyond simple anti-crossings
 
 
 In fig 7, there is a 4 level "anti-crossing" around $\Delta E = 1$. Because $\Delta E = \omega$ at this point, we suspect that the transition $|0,+, + \rangle \rightarrow |2,-, - \rangle$ (that we spoke of during exploration of the Hinton diagram) might be active here. 
@@ -619,7 +641,7 @@ Things here are not quite as simple as a two level anti-crossing, but our intuit
 What about the novel feature we found in the Hinton diagram - the suggestion of something we termed excitation transfer?
 
 
-## 5.10 - Excitation transfer
+## 5.7 - Excitation transfer
 
 
 Let's see if we can simulate the excitation transfer that we also discussed during our exploration of the Hinton diagram, i.e. the transition $|1,+, - \rangle \rightarrow  |1,-, + \rangle$. We should just be able to re run the above simulation with a different starting condition corresponding to $|1,+, - \rangle$ - which state is this in QuTiP?
