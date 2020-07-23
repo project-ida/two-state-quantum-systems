@@ -5,6 +5,7 @@ import pandas as pd
 import warnings
 warnings.filterwarnings('ignore')
 from itertools import product
+import matplotlib.pyplot as plt
 
 
 def make_df_for_energy_scan(label_param, min_param, max_param, num_param, num_levels):
@@ -118,7 +119,6 @@ def simulate(H, psi0, times):
     return P, psi
 
 
-# This function takes a list of QuTiP states and puts them in a dataframe to make them easier to visually compare
 def prettify_states(states, mm_list=None):
     """
     Takes an array of QuTiP states and returns a pandas dataframe that makes it easier to compare the states side by side 
@@ -146,3 +146,33 @@ def prettify_states(states, mm_list=None):
         df = pd.DataFrame(data=pretty_states, index=mm_list)
             
     return df
+
+
+def plot_prob(P, times, labels=None):
+    """
+    Plots the basis state occupation probabilities that come out of the simulate function
+    
+    
+    Parameters
+    ----------
+    P      :  2D numpy array, get this from output of the simulate function
+    times  :  1D numpy array, same time array as used for input of the simulate function
+    labels :  List of strings, labels for each basis state, used for the plot legend, best to use make_braket_labels to make this
+
+    
+    """
+    f = plt.figure(figsize=(10,8))
+    ax = f.add_subplot(1, 1, 1)
+    
+    if (labels == None):
+        for i in range(0,P.shape[0]):
+            ax.plot(times, P[i,:], label=f"{i}")
+    else:
+        for i in range(0,P.shape[0]):
+            ax.plot(times, P[i,:], label=f"{labels[i]}")
+            
+    ax.set_ylabel("Probability")
+    ax.set_xlabel("Time")
+    ax.legend(loc="right")
+    
+    return
