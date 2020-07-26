@@ -422,7 +422,7 @@ Creating a hinton diagram for the parity operator is revealing:
 ```python
 f, ax = hinton(P, xlabels=ket_labels, ylabels=bra_labels)
 ax.tick_params(axis='x',labelrotation=90,)
-ax.set_title("Matrix elements of H     (Fig 7)");
+ax.set_title("Matrix elements of parity     (Fig 7)");
 ```
 
 In Fig 7, we see that the the blue squares (parity=+1, often called even) matches up with the path of the yellow arrows in Fig 6 (along the diagonal). This suggests that if we start on a blue/red square then we remain on a blue/red square, i.e. parity is conserved during the evolution of the system.
