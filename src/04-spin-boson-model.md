@@ -66,7 +66,7 @@ H_latex = "$H = (\Delta E / 2) \sigma_z + \hbar\omega(a^{{\dagger}}a +1/2) + U( 
 
 In the last tutorial we saw how the physics of spontaneous emission arose from an indirect coupling between the |+> and |-> states of the TSS which was mediated by the interaction with the boson field. This interaction manifested as a Rabi type oscillation between two states of the combined spin boson system (described by |n,±>), namely |0,+> and |1,->.
 
-In general, the result of such interactions are far more complicated than the Rabi type oscillations we are becoming familiar with. We glimpsed this complexity last time when we observed that many bosons modes, with slightly different frequencies, interact with the TSS to produce an irregular pattern of state occupation probabilities. The complexity arises because the combined TSS and field system has many states that interact with each other strongly if their energies are similar.
+In general, the result of such interactions are far more complicated than the Rabi type oscillations we are becoming familiar with. The complexity arises because the combined TSS and field system has many states that interact with each other strongly if their energies are similar.
 
 We can however still apply the ideas we've learnt about TSS's in some special and interesting situations. That is what we'll explore in this notebook.
 
