@@ -21,7 +21,7 @@ jupyter:
 
 [Last time](https://nbviewer.jupyter.org/github/project-ida/two-state-quantum-systems/blob/master/04-spin-boson-model.ipynb), we explored the spin boson model and found the surprising physics of down conversion. This is where many bosons are emitted/absorbed (rather than a single boson) when a two state system (TSS) makes a transition. This is not what's usually taught to be possible in introductory quantum mechanics courses.
 
-Today, we are going to extend the spin boson model by adding another TSS into the mix. What new lessons does mother nature have for us...the clue is in the name of the tutorial 😉 .
+Today, we are going to extend the spin boson model by adding another TSS into the mix. What new lessons does mother nature have for us... the clue is in the name of the tutorial 😉 .
 
 This tutorial is split up into the following sections:
 1. [Recap](https://nbviewer.jupyter.org/github/project-ida/two-state-quantum-systems/blob/master/05-excitation-transfer.ipynb#5.1---Recap)
@@ -65,7 +65,7 @@ Let's remind ourselves of the Hamiltonian that we used in the last tutorial ([Tu
 
 $$H =  \frac{\Delta E}{2} \sigma_z + \hbar\omega\left(a^{\dagger}a +\frac{1}{2}\right) + U\left( a^{\dagger} + a \right)\sigma_x$$
 
-where we recognie $\Delta E$ as the transition energy of the TSS, $\hbar\omega$ the energy of a single boson and $U$ as the strength of the interaction between the TSS and the boson field.
+where we recognise $\Delta E$ as the transition energy of the TSS, $\hbar\omega$ the energy of a single boson and $U$ as the strength of the interaction between the TSS and the boson field.
 
 We described the states of the system above using the notation $|n,\pm \rangle$.
 
@@ -197,7 +197,9 @@ ax.tick_params(axis='x',labelrotation=90)
 ax.set_title("Matrix elements of H     (Fig 1)");
 ```
 
-As we might have guessed, the Hinton diagram is more complicated than for a single TSS. Each state is connected to twice as many states as previously. For example, $|0,+, + \rangle$ (top left corner) is directly coupled to the following 2 states:
+First, a short reminder from [last time](https://nbviewer.jupyter.org/github/project-ida/two-state-quantum-systems/blob/master/04-spin-boson-model.ipynb#4.3---Structure-of-the-Hamiltonian). Each off-diagonal coloured square represents an interaction between 2 states of the system (aka a non-zero matrix element of the Hamiltonian). If there is no coloured square then the particular 2 states in question are not connected, i.e. they cannot transform into one another.
+
+Looking now in detail at Fig 1. As we might have guessed, the Hinton diagram in is more complicated than for a single TSS (see [Fig 4 of tutorial 4](https://nbviewer.jupyter.org/github/project-ida/two-state-quantum-systems/blob/master/04-spin-boson-model.ipynb#4.3---Structure-of-the-Hamiltonian)). Each state is connected to twice as many states as previously. For example, $|0,+, + \rangle$ (top left corner) is directly coupled to the following 2 states:
 - $|1,+, - \rangle$
 - $|1,-, + \rangle$
 
@@ -216,9 +218,9 @@ $|0,+, + \rangle \rightarrow |1,-, + \rangle \rightarrow |2,-, - \rangle \righta
 
 What can we learn from this pathway?
 
-We can expect that the indirect path from $|0,+, + \rangle \rightarrow |2,-, - \rangle$ could be physically realised by each TSS emitting a single boson whose energy matches the TSS transition energy, i.e. $\Delta E = \omega$. We've seen similar physics for single TSS - nothing new here.
+We can expect that the indirect path from $|0,+, + \rangle \rightarrow |2,-, - \rangle$ could be physically realised by each TSS emitting a single boson whose energy matches the TSS transition energy, i.e. $\Delta E = \omega$, - in this way energy is conserved. We've seen similar physics for single TSS - nothing new here.
 
-We can also expect that the indirect path from $|0,+, + \rangle \rightarrow |4,-, - \rangle$ could be physically realised by each TSS emitting a 2 bosons whose energy is half the TSS transition energy, i.e. $\Delta E = 2\omega$. This is another example of down conversion that we found last time - again nothing new here.
+We can also expect that the indirect path from $|0,+, + \rangle \rightarrow |4,-, - \rangle$ could be physically realised by each TSS emitting a 2 bosons whose energy is half the TSS transition energy, i.e. $\Delta E = 2\omega$, - in this way energy is also conserved. This is another example of down conversion that we found last time - again nothing new here.
 
 We can also draw quite different pathways like the one below.
 
@@ -386,8 +388,8 @@ Thinking more carefully about these unfamiliar horizontal levels, there are 2 wa
 
 These combinations are reminiscent of the "in phase" and "out of phase" states that we described [back in tutorial 1](https://nbviewer.jupyter.org/github/project-ida/two-state-quantum-systems/blob/master/01-an-isolated-two-state-system.ipynb#1.2-Coupling-between-two-states-of-the-same-energy).  Because there are two combinations, we can expect that each horizontal line in Fig 6 is in fact 2 horizontal lines on top of each other, i.e:
 
- - $|1,+,-\rangle \pm |1,-,+\rangle $ - green/red
- - $|3,+,-\rangle \pm |3,-,+\rangle $ - pink/grey
+ - $|1,+,-\rangle \pm |1,-,+\rangle $ - the lowest horizontal lines with energy = 1.5
+ - $|3,+,-\rangle \pm |3,-,+\rangle $ - the highest horizontal lines with energy = 3.5
 
 What else can we say about Fig 6?
 
@@ -425,7 +427,7 @@ plt.ylabel("Energy");
 There are many things we can see in Fig 7:
 1. Where 2 levels have come together (e.g. levels 4 and 5) we see an anti-crossing as we have come to expect from interacting levels
 2. The horizontal levels of Fig 6 have split into 2 levels as we suspected. This confirms that we do indeed have 4 levels coming together at some anti-crossings, e.g. levels 1,2,3,4
-3. There appear to still be genuine crossings between some levels, most strikingly seen at the intersection of levels 2 and 3 - this indicates there might be non interacting sub-universes with each parity universe 🤔
+3. There appear to still be genuine crossings between some levels, most strikingly seen around $\Delta E \approx 1$ between e.g. levels 2 and 3 - this indicates there might be non interacting sub-universes with each parity universe 🤔
 
 There is a lot to explore and understand here. We'll start with point 1, i.e. two level anti-crossing, as this is the most familiar to us. We'll then take a look at point 3 i.e. the mystery crossing between the states with no overall excitation. Then we'll finish off with point 2, i.e. the unfamiliar 4 level anti-crossing.
 
@@ -507,7 +509,7 @@ plot_prob(P, times, ket_labels)
 plt.title(f"2 TSS with {H_latex}  ($\Delta E \\approx 1.9328$, $\omega=1$, $U=0.1$)   (Fig 8)");
 ```
 
-Fig 8 shows exactly what we expected i.e. both TSS transition from "+" to "-" each giving of 2 bosons in the process, i.e. $|0,+, + \rangle \rightarrow |4,-, - \rangle$.
+Fig 8 shows exactly what we expected, namely down conversion - both TSS transition from "+" to "-" each giving of 2 bosons in the process i.e. $|0,+, + \rangle \rightarrow |4,-, - \rangle$.
 
 
 ### 5.6.2 - Mystery crossings
@@ -552,7 +554,7 @@ This pattern persists for all $\Delta E$ - try it out for yourself by changing t
 
 Why is it that changing plus to minus in $|1,+,-\rangle  \pm |1,-,+\rangle$ makes such a difference? What is the nature of this other sub-universe? They are important questions but they take us somewhat away from the primary mission of this tutorial. We'll come back to this in the next tutorial.
 
-> For those who just can't wait that long, it has to do with conservation of spin angular momentum
+> For those who just can't wait that long, it has to do with conservation of pseudo-angular momentum
 
 For now, what we can confidently say is that when we see a 4 level anti-crossing it's actually only 3 levels that are interacting to produce the energy splitting - the other level is a non-interacting one of the form $|n,+,-\rangle  - |n,-,+\rangle$. With that said, let's take a look at these unfamiliar many level anti-crossings.
 
@@ -581,7 +583,7 @@ df_even.plot(x="$\Delta E$",ylim=[1,2],legend=True,
 plt.ylabel("Energy");
 ```
 
-When looking at levels 2 and 3 in Fig 9, we should try and ignore the horizontal part (the non interacting level) and instead imagine the elongated "S" looking shape as a single energy level - let's call it level S.
+Firstly, a note on colour schemes. When looking at levels 2 and 3 in Fig 9, we can now see that the way the colour scheme works is at odds with how we naturally want to interpret these energy levels. Specifically, we know that the horizontal parts are from the non interacting state and so we would want to give it a single colour. That's not how the simple plot function works 😔 . For now let us ignore the horizontal parts and instead focus on the elongated "S" looking shape - let's call it level S.
 
 We can see from Fig 9 that the notion of an anti-crossing is now somewhat ill defined because things don't look very symmetric. In particular:
 - The extrema of the upper (purple) and lower (orange) levels don't occur at the same $\Delta E$
@@ -729,7 +731,7 @@ the excitation transfer of Fig 12.
 
 > As an aside, the energy difference has not arisen due to a coupling between the levels themselves (that would be the usual explanation). Indeed, it is not the case that levels 2 and 3 have been split apart - one moving up in energy while the other moves down. Instead, the non-interacting level 2 has maintained its energy of 1.5 while level 3 has shifted up due to its interaction with other levels around it (not seen at this zoom level).
 
-Why does the this energy difference create the oscillations? We set up our system in the $|1,+,-\rangle$ state, but we could also think of this initial state as a mixture of level 2 and 3. Specifically (ignoring normalisations):
+Why does this energy difference create the oscillations? We set up our system in the $|1,+,-\rangle$ state, but we could also think of this initial state as a mixture of level 2 and 3. Specifically (ignoring normalisations):
 
 $|1,+,-\rangle \approx \text{level_2} + \text{level_3}$
 
