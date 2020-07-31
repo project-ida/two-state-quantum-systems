@@ -20,7 +20,7 @@ jupyter:
 
 
 In this tutorial we are going to look at a single two state system that doesn't talk to the environment around it. We'll look at two examples
-1. When system is in a stationary state
+1. When the system is in a stationary state
 2. When the two states are coupled together
 
 ```python
