@@ -235,7 +235,7 @@ $|1,+, - \rangle \rightarrow |0,+, + \rangle \rightarrow |1,-, + \rangle$
 
 We could describe such an indirect path from $|1,+, - \rangle \rightarrow |1,-, + \rangle$ as **excitation transfer** because the "excitation" (i.e. the +) moves from one TSS to another - this is something that we've not encountered before and we'd like to explore this in more detail through simulation.
 
-Before we are able to simulate, we need to also extend the ideas of party that we [introduced last time](https://nbviewer.jupyter.org/github/project-ida/two-state-quantum-systems/blob/master/04-spin-boson-model.ipynb#4.4---Parity) and bring everything together in a convenient function that we can use again and again.
+Before we are able to simulate, we need to also extend the ideas of parity that we [introduced last time](https://nbviewer.jupyter.org/github/project-ida/two-state-quantum-systems/blob/master/04-spin-boson-model.ipynb#4.4---Parity) and bring everything together in a convenient function that we can use again and again.
 
 
 
@@ -747,7 +747,7 @@ delta = df_even.loc[0]["level_3"] - df_even.loc[0]["level_2"]
 
 This time matches up with the excitation transfer period we observed in Fig 12.
 
-Although this non-radiative excitation transfer might seem counter intuitive, we see that we can begin to understand it in terms of concepts that we introduced all the way back at the start of our quantum journey. This should give you confidence that with bit more time, we will obtain the quantum mastering that we seek 🧙‍ .
+Although this non-radiative excitation transfer might seem counter intuitive, we see that we can begin to understand it in terms of concepts that we introduced all the way back at the start of our quantum journey. This should give you confidence that with bit more time, we will obtain the quantum mastery that we seek 🧙‍ .
 
 
 ## Next up
