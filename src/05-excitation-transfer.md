@@ -5,8 +5,8 @@ jupyter:
     text_representation:
       extension: .md
       format_name: markdown
-      format_version: '1.2'
-      jupytext_version: 1.3.3
+      format_version: '1.3'
+      jupytext_version: 1.10.1
   kernelspec:
     display_name: Python 3
     language: python
@@ -177,7 +177,7 @@ interaction_2   = (a.dag() + a) * sx2                  # interaction_2 energy op
 
 ## 5.3  - Structure of the Hamiltonian
 
-In [tutorial 4](https://nbviewer.jupyter.org/github/project-ida/two-state-quantum-systems/blob/master/04-spin-boson-model.ipynb#4.3---Structure-of-the-Hamiltonian), we learnt a lot from looking at the Hinton diagram of the Hamiltonian. What we we learn this time?
+In [tutorial 4](https://nbviewer.jupyter.org/github/project-ida/two-state-quantum-systems/blob/master/04-spin-boson-model.ipynb#4.3---Structure-of-the-Hamiltonian), we learnt a lot from looking at the Hinton diagram of the Hamiltonian. What will we learn this time?
 
 We'll use an example Hamiltonian with $\Delta E = \omega = U = 1$ for this visual exploration.
 
@@ -370,7 +370,7 @@ axes[0].set_ylabel("Energy");
 
 ```
 
-What can we say about th energy levels in Figs 5 and 6?
+What can we say about the energy levels in Figs 5 and 6?
 
 Compared to [Fig 1 of tutorial 4](https://nbviewer.jupyter.org/github/project-ida/two-state-quantum-systems/blob/master/04-spin-boson-model.ipynb#4.2.1---Spin-boson-landscape-$U=0$), we have some similarities and some differences:
 - Similarity - levels that trend up and down with changing $\Delta E$. These correspond to states like $|n,+,+\rangle$ and $|n,-,-\rangle$. For example, in Fig 6 for small positive $\Delta E$ (referring to blue squares in Fig 4 for even parity states) we have:
@@ -699,7 +699,7 @@ How is it possible to transfer energy quantum mechanically without radiation of 
 
 In the context of quantum mechanics, in systems more physically realistic than what we describe in this notebook, such non radiative transfers of energy are made by something called virtual bosons. In general, [virtual particles](https://profmattstrassler.com/articles-and-posts/particle-physics-basics/virtual-particles-what-are-they) are quite a complicated business so we will return to them in a later tutorial. We can however say that their application to the mature research area of [Resonance Energy Transfer](https://www.frontiersin.org/articles/10.3389/fphy.2019.00100/full) (used to explain certain dynamics of photosynthesis in plants among other things) is common place.
 
-We have made a most striking observation, but let's not get too carried away with the surprise of it all. We should make the connection back to the energy level diagram as we always try to do. Let's zoom in in the area around $\Delta E = 2.5$.
+We have made a most striking observation, but let's not get too carried away with the surprise of it all. We should make the connection back to the energy level diagram as we always try to do. Let's zoom into the area around $\Delta E = 2.5$.
 
 ```python
 df_even = make_df_for_energy_scan("$\Delta E$", 2.5, 2.6, 201, two_state_1.shape[0])
