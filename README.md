@@ -4,7 +4,7 @@ This repo is dedicated to exploring the dynamics of [two state quantum systems](
 
 ## Why two state systems?
 
-The most common two state system discussed in introductory quantum mechanics courses is the spin of an electron. It was discovered experimentally, in [1922 by Stern and Gerlach](https://www.feynmanlectures.caltech.edu/II_35.html#Ch35-S2), that the spin of an electron along any direction is quantised, taking values of either <img src="/tex/05c9304bf445964d1a11d1504c87f8f1.svg?invert_in_darkmode&sanitize=true" align=middle width=38.10517259999999pt height=24.65753399999998pt/> or <img src="/tex/e8d4d0df661ff8a783e7efdb42747035.svg?invert_in_darkmode&sanitize=true" align=middle width=38.10517259999999pt height=24.65753399999998pt/>. Although interesting in its own right, the mathematical description of spin has much broader applications - **any two state problem can be translated into an equivalent spinning electron problem**.
+The most common two state system discussed in introductory quantum mechanics courses is the spin of an electron. It was discovered experimentally, in [1922 by Stern and Gerlach](https://www.feynmanlectures.caltech.edu/II_35.html#Ch35-S2), that the spin of an electron along any direction is quantised, taking values of either $+\hbar/2$ or $-\hbar/2$. Although interesting in its own right, the mathematical description of spin has much broader applications - **any two state problem can be translated into an equivalent spinning electron problem**.
 
 It turns out that the dynamics of some complicated systems can be approximately described by considering only two states. For example:
 
