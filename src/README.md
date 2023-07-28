@@ -9,24 +9,30 @@ Notebook meta data and outputs are removed and the remaining content is converte
 ## Why do we need notebook source files?
 Without some kind of source file, version control of notebooks is extremely difficult.
 
-## How are these source files created?
-
-The files are automatically generated using [Jupytext](https://github.com/mwouts/jupytext) in conjunction with Jupyter Lab.
-
-Jupytext has a nice [online demo](https://mybinder.org/v2/gh/mwouts/jupytext/master?urlpath=lab/tree/demo/get_started.ipynb) to help you get familiar with the [Jupytext commands](https://github.com/mwouts/jupytext#jupytext-commands-in-jupyterlab).
 
 
 
-## How do I create source files locally?
 
-A simple `pip install jupytext` should be all you need to activate the Jupytext commands in your local Jupyter lab. If this doesn't work then go to `settings`, `enable extension manager`. From there you can search for and install the Jupytext plugin manually.
+## How do I create / update source files?
 
-If you follow the instructions in the [online demo](https://mybinder.org/v2/gh/mwouts/jupytext/master?urlpath=lab/tree/demo/get_started.ipynb)  then you will generate some nice source files. The final step that's required to place the source files inside a subdirectory called `src` is to open up the notebook as a raw text file, navigate to the bottom and modify the jupytext part of the meta data to look like this:
+We use [Jupytext](https://github.com/mwouts/jupytext) to pair `.ipynb` files with `.md` files. Once the pairing is set-up once, you'll never have to worry about it again - the two files will be kept in sync.
 
-```
-"jupytext": {
-   "formats": "ipynb,src//md"
-  }
-```
+You'll need to have `jupytext` installed and also the jupytext jupyter lab extension. A simple `pip install jupytext` should sort out both requirements.
 
-I'm sorry for this last part - it a bit annoying, but currently unavoidable.
+To check this has worked, open the command palette in jupyter lab via `View -> Activate Command Palette` and type `jupytext`. If you see references to e.g. "Pair Notebook..." then all is good. If this doesn't work, go to `Settings -> Enable Extension Manager`. From there, you can search for and install the Jupytext plugin manually via `View -> Extension Manager`.
+
+To pair a notebook with a source file and make sure that source file ends up in the `src` folder:
+- Open a new notebook
+- Open the command palette
+- Type `Pair Notebook` and select `Pair Notebook with Markdown` option
+- Close the notebook
+- Open the notebook in a plain text editor
+- Navigate to the bottom and modify the jupytext part of the meta data to look like this:
+  ```
+  "jupytext": {
+    "formats": "ipynb,src//md"
+    }
+  ```
+- Open the notebook in Jupyter lab and hit the save button - a new source file should appear in the `src` folder
+- Delete any additional source files that might have been accidentally created in the root directory
+- Commit your changes to the repo
