@@ -5,10 +5,10 @@ jupyter:
     text_representation:
       extension: .md
       format_name: markdown
-      format_version: '1.2'
-      jupytext_version: 1.3.3
+      format_version: '1.3'
+      jupytext_version: 1.14.7
   kernelspec:
-    display_name: Python 3
+    display_name: Python 3 (ipykernel)
     language: python
     name: python3
 ---
@@ -208,7 +208,7 @@ Although we again initialised the system in the $|+>$ state, the probability to 
 
 This behaviour is identical to a system of two coupled pendulums - each state in the quantum system is analagous to one of the pendulums. If you displace only one pendulum, then its maximum amplitude oscillates slowly as it transfers energy to the second pendulum and then back again (as you can see in this [video](https://youtu.be/CjJVBvDNxcE?t=56)).
 
-In the language of classical physics, this slow oscillation of the maximum amplitude results from the [beating](https://en.wikipedia.org/wiki/Beat_(acoustics%29) of two frequencies that correspond to different [normal modes](https://www.physics.utoronto.ca/~sandra/PHY238Y/Lectures/Lect4_Coupl_osc.pdf). These modes can be distinguished when you displace both pendulums, first in phase and then out of phase (see [this video](https://youtu.be/CjJVBvDNxcE?t=14)). 
+In the language of classical physics, this slow oscillation of the maximum amplitude results from the [beating](https://en.wikipedia.org/wiki/Beat_%28acoustics%29) of two frequencies that correspond to different [normal modes](https://www.physics.utoronto.ca/~sandra/PHY238Y/Lectures/Lect4_Coupl_osc.pdf). These modes can be distinguished when you displace both pendulums, first in phase and then out of phase (see [this video](https://youtu.be/CjJVBvDNxcE?t=14)). 
 
 In the absence of coupling, there are also two frequencies in the system, but they are identical because the pendulums are identical. In effect, the coupling splits the two frequencies apart and that is also what's happening in our quantum system.
 
