@@ -5,10 +5,10 @@ jupyter:
     text_representation:
       extension: .md
       format_name: markdown
-      format_version: '1.2'
-      jupytext_version: 1.3.3
+      format_version: '1.3'
+      jupytext_version: 1.14.7
   kernelspec:
-    display_name: Python 3
+    display_name: Python 3 (ipykernel)
     language: python
     name: python3
 ---
@@ -646,9 +646,10 @@ Let's automate this process for all time steps using a function.
 
 ```python
 def expectation(operator, states):
+    operator_matrix = operator.full()
     operator_expect = []
     for i in range(0,shape(states)[1]):
-        e = np.conj(states[:,i])@ (operator @ states[:,i])
+        e = np.conj(states[:,i])@ (operator_matrix @ states[:,i])
         operator_expect.append(e)
     return operator_expect
 ```
