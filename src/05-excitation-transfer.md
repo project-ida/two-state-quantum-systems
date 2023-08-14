@@ -262,7 +262,7 @@ Fig 4 shows us that our guess at parity creates a binary $\pm 1$ similar to what
 commutator(H,P).full
 ```
 
-We have zero commutator - this is exactly what we need.
+We have zero commutator - this shows that partiy is indeed conserved.
 
 We are now ready to put this all together in much the same way we did in the last tutorial, i.e. create a function that can extract the even parity universe (+1) or the odd parity universe (-1).
 
