@@ -329,7 +329,7 @@ two_state_1, two_state_2, bosons, interaction_1, interaction_2, number, nmm_list
 # prepare data structure for the energy level scan
 df_odd = make_df_for_energy_scan("$\Delta E$", -4, 4, 201, two_state_1.shape[0])
 
-# fill the data structure with eigevalues of the Hamiltonian i.e. the energy levels
+# fill the data structure with eigenvalues of the Hamiltonian i.e. the energy levels
 for i, row in df_odd.iterrows():
     H =  row["$\Delta E$"]*two_state_1+ row["$\Delta E$"]*two_state_2 + 1*bosons 
     evals, ekets = H.eigenstates()
@@ -346,7 +346,7 @@ two_state_1, two_state_2, bosons, interaction_1, interaction_2, number, nmm_list
 # prepare data structure for the energy level scan
 df_even = make_df_for_energy_scan("$\Delta E$", -4, 4, 201, two_state_1.shape[0])
 
-# fill the data structure with eigevalues of the Hamiltonian i.e. the energy levels
+# fill the data structure with eigenvalues of the Hamiltonian i.e. the energy levels
 for i, row in df_even.iterrows():
     H =  row["$\Delta E$"]*two_state_1+ row["$\Delta E$"]*two_state_2 + 1*bosons 
     evals, ekets = H.eigenstates()
