@@ -525,8 +525,7 @@ We'll spend a lot more time on the details of pseudo-angular momentum in the nex
 
 We'll need to introduce a few new operators:
 
-- The spin operators ($S$) for a [spi
-n 1/2 particle](https://en.wikipedia.org/wiki/Spin-%C2%BD#Observables):
+- The spin operators ($S$) for a [spin 1/2 particle](https://en.wikipedia.org/wiki/Spin-%C2%BD#Observables):
 
 $$
 S_x = \frac{1}{2}\sigma_x \,\,\,\,\,\, S_y = \frac{1}{2}\sigma_y \,\,\,\,\,\, S_z = \frac{1}{2}\sigma_z
