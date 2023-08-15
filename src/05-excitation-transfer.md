@@ -46,6 +46,7 @@ import warnings
 warnings.filterwarnings('ignore')
 
 from qutip import *
+from qutip.piqs import *
 
 from scipy.optimize import minimize_scalar
 
@@ -429,10 +430,10 @@ There are many things we can see in Fig 7:
 2. The horizontal levels of Fig 6 have split into 2 levels as we suspected. This confirms that we do indeed have 4 levels coming together at some anti-crossings, e.g. levels 1,2,3,4
 3. There appear to still be genuine crossings between some levels, most strikingly seen around $\Delta E \approx 1$ between e.g. levels 2 and 3 - this indicates there might be non interacting sub-universes with each parity universe 🤔
 
-There is a lot to explore and understand here. We'll start with point 1, i.e. two level anti-crossing, as this is the most familiar to us. We'll then take a look at point 3 i.e. the mystery crossing between the states with no overall excitation. Then we'll finish off with point 2, i.e. the unfamiliar 4 level anti-crossing.
+There is a lot to explore and understand here. We'll start with two level anti-crossings, as this is the most familiar to us. We'll then look at what's happening when 4 levels are coming together.
 
 
-### 5.6.1 - Two Level anti-crossing
+### 5.6.1 - Two Levels
 
 In Fig 7, levels 4 and 5 anti-cross at around $\Delta E = 2$. This anti-crossing looks like it could be linked to the $|0,+, + \rangle \rightarrow |4,-, - \rangle$ down conversion that we talked about when we explored the Hinton diagram. Let's see if we can confirm this down conversion via simulation (just as we did in [Fig 12 of tutorial 4](https://nbviewer.jupyter.org/github/project-ida/two-state-quantum-systems/blob/master/04-spin-boson-model.ipynb#4.5---Down-conversion)). 
 
@@ -512,114 +513,143 @@ plt.title(f"2 TSS with {H_latex}  ($\Delta E \\approx 1.9328$, $\omega=1$, $U=0.
 Fig 8 shows exactly what we expected, namely down conversion - both TSS transition from "+" to "-" each giving of 2 bosons in the process i.e. $|0,+, + \rangle \rightarrow |4,-, - \rangle$.
 
 
-### 5.6.2 - Mystery crossings
+### 5.6.2 - Four levels
 
 
-In Fig 7, we found something unexpected for the energy levels corresponding to no overall excitation, i.e. those consisting of equal number of "+" and "-". We found that e.g. levels 2 and 3 appeared to cross each other. Considering that we are in an even parity universe, the expectation is that all levels can interact with each other and create anti-crossings in the process - so why don't levels 2 and 3 do this?
+In Fig 7, we found something unexpected for the energy levels corresponding to no overall excitation, i.e. those consisting of equal number of "+" and "-". We found that e.g. levels 2 and 3 appeared to cross each other. Considering that we are in an even parity universe, the expectation is that all levels can interact with each other and create anti-crossings in the process - so why don't levels 2 and 3 do this? It has to do with the conservation of angular momentum.
 
-To dig a little deeper, we'll set $\Delta E = 0$ and inspect levels 2 and 3 in more detail - specifically we'll look at their corresponding eigenstates.
+
+Although we don't explicitly have a description of angular momentum in our TSS, you may recall from [tutorial 2](https://nbviewer.jupyter.org/github/project-ida/two-state-quantum-systems/blob/master/02-perturbing-a-two-state-system.ipynb#Transition-probability) that our system is mathematically similar to spin $1/2$ particles which do have angular momentum. In general, the conservation of total angular momentum of a system constrains how that system can behave. We can therefore expect to find constraints in our TSS based on the conservation of what we can call `pseudo-angular momentum`.
+
+We'll spend a lot more time on the details of pseudo-angular momentum in the next tutorial. For now, let's just try and calculate the magnitude of the total pseudo-angular momentum around $\Delta E \approx 1$ for levels 2 and 3 to see what insights we can find.
+
+We'll need to introduce a few new operators:
+
+- The spin operators ($S$) for a [spi
+n 1/2 particle](https://en.wikipedia.org/wiki/Spin-%C2%BD#Observables):
+
+$$
+S_x = \frac{1}{2}\sigma_x \,\,\,\,\,\, S_y = \frac{1}{2}\sigma_y \,\,\,\,\,\, S_z = \frac{1}{2}\sigma_z
+$$
+
+- The [total angular momentum operators](https://www2.ph.ed.ac.uk/~ldeldebb/docs/QM/lect15.pdf) ($J$) for $N$ TSS:
+
+$$J_x = \overset{N}{\underset{n=1}{\Sigma}} S_{n x} \,\,\,\,\,\, J_y = \overset{N}{\underset{n=1}{\Sigma}} S_{n y} \,\,\,\,\,\, J_z = \overset{N}{\underset{n=1}{\Sigma}} S_{n z}$$
+
+
+
+
+Our Hamiltonian then looks like:
+
+$$H =  \Delta E J_z + \hbar\omega\left(a^{\dagger}a +\frac{1}{2}\right) + U\left( a^{\dagger} + a \right)2J_x$$
+
 
 ```python
-DeltaE = 0
+H_latex = "$H = \Delta E J_z + \hbar\omega(a^{{\dagger}}a +1/2) + U( a^{{\dagger}} + a )2J_x$ "
+```
+
+To calculate the magnitude of the total pseudo-angular momentum, we'll need to use QuTiP's [`jspin`](http://qutip.org/docs/latest/apidoc/functions.html#qutip.piqs.jspin),  to generate the $J$ operators for any given number of TSS (note, you must import [`qutip.piqs`](http://qutip.org/docs/latest/apidoc/functions.html#module-qutip.piqs) to use this).
+
+```python
+J = jspin(2, basis="uncoupled")
 ```
 
 ```python
-H = DeltaE*two_state_1 + DeltaE*two_state_2 + 1*bosons + 0.1*interaction_1 + 0.1*interaction_2
+J[0] # J_x
 ```
 
 ```python
-evals, ekets = H.eigenstates()
+J[1] # J_y
 ```
 
-Let's first look at the energy of levels 2 and 3
-
 ```python
-print(f"Energy of level 2 = {evals[2]}")
-print(f"Energy of level 3 = {evals[3]}")
+J[2] # J_z
 ```
 
-How intriguing, the energy of level 3 is exactly 1.5 - just as as it was when we didn't have any coupling between the TSS and the boson field.
-
-Now let's look at the corresponding eigenstates using a helper function `prettify_states` that we imported from the helper file.
+The magnitude of the total angular momentum is then represented by an operator that's the sum of the squares of the individual component operators (see [spinors](https://en.wikipedia.org/wiki/Spinors_in_three_dimensions) for a deeper discussion of this).
 
 ```python
-prettify_states(ekets, nmm_list)[[2,3]]
+J2 = J[0]*J[0] + J[1]*J[1] + J[2]*J[2]
 ```
 
-We can see that the eigenstates corresponding to levels 2 and 3 are normalised versions of: 
-- Level 2 = $|1,+,-\rangle  + |1,-,+\rangle$ +  other states with boson number different from 1
-- Level 3 = $|1,+,-\rangle  - |1,-,+\rangle$ 
-
-This pattern persists for all $\Delta E$ - try it out for yourself by changing the $\Delta E$ in the above Hamiltonian. There is always a horizontal level corresponding to  $|1,+,-\rangle  - |1,-,+\rangle$ with energy 1.5. This level (and others like it with different boson number) does not couple to others and so does indeed live in its own sub-universe.
-
-Why is it that changing plus to minus in $|1,+,-\rangle  \pm |1,-,+\rangle$ makes such a difference? What is the nature of this other sub-universe? They are important questions but they take us somewhat away from the primary mission of this tutorial. We'll come back to this in the next tutorial.
-
-> For those who just can't wait that long, it has to do with conservation of pseudo-angular momentum
-
-For now, what we can confidently say is that when we see a 4 level anti-crossing it's actually only 3 levels that are interacting to produce the energy splitting - the other level is a non-interacting one of the form $|n,+,-\rangle  - |n,-,+\rangle$. With that said, let's take a look at these unfamiliar many level anti-crossings.
-
-
-### 5.6.3 - Beyond simple anti-crossings
-
-
-In Fig 7, there is a 4 level "anti-crossing" around $\Delta E = 1$. Because $\Delta E = \omega$ at this point, we suspect that the transition $|0,+, + \rangle \rightarrow |2,-, - \rangle$ (that we spoke of during exploration of the Hinton diagram) might be related to it.
-
-Let's zoom in a take a closer look before we head straight into simulation.
+These new operators will need to be tensorised just like our other operators. We'll adapt our `make_operators` function for this. Note that we've also needed to adapt the parity operator to work with $J_z$.
 
 ```python
-df_even = make_df_for_energy_scan("$\Delta E$", 0.7, 1.3, 201, two_state_1.shape[0])
+def make_operators(max_bosons, parity=0):
+    
+    a     = tensor(destroy(max_bosons+1), qeye(2),qeye(2))                 # tensorised boson destruction operator
+    J     = jspin(2, basis="uncoupled")
+    Jx    = tensor(qeye(max_bosons+1), J[0])                               # tensorised Jx operator
+    Jz    = tensor(qeye(max_bosons+1), J[2])                               # tensorised Jx operator
+    J2    = tensor(qeye(max_bosons+1), J[0]*J[0] + J[1]*J[1] + J[2]*J[2])  # tensorised J^2 operator
+
+    two_state     = Jz                                 # two state system energy operator   Jz
+    bosons        = (a.dag()*a+0.5)                    # boson energy operator              𝑎†𝑎+1/2
+    number        = a.dag()*a                          # boson number operator              𝑎†𝑎
+    interaction   = 2*(a.dag() + a) * Jx               # interaction energy operator        2(𝑎†+𝑎)Jz  
+    
+    P = -(1j*np.pi*(number + Jz)).expm()               # parity operator 
+    
+    # map from QuTiP number states to |n,±, ±> states
+    possible_ns = range(0, max_bosons+1)
+    possible_ms = ["+","-"]
+    nmm_list = [(n,m1,m2) for (n,m1,m2) in product(possible_ns, possible_ms, possible_ms)]
+    
+    # only do parity extraction if a valid parity is being used
+    if (parity==1) | (parity==-1):
+        p               = np.where(P.diag()==parity)[0]
+        
+        two_state       = two_state.extract_states(p)
+        bosons          = bosons.extract_states(p)
+        number          = number.extract_states(p)
+        interaction     = interaction.extract_states(p)
+        J2              = J2.extract_states(p)  
+        nmm_list        = [nmm_list[i] for i in p]
+  
+    
+    return two_state, bosons, interaction, number, nmm_list, J2
+```
+
+Let's now create a zoomed in version of the Fig 6 energy level diagram (where interaction is turned off  $U=0$) around the area of interest for levels 2 and 3.
+
+```python
+two_state, bosons, interaction, number, nmm_list, J2 = make_operators(max_bosons=6, parity=1)
+```
+
+```python
+df_even = make_df_for_energy_scan("$\Delta E$", 0.7, 1.3, 201, two_state.shape[0])
 
 for i, row in df_even.iterrows():
-    H =  row["$\Delta E$"]*two_state_1+ row["$\Delta E$"]*two_state_2 + 1*bosons + 0.1*interaction_1 + 0.1*interaction_2
+    H =  row["$\Delta E$"]*two_state + 1*bosons
     evals, ekets = H.eigenstates()
     df_even.iloc[i,1:] = evals 
 ```
 
 ```python
 df_even.plot(x="$\Delta E$",ylim=[1,2],legend=True, 
-        title=f"Even energy levels for {H_latex}   ($\omega=1$, $U=0.1$)    (Fig 9)",
+        title=f"Even energy levels for {H_latex}   ($\omega=1$, $U=0$)    (Fig 9)",
              figsize=(10,8));
 
 plt.ylabel("Energy");
 ```
 
-Firstly, a note on colour schemes. When looking at levels 2 and 3 in Fig 9, we can now see that the way the colour scheme works is at odds with how we naturally want to interpret these energy levels. Specifically, we know that the horizontal parts are from the non interacting state and so we would want to give it a single colour. That's not how the simple plot function works 😔 . For now let us ignore the horizontal parts and instead focus on the elongated "S" looking shape - let's call it level S.
-
-We can see from Fig 9 that the notion of an anti-crossing is now somewhat ill defined because things don't look very symmetric. In particular:
-- The extrema of the upper (purple) and lower (orange) levels don't occur at the same $\Delta E$
-- The upper and lower levels come closest to the middle level S at a $\Delta E$ that doesn't not coincide with their extrema
-
-It is therefore difficult to choose an appropriate $\Delta E$ for a simulation. We do however know that as $U \rightarrow 0$ all the levels come together at $\Delta E=1 $ (as we saw in Fig 6). Let's therefore reduce $U$ by a factor of 10 to $U=0.01$, set $\Delta E=1 $ and see how we go.
+Let's now look at the 4 energy levels visible in Fig 9 and calculate the square total pseudo-angular momentum. Specifically, we're going to calculate the expectation value of $J^2$ for each energy level at each value of $\Delta E$. For this, we'll use QuTip's [`expect`](https://qutip.org/docs/latest/apidoc/functions.html#module-qutip.expect) function.
 
 ```python
-H = 1*two_state_1 + 1*two_state_2 + 1*bosons + 0.01*interaction_1 + 0.01*interaction_2
+df_J_even = make_df_for_energy_scan("$\Delta E$", 0.7, 1.3, 201, two_state.shape[0])
+
+for i, row in df_J_even.iterrows():
+    H =  row["$\Delta E$"]*two_state + 1*bosons + 0.1*interaction
+    evals, ekets = H.eigenstates()
+    df_J_even.iloc[i,1:] = expect(J2,ekets)  # The expected square total angular momentum for each energy level
+    
+df_J_even[["$\Delta E$", "level_1", "level_2", "level_3", "level_4"]].head()
 ```
 
-We'll again start in the $|0,+, + \rangle$ state.
+We can see that the horizontal level 3 has $<J^2> = 0$ (tiny non-zero values are due to numerical limitations) whereas the others have $<J^2> = 2$. Because pseudo-angular momentum is conserved, level 3 cannot influece the others, even when the energies are the same. For example, at $\Delta E = 1$ when all the levels converge, frequency "beating" will only occur between levels 1, 2 and 4 where the pseudo-angular momentum is the same. Level spltting accompanies that beating, as we've seen several times during these tutorials and we see in Fig 7 when  $U \neq 0$. Level 3 is however excluded from the beating and that's why its energy remains the same whether or not there is any ineraction with the boson field.
 
-```python
-psi0 = basis(len(nmm_list), 0)
-```
 
-```python
-times = np.linspace(0.0, 1000.0, 10000)
-P, psi = simulate(H, psi0, times)
-```
-
-```python
-plot_prob(P ,times, ket_labels)
-plt.title(f"2 TSS with {H_latex}  ($\Delta E = 1$, $\omega=1$, $U=0.01$)   (Fig 10)");
-```
-
-Fig 10 indeed shows the emission of a single boson from each TSS as we predicted when we explored the Hinton diagram.
-
-Things are not quite as simple as for a two level anti-crossing. We see incomplete Rabi oscillations in $|0,+,+ \rangle$ (i.e. probability does not go from 1 to 0 to 1) which results from an asymmetry in the coupling between states with different boson numbers.
-
-> For those wanting to go a bit deeper here in understanding why we don't see a full oscillation in probability from 1 to 0 for $|0,+,+ \rangle$ and $|2,-,- \rangle$. We saw in [Fig 2 of tutorial 4](https://nbviewer.jupyter.org/github/project-ida/two-state-quantum-systems/blob/master/04-spin-boson-model.ipynb#4.2.2---Crossings-and-anti-crossings), that as the boson number increased the separation in levels at anti-crossings also increased - this tells us that the boson number is involved in the amount of coupling between any two levels. Because $|0,+,+ \rangle \rightarrow |2,-,- \rangle$ involves the coupling of 3 levels of different boson number (the third being the intermediate level $|1,+,-\rangle + |1,-,+\rangle$), an asymmetry develops between the intermediate and the upper/lower levels. This asymmetry is then reflected in the time evolution of Fig 10.
-
-Despite the additional complexity, our intuition from looking at both the Hinton diagram and the energy levels still gave us the right idea.
-
-What about the novel feature we found in the Hinton diagram - the suggestion of something we termed excitation transfer?
+So, when we see 4 levels coming together, in practical terms it's 3 + 1. Thinking about 3 interacting levels is more complicated than the 2 we've been used to. We'll not dig into that in this tutorial because what's more interesting is to look at the novel feature we found in the Hinton diagram - the suggestion of something we termed excitation transfer.
 
 
 ## 5.7 - Excitation transfer
