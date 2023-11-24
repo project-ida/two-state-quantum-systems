@@ -5,8 +5,8 @@ import pandas as pd
 import warnings
 warnings.filterwarnings('ignore')
 from itertools import product
-from fractions import Fraction
-from qutip.cy.piqs import j_min, j_vals, m_vals
+import matplotlib.pyplot as plt
+from qutip import *
 
 
 def make_df_for_energy_scan(label_param, min_param, max_param, num_param, num_levels):
@@ -52,16 +52,15 @@ def make_df_for_energy_scan(label_param, min_param, max_param, num_param, num_le
     return df
 
 
-def make_braket_labels(n_list, output_fractions = True):
+def make_braket_labels(list_of_states):
     """
     Creates 2 lists of strings to be used in labels for plot when bras and kets are required.
     
-    See https://nbviewer.jupyter.org/github/project-ida/two-state-quantum-systems/blob/master/04-spin-boson-model.ipynb#4.3---Structure-of-the-Hamiltonian for where this function was first created. The function has since been adapted.
+    See https://nbviewer.jupyter.org/github/project-ida/two-state-quantum-systems/blob/master/04-spin-boson-model.ipynb#4.3---Structure-of-the-Hamiltonian for where this function was first created.
     
     Parameters
     ----------
-    n_list             : list of tuples, Each tuple contains strings or numbers that describe the state
-    output_fractions   : Boolean, If true, the function will try and turn numbers into fractions, e.g. 0.5 -> 1/2
+    list_of_states : list of strings, or list of tuples containing strings
     
     Returns
     -------
@@ -73,74 +72,35 @@ def make_braket_labels(n_list, output_fractions = True):
     >>> bra_labels, ket_labels = make_braket_labels([("+","+"), ("-","+")])
     
     """
-    
-    def Fraction_no_fail(val):
-        try:
-            val = Fraction(val)
-        except:
-            pass
-        return val
-    
-    bra_labels = []
-    ket_labels = []
-    
-    if (output_fractions == True):
-        
-        bra_labels = []
-        ket_labels = []
-        
-        for label in n_list:
-            s = []
-            for l in label:
-                s.append(str(Fraction_no_fail(str(l))))
-            
-            bra_labels.append("$\langle$" + ', '.join(s) + " |")
-            ket_labels.append("| "+ ', '.join(s) +"$\\rangle$")
-        
-    else:
-        
-        bra_labels = ["$\langle$"+', '.join(map(str,n))+" |" for n in n_list]
-        ket_labels = ["| "+', '.join(map(str,n))+"$\\rangle$" for n in n_list]
-        
-    
+    bra_labels = ["$\langle$"+', '.join(map(str,n))+" |" for n in list_of_states]
+    ket_labels = ["| "+', '.join(map(str,n))+"$\\rangle$" for n in list_of_states]
     return bra_labels, ket_labels
 
 
-# This function takes a list of QuTiP states and puts them in a dataframe to make them easier to visually compare
-def prettify_states(states, mm_list=None):
-    pretty_states = np.zeros([states[0].shape[0],len(states)], dtype="object")
-    
-    for j, state in enumerate(states):
-        for i, val in enumerate(state):
-            pretty_states[i,j] = f"{val[0,0]:.1f}"
-    if (mm_list == None):
-        df = pd.DataFrame(data=pretty_states)
-    else:
-        df = pd.DataFrame(data=pretty_states, index=mm_list)
-            
-    return df
-
-def j_states_list(num_tss):
-    i=0
-    
-    jm_list = []   # This will be the ordered list of the basis states
-    j_index = {}   # This will be a python doctionary to allow us to easily find the rows/columns for a specific j
-
-    # Get the j values for 2 TSS and order them high to low
-    js = j_vals(num_tss)[::-1]
-    
-    for j in js:
-        j_index[j] = []
-        # for each j value get the different possible m's and order them high to low
-        ms = m_vals(j)[::-1]
-        for m in ms:
-            j_index[j].append(i)
-            jm_list.append((j,m))
-            i+=1
-    return j_index, jm_list
-
 
 def simulate(H, psi0, times):
+    """
+    Solves the time independent Schrödinger equation
+    
+    See https://nbviewer.jupyter.org/github/project-ida/two-state-quantum-systems/blob/master/04-spin-boson-model.ipynb#4.5---Down-conversion for where this function was first created
+    
+    Parameters
+    ----------
+    H     :  QuTiP object, Hamiltonian for the system you want to simulate
+    psi0  :  QuTiP object, Initial state of the system
+    times :  1D numpy array, Times to evaluate the state of the system (best to use use np.linspace to make this) 
+
+    
+    Returns
+    -------
+    P   : numpy array [i,j], Basis state (denoted by i) occupation probabilities at each time j
+    psi : numpy array [i,j], Basis state (denoted by i) values at each time j
+    
+    Examples
+    --------
+    >>> P, psi = simulate(sigmaz() + sigmax(), basis(2, 0),  np.linspace(0.0, 20.0, 1000) )
+    
+    """
     num_states = H.shape[0]
     
     # create placeholder for values of amplitudes for different states
@@ -158,3 +118,91 @@ def simulate(H, psi0, times):
         psi[k,:] = amp
         P[k,:] = amp*np.conj(amp)
     return P, psi
+
+
+def prettify_states(states, mm_list=None):
+    """
+    Takes an array of QuTiP states and returns a pandas dataframe that makes it easier to compare the states side by side 
+    
+    
+    Parameters
+    ----------
+    states     :  Numpy array of QuTiP objects
+    mm_list    :  list strings, or list of tuples containing strings, these will become row labels to label basis states
+
+    
+    Returns
+    -------
+    df   : pandas dataframe
+    
+    """
+    pretty_states = np.zeros([states[0].shape[0],len(states)], dtype="object")
+    
+    for j, state in enumerate(states):
+        for i, val in enumerate(state):
+            pretty_states[i,j] = f"{val[0,0]:.1f}"
+    if (mm_list == None):
+        df = pd.DataFrame(data=pretty_states)
+    else:
+        df = pd.DataFrame(data=pretty_states, index=mm_list)
+            
+    return df
+
+
+def plot_prob(P, times, labels=None):
+    """
+    Plots the basis state occupation probabilities that come out of the simulate function
+    
+    
+    Parameters
+    ----------
+    P      :  2D numpy array, get this from output of the simulate function
+    times  :  1D numpy array, same time array as used for input of the simulate function
+    labels :  List of strings, labels for each basis state, used for the plot legend, best to use make_braket_labels to make this
+
+    
+    """
+    f = plt.figure(figsize=(10,8))
+    ax = f.add_subplot(1, 1, 1)
+
+    # NUM_COLORS = len(P)
+    # cm = plt.get_cmap('gist_rainbow')
+    # ax.set_prop_cycle(color=[cm(1.*i/NUM_COLORS) for i in range(NUM_COLORS)])
+
+    line_styles = ['-', '--', '-.', ':']
+
+    
+    if (labels == None):
+        for i in range(0,P.shape[0]):
+            current_line_style = line_styles[i % len(line_styles)]
+            ax.plot(times, P[i,:], label=f"{i}",linestyle=current_line_style)
+    else:
+        for i in range(0,P.shape[0]):
+            current_line_style = line_styles[i % len(line_styles)]
+            ax.plot(times, P[i,:], label=f"{labels[i]}",linestyle=current_line_style)
+            
+    ax.set_ylabel("Probability")
+    ax.set_xlabel("Time")
+    ax.legend(loc="right")
+    
+    return
+
+def expectation(operator, states):
+    """
+    Calculates the expectation of an operator given a array of states
+    
+    
+    Parameters
+    ----------
+    operator      :  QuTiP operator
+    states        :  2D numpy array, get this from output of the simulate function
+
+    
+    """
+    
+    operator_matrix = operator.full()
+    operator_expect = []
+    for i in range(0,shape(states)[1]):
+        e = np.conj(states[:,i])@ (operator_matrix @ states[:,i])
+        operator_expect.append(e)
+    return operator_expect
