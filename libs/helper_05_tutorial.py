@@ -163,13 +163,22 @@ def plot_prob(P, times, labels=None):
     """
     f = plt.figure(figsize=(10,8))
     ax = f.add_subplot(1, 1, 1)
+
+    # NUM_COLORS = len(P)
+    # cm = plt.get_cmap('gist_rainbow')
+    # ax.set_prop_cycle(color=[cm(1.*i/NUM_COLORS) for i in range(NUM_COLORS)])
+
+    line_styles = ['-', '--', '-.', ':']
+
     
     if (labels == None):
         for i in range(0,P.shape[0]):
-            ax.plot(times, P[i,:], label=f"{i}")
+            current_line_style = line_styles[i % len(line_styles)]
+            ax.plot(times, P[i,:], label=f"{i}",linestyle=current_line_style)
     else:
         for i in range(0,P.shape[0]):
-            ax.plot(times, P[i,:], label=f"{labels[i]}")
+            current_line_style = line_styles[i % len(line_styles)]
+            ax.plot(times, P[i,:], label=f"{labels[i]}",linestyle=current_line_style)
             
     ax.set_ylabel("Probability")
     ax.set_xlabel("Time")
