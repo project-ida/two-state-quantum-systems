@@ -46,14 +46,7 @@ from qutip.cy.piqs import j_min, j_vals, m_vals
 from scipy.stats import linregress
 from scipy.signal import find_peaks
 
-
 # The helper file below brings functions created in previous tutorials and adds an extra one
-# make_df_for_energy_scan - we made this in tutorial 4
-# make_braket_labels - we made this in tutorial 4
-# simulate - we made this in tutorial 4
-# plot_prob - made from code used for plotting in tutorial 4
-# prettify_states - nice way to display many QuTiP states for side by side comparison
-# 
 from libs.helper_06_tutorial import *
 ```
 
