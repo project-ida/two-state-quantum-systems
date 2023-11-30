@@ -41,8 +41,6 @@ warnings.filterwarnings('ignore')
 from qutip import *
 from qutip.piqs import *
 
-from qutip.cy.piqs import j_min, j_vals, m_vals
-
 from scipy.stats import linregress
 from scipy.signal import find_peaks
 
