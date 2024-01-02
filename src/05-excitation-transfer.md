@@ -6,7 +6,7 @@ jupyter:
       extension: .md
       format_name: markdown
       format_version: '1.3'
-      jupytext_version: 1.14.7
+      jupytext_version: 1.15.1
   kernelspec:
     display_name: Python 3 (ipykernel)
     language: python
@@ -533,18 +533,17 @@ $$
 
 - The [total angular momentum operators](https://www2.ph.ed.ac.uk/~ldeldebb/docs/QM/lect15.pdf) ($J$) for $N$ TSS:
 
-$$J_x = \overset{N}{\underset{n=1}{\Sigma}} S_{n x} \,\,\,\,\,\, J_y = \overset{N}{\underset{n=1}{\Sigma}} S_{n y} \,\,\,\,\,\, J_z = \overset{N}{\underset{n=1}{\Sigma}} S_{n z}$$
+$$J_{Nx} = \overset{N}{\underset{n=1}{\Sigma}} S_{n x} \,\,\,\,\,\, J_{Ny} = \overset{N}{\underset{n=1}{\Sigma}} S_{n y} \,\,\,\,\,\, J_{Nz} = \overset{N}{\underset{n=1}{\Sigma}} S_{n z}$$
 
 
 
 
 Our Hamiltonian then looks like:
 
-$$H =  \Delta E J_z + \hbar\omega\left(a^{\dagger}a +\frac{1}{2}\right) + U\left( a^{\dagger} + a \right)2J_x$$
-
+$$H =  \Delta E J_{Nz} + \hbar\omega\left(a^{\dagger}a +\frac{1}{2}\right) + U\left( a^{\dagger} + a \right)2J_{Nx}$$
 
 ```python
-H_latex = "$H = \Delta E J_z + \hbar\omega(a^{{\dagger}}a +1/2) + U( a^{{\dagger}} + a )2J_x$ "
+H_latex = "$H = \Delta E J_{Nz} + \hbar\omega(a^{{\dagger}}a +1/2) + U( a^{{\dagger}} + a )2J_{Nx}$ "
 ```
 
 To calculate the magnitude of the total pseudo-angular momentum, we'll need to use QuTiP's [`jspin`](http://qutip.org/docs/latest/apidoc/functions.html#qutip.piqs.jspin),  to generate the $J$ operators for any given number of TSS (note, you must import [`qutip.piqs`](http://qutip.org/docs/latest/apidoc/functions.html#module-qutip.piqs) to use this).
@@ -626,7 +625,7 @@ for i, row in df_even.iterrows():
 
 ```python
 df_even.plot(x="$\Delta E$",ylim=[1,2],legend=True, 
-        title=f"Even energy levels for {H_latex}   ($\omega=1$, $U=0$)    (Fig 9)",
+        title=f"Even energy levels for {H_latex}   ($\omega=1$, $U=0$, N=2)    (Fig 9)",
              figsize=(10,8));
 
 plt.ylabel("Energy");
@@ -683,7 +682,7 @@ P, psi = simulate(H, psi0, times)
 ```python
 bra_labels, ket_labels = make_braket_labels(nmm_list)
 plot_prob(P ,times, ket_labels)
-plt.title(f"2 TSS with {H_latex}  ($\Delta E = 1$, $\omega=1$, $U=0.01$)   (Fig 10)");
+plt.title(f"2 TSS with {H_latex}  ($\Delta E = 1$, $\omega=1$, $U=0.01$, N=2)   (Fig 10)");
 ```
 
 <!-- #region -->
@@ -725,7 +724,7 @@ P, psi = simulate(H, psi0, times)
 
 ```python
 plot_prob(P ,times, ket_labels)
-plt.title(f"2 TSS with {H_latex}  ($\Delta E = 2.5$, $\omega=1$, $U=0.01$)   (Fig 11)");
+plt.title(f"2 TSS with {H_latex}  ($\Delta E = 2.5$, $\omega=1$, $U=0.01$, N=2)   (Fig 11)");
 ```
 
 Fig 11 shows us that excitation can be transfered from one TSS_1 to TSS_2 without bosons having any significant chance of being emitted/absorbed.
