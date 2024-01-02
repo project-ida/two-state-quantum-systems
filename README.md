@@ -28,5 +28,8 @@ The tutorials below are aimed at someone whose knowledge of quantum mechanics is
 - [05 - Excitation transfer](05-excitation-transfer.ipynb)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="https://nbviewer.jupyter.org/github/project-ida/two-state-quantum-systems/blob/master/05-excitation-transfer.ipynb" target="_parent"><img src="https://nbviewer.jupyter.org/static/img/nav_logo.svg" alt="Open In nbviewer" height="22"/></a>
 - [06 - Many two state systems](06-many-two-state-systems.ipynb)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="https://nbviewer.jupyter.org/github/project-ida/two-state-quantum-systems/blob/master/06-many-two-state-systems.ipynb" target="_parent"><img src="https://nbviewer.jupyter.org/static/img/nav_logo.svg" alt="Open In nbviewer" height="22"/></a>
 
+## Intellectual Inspiration
+These tutorials have been inspired by the work of Prof. Peter Hagelstein of MIT and his proposition of resonance energy transfer (RET) between atomic nuclei.
+
 ## Financial support
 We would not have been able to continue creating these tutorials without the generous support of grants from the [Anthropocene Institute](https://anthropoceneinstitute.com/). 
