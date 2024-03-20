@@ -170,7 +170,7 @@ for i, N in enumerate(Ns):
 
     # We're using our custom simulate function from the last tutorial because 
     # it's faster than using QuTips solvers in the case of long simulation times.
-    # This is because our "solver" uses an exact solution and so does not have 
+    # This is because our "solver" uses an analytical solution and so does not have 
     # limits on the number of timesteps like QuTips ODE solvers do. 
     # If you try using e.g. sesolve here you'll notice you'll need to increase the
     # number of timesteps significantly which will slow things down a lot
