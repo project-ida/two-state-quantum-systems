@@ -241,19 +241,24 @@ for i, N in enumerate(Ns):
 
     psi0, psi0_ind = create_single_excitation_psi0(nm_list,0)
 
-    # We are using custom simulate and expectation function from last tutorial. These are quicker than QuTips solvers for our specific purpose
-    P, psi = simulate(H, psi0, times)
-    bosons_expectation = expectation(number,psi)
+    # # We are using custom simulate and expectation function from last tutorial. These are quicker than QuTips solvers for our specific purpose
+    # P, psi = simulate(H, psi0, times)
+    # bosons_expectation = expectation(number,psi)
+
+    # We can use use QuTips mesolve here. It's MUCH faster than our custom solver
+    # for short simulation times. This is likely because we've not optimised our solver.
+    # Adding [number] means result.expect will give us the expected number of bosons
+    result = mesolve(H, psi0, times, [], [number])
 
     # find_peaks from SciPy helps us find peaks.
     # The peak_2 - peak_1 should give us the end of the first rabi cycle because we start with zero bosons
-    peaks, _ = find_peaks(bosons_expectation, prominence=0.05)
+    peaks, _ = find_peaks(result.expect[0], prominence=0.05)
     peak_times = times[peaks]
    
     rabi.append(2*np.pi / (peak_times[1] - peak_times[0]))
     # print((peak_times[1] - peak_times[0]))
 
-    plt.plot(times, bosons_expectation, label="Expected bosons")
+    plt.plot(times, result.expect[0], label="Expected bosons")
     plt.xlabel("Time")
     plt.legend(loc="right")
     plt.title(f"{H_latex} (Fig. {i+6})  \n $\Delta E={DeltaE}$, $\omega={omega}$, $U={U}$, N={N} \n $\Psi_0 =$ {ket_labels[psi0_ind]}")
@@ -431,12 +436,13 @@ psi0 = psi0.unit() # make sure the initial state is normalised
 ```
 
 ```python
-P, psi = simulate(H, psi0, times)
-bosons_expectation = expectation(number,psi)
+# We can use use QuTips mesolve here. It's MUCH faster than our custom solver
+# for short simulation times. This is likely because we've not optimised our solver.
+result = mesolve(H, psi0, times, [], [number])
 ```
 
 ```python
-plt.plot(times, bosons_expectation, label="Expected bosons")
+plt.plot(times, result.expect[0], label="Expected bosons")
 plt.xlabel("Time")
 plt.legend(loc="right")
 plt.title(f"{H_latex} (Fig. 17)  \n $\Delta E={DeltaE}$, $\omega={omega}$, $U={U}$, N={N} \n $\Psi_0 \sim$ {ket_labels[0]} + {ket_labels[1]}")
@@ -481,12 +487,13 @@ psi0 = psi0.unit()
 ```
 
 ```python
-P, psi = simulate(H, psi0, times)
-bosons_expectation = expectation(number,psi)
+# We can use use QuTips mesolve here. It's MUCH faster than our custom solver
+# for short simulation times. This is likely because we've not optimised our solver.
+result = mesolve(H, psi0, times, [], [number])
 ```
 
 ```python
-plt.plot(times, bosons_expectation, label="Expected bosons")
+plt.plot(times, result.expect[0], label="Expected bosons")
 plt.xlabel("Time")
 plt.legend(loc="right")
 plt.title(f"{H_latex} (Fig. 18)  \n $\Delta E={DeltaE}$, $\omega={omega}$, $U={U}$, N={N} \n $\Psi_0 \sim$ {ket_labels[3]} + {ket_labels[5]}+ {ket_labels[6]}+ {ket_labels[7]}")
