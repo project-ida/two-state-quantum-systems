@@ -172,7 +172,7 @@ for i, N in enumerate(Ns):
     # it's faster than using QuTips solvers in the case of long simulation times.
     # This is because our "solver" uses an exact solution and so does not have 
     # limits on the number of timesteps like QuTips ODE solvers do. 
-    # If you try using e.g. mesolve here you'll notice you'll need to increase the
+    # If you try using e.g. sesolve here you'll notice you'll need to increase the
     # number of timesteps significantly which will slow things down a lot
     P, psi = simulate(H, psi0, times)
 
@@ -245,10 +245,10 @@ for i, N in enumerate(Ns):
     # P, psi = simulate(H, psi0, times)
     # bosons_expectation = expectation(number,psi)
 
-    # We can use use QuTips mesolve here. It's MUCH faster than our custom solver
+    # We can use use QuTips sesolve here. It's MUCH faster than our custom solver
     # for short simulation times. This is likely because we've not optimised our solver.
     # Adding [number] means result.expect will give us the expected number of bosons
-    result = mesolve(H, psi0, times, [], [number])
+    result = sesolve(H, psi0, times, [number])
 
     # find_peaks from SciPy helps us find peaks.
     # The peak_2 - peak_1 should give us the end of the first rabi cycle because we start with zero bosons
@@ -436,9 +436,9 @@ psi0 = psi0.unit() # make sure the initial state is normalised
 ```
 
 ```python
-# We can use use QuTips mesolve here. It's MUCH faster than our custom solver
+# We can use use QuTips sesolve here. It's MUCH faster than our custom solver
 # for short simulation times. This is likely because we've not optimised our solver.
-result = mesolve(H, psi0, times, [], [number])
+result = sesolve(H, psi0, times, [number])
 ```
 
 ```python
@@ -487,9 +487,9 @@ psi0 = psi0.unit()
 ```
 
 ```python
-# We can use use QuTips mesolve here. It's MUCH faster than our custom solver
+# We can use use QuTips sesolve here. It's MUCH faster than our custom solver
 # for short simulation times. This is likely because we've not optimised our solver.
-result = mesolve(H, psi0, times, [], [number])
+result = sesolve(H, psi0, times, [number])
 ```
 
 ```python
