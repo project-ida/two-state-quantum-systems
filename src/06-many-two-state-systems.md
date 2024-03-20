@@ -168,7 +168,12 @@ for i, N in enumerate(Ns):
 
     psi0, psi0_ind = create_single_excitation_psi0(nm_list,0)
 
-    # We are using custom simulate function from last tutorial. These are quicker than QuTips solvers for our specific purpose
+    # We're using our custom simulate function from the last tutorial because 
+    # it's faster than using QuTips solvers in the case of long simulation times.
+    # This is because our "solver" uses an exact solution and so does not have 
+    # limits on the number of timesteps like QuTips ODE solvers do. 
+    # If you try using e.g. mesolve here you'll notice you'll need to increase the
+    # number of timesteps significantly which will slow things down a lot
     P, psi = simulate(H, psi0, times)
 
     # find_peaks from SciPy helps us find peaks. 
