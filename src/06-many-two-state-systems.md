@@ -365,7 +365,7 @@ plt.tight_layout()
 plt.show()
 ```
 
-Where do we put out focus in the above figures? 
+Where do we put our focus in the above figures? 
 
 In our simulations of spontaneous emission, we're interested in moving between 0 bosons and 1 boson. The stationary states, 0 and 2 (shown in Figs. 11 and 13) are therefore of interest to us because they appear to be composed of $| 0, +, -\rangle$, $| 0, -, +\rangle$ and $| 1, -, -\rangle$. Let's take a closer look at the associated states and energies.
 
