@@ -601,7 +601,7 @@ bra_labels, ket_labels = make_braket_labels(nm_list)
 
 ```python
 plt.figure(figsize=(10,8))
-for i in range(0,P.shape[1]):
+for i in range(0,len(result.expect)):
     plt.plot(times, result.expect[i][:], label=f"{ket_labels[i]}")
 plt.ylabel("Probability")
 plt.xlabel("Time")
