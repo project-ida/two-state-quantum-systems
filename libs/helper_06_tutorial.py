@@ -82,7 +82,7 @@ def simulate(H, psi0, times):
     """
     Solves the time independent Schrödinger equation
     
-    See https://nbviewer.jupyter.org/github/project-ida/two-state-quantum-systems/blob/master/04-spin-boson-model.ipynb#4.5---Down-conversion for where this function was first created
+    See https://nbviewer.jupyter.org/github/project-ida/two-state-quantum-systems/blob/master/05-excitation-transfer.ipynb for where this function was first created
     
     Parameters
     ----------
@@ -93,30 +93,32 @@ def simulate(H, psi0, times):
     
     Returns
     -------
-    P   : numpy array [i,j], Basis state (denoted by i) occupation probabilities at each time j
-    psi : numpy array [i,j], Basis state (denoted by i) values at each time j
+    P   : numpy array [i,j], Basis state (denoted by j) occupation probabilities at each time i
+    psi : numpy array [i,j], Basis state (denoted by j) values at each time i
     
     Examples
     --------
     >>> P, psi = simulate(sigmaz() + sigmax(), basis(2, 0),  np.linspace(0.0, 20.0, 1000) )
     
     """
-    num_states = H.shape[0]
-    
-    # create placeholder for values of amplitudes for different states
-    psi = np.zeros([num_states,times.size], dtype="complex128")
-     # create placeholder for values of occupation probabilities for different states
-    P = np.zeros([num_states,times.size], dtype="complex128")
-    
-    evals, ekets = H.eigenstates()
-    psi0_in_H_basis = psi0.transform(ekets)
 
-    for k in range(0,num_states):
-        amp = 0
-        for i in range(0,num_states):
-            amp +=  psi0_in_H_basis[i][0][0]*np.exp(-1j*evals[i]*times)*ekets[i][k][0][0]
-        psi[k,:] = amp
-        P[k,:] = amp*np.conj(amp)
+    num_states = H.shape[0]
+
+    # Initialize the psi matrix
+    psi = np.zeros((num_states, len(times)), dtype=complex)
+    evals, ekets = H.eigenstates()
+    psi0_in_H_basis = psi0.transform(ekets)  
+
+    # Pre-compute the exponential factor outside the loop for all evals and times
+    exp_factors = np.exp(-1j * np.outer(evals, times))
+
+    # Vectorised computation for each eigenstate's contribution
+    for i, e in enumerate(ekets):
+        psi += np.outer(psi0_in_H_basis[i] * e.full(), exp_factors[i, :])
+    
+    # Compute probabilities from psi
+    P = np.abs(psi)**2
+
     return P, psi
 
 
