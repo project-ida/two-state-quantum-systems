@@ -179,23 +179,3 @@ def plot_sim(times, P, labels=None, ylabel="Probability", xlabel="Time", legend=
     ax.legend(loc=legend)
     
     return
-
-def expectation(operator, states):
-    """
-    Calculates the expectation of an operator given a array of states
-    
-    
-    Parameters
-    ----------
-    operator      :  QuTiP operator
-    states        :  2D numpy array, get this from output of the simulate function
-
-    
-    """
-    
-    operator_matrix = operator.full()
-    operator_expect = []
-    for i in range(0,shape(states)[1]):
-        e = np.conj(states[:,i])@ (operator_matrix @ states[:,i])
-        operator_expect.append(e)
-    return operator_expect
