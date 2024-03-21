@@ -93,8 +93,8 @@ def simulate(H, psi0, times):
     
     Returns
     -------
-    P   : numpy array [i,j], Basis state (denoted by j) occupation probabilities at each time i
-    psi : numpy array [i,j], Basis state (denoted by j) values at each time i
+    P   : numpy array [i,j], Basis state (denoted by i) occupation probabilities at each time j
+    psi : numpy array [i,j], Basis state (denoted by i) values at each time j
     
     Examples
     --------
