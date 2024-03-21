@@ -6,7 +6,7 @@ jupyter:
       extension: .md
       format_name: markdown
       format_version: '1.3'
-      jupytext_version: 1.14.7
+      jupytext_version: 1.15.1
   kernelspec:
     display_name: Python 3 (ipykernel)
     language: python
@@ -581,36 +581,16 @@ To create the Hamiltonian corresponding to the anti-crossing we saw in Fig 3 we 
 H =  2.88*two_state + 1*bosons + 0.2*interaction
 ```
 
-In previous tutorials we have been using QuTiP's [`sesolve`](http://qutip.org/docs/latest/apidoc/functions.html#module-qutip.sesolve) to solve the Schrödinger equation. This was convenient for us when we were getting started - we only needed a single line of code to run the simulation. It was especially useful when we introduced a time dependent perturbation to our TSS Hamiltonian in [Tutorial 2](https://nbviewer.jupyter.org/github/project-ida/two-state-quantum-systems/blob/master/02-perturbing-a-two-state-system.ipynb#2.2-Time-dependent-perturbation). However, `sesolve` will cause us problems as we increase the number of bosons that we want to simulate - the simulation will take too long to run.
+In the previous tutorials, we used [`sesolve`](http://qutip.org/docs/latest/apidoc/functions.html#module-qutip.sesolve) to solve the Schrödinger equation. The default output is not probabilities but instead a list of state vectors $\left[\Psi_{t0}, \Psi_{t1}, \Psi_{t2}, ... \right]$ that must be turned into probabilities as a separate step. This has been fine for us so far, but it would be nice to be able to deal with just the probabilities.
 
-Technically, we don't actually need a special solver like `sesolve` when dealing with time-independent problems (like ours). The business of solving the Schrödinger equation can be reduced to a problem of finding the eigenvalues and eigenvectors of the Hamiltonian.
+It turns out that there is a way to get sesolve to output the probabilities for us using the [`e_ops`](https://qutip.org/docs/latest/apidoc/functions.html?highlight=sesolve#module-qutip.sesolve) parameter. It accepts a list of operators and sesolve then returns the expectation value of those operators over time.
 
-We'll not go into the details of how this works right now - head over to the appendix for that. For now, we'll just use the results to run some simulations.
-
-```python
-def simulate(H, psi0, times):
-    num_states = H.shape[0]
-    
-    # create placeholder for values of amplitudes for different states
-    psi = np.zeros([num_states,times.size], dtype="complex128")
-     # create placeholder for values of occupation probabilities for different states
-    P = np.zeros([num_states,times.size], dtype="complex128")
-    
-    evals, ekets = H.eigenstates()
-    psi0_in_H_basis = psi0.transform(ekets)
-
-    for k in range(0,num_states):
-        amp = 0
-        for i in range(0,num_states):
-            amp +=  psi0_in_H_basis[i][0][0]*np.exp(-1j*evals[i]*times)*ekets[i][k][0][0]
-        psi[k,:] = amp
-        P[k,:] = amp*np.conj(amp)
-    return P, psi
-```
+If we call $|i \rangle$ the i'th basis state, then the expectation value of the `projection operator` $|i\rangle \langle i|$ gives us the probability for the system to be found in the i'th basis state.
 
 ```python
 times = np.linspace(0.0, 1000.0, 1000)
-P, psi = simulate(H, psi0, times)
+projection_operators = [basis(len(nm_list), i) * basis(len(nm_list), i).dag() for i in range(len(nm_list))]
+result = sesolve(H, psi0, times, e_ops=projection_operators)
 ```
 
 Before we make the plots, we must remember to regenerate the state labels.
@@ -621,8 +601,8 @@ bra_labels, ket_labels = make_braket_labels(nm_list)
 
 ```python
 plt.figure(figsize=(10,8))
-for i in range(0,P.shape[0]):
-    plt.plot(times, P[i,:], label=f"{ket_labels[i]}")
+for i in range(0,P.shape[1]):
+    plt.plot(times, result.expect[i][:], label=f"{ket_labels[i]}")
 plt.ylabel("Probability")
 plt.xlabel("Time")
 plt.legend(loc="right")
@@ -633,42 +613,20 @@ plt.show();
 Fig 12 shows us that our ideas were correct - the system starts off with no bosons and, over time, transitions to a state with 3 bosons at the expense of the TSS energy. We can see this energy exchange explicitly by evaluating the expectation values of the various parts of the Hamiltonian.
 
 
-QuTiP does allow us to do this using the [`expect`](http://qutip.org/docs/latest/guide/guide-states.html#expectation-values) function. However, it turns out that we need to create a `Qobj` for every time step in order to use this function and that can be very slow. We will instead directly calculate the expectation value using matrix multiplication, i.e.
-
-
-
-$<H> = \psi^{\dagger}H\psi = \psi^{\dagger} @ (H @\psi) $
-
-Where @ is the matrix multiplication operator and $\dagger$ in this context means taking the complex conjugate.
-
-
-Let's automate this process for all time steps using a function.
+The easiest way for is to generate the expectation values over time is just to re-run sesolve with the Hamiltonian operators for `e_ops` instead of the projection operators.
 
 ```python
-def expectation(operator, states):
-    operator_matrix = operator.full()
-    operator_expect = []
-    for i in range(0,shape(states)[1]):
-        e = np.conj(states[:,i])@ (operator_matrix @ states[:,i])
-        operator_expect.append(e)
-    return operator_expect
+result = sesolve(H, psi0, times, e_ops=[H, 2.88*two_state, 1*bosons, 0.2*interaction ])
 ```
 
 We can now see how the different parts of the Hamiltonian change over time:
 
 ```python
-hamiltonian_expect = expectation(H,psi)
-two_state_expect = expectation(2.88*two_state,psi)
-bosons_expect = expectation(1*bosons,psi)
-interaction_expect = expectation(0.2*interaction,psi)
-```
-
-```python
 plt.figure(figsize=(10,8))
-plt.plot(times, hamiltonian_expect, label="$H$ - Total Hamiltonian")
-plt.plot(times, two_state_expect, label="$(\Delta E/2) \sigma_z$ - TSS")
-plt.plot(times, bosons_expect, label="$\hbar\omega(a^{{\dagger}}a +1/2)$ - bosons")
-plt.plot(times, interaction_expect, label="$U( a^{{\dagger}} + a )\sigma_x$ - interaction")
+plt.plot(times, result.expect[0], label="$H$ - Total Hamiltonian")
+plt.plot(times, result.expect[1], label="$(\Delta E/2) \sigma_z$ - TSS")
+plt.plot(times, result.expect[2], label="$\hbar\omega(a^{{\dagger}}a +1/2)$ - bosons")
+plt.plot(times, result.expect[3], label="$U( a^{{\dagger}} + a )\sigma_x$ - interaction")
 
 plt.ylabel("Energy")
 plt.xlabel("Time")
@@ -684,126 +642,3 @@ In Fig 13 we can indeed see the energy exchange that we expect between the TSS a
 
 We've discovered the surprising new physics of down conversion by exploring the energy levels of the spin boson system. This is just the tip of the ice berg though. How strong do these resonances get as we increase the boson number? How sensitive are the resonances compared to each other? We'll explore that and more in future tutorials. Before we dig into those details, let's see what delights await us when we add another two state system into the mix.
 
-
-
----
-
-
-## Appendix - Solving the Schrödinger equation
-
-
-To illustrate how we solve the Schrödinger equation using the function `simulate`, we will go through an example using the set-up of down conversion in Section 4.5.
-
-```python
-# Create the operators and state list for even parity universe
-two_state, bosons, interaction, number, nm_list = make_operators(max_bosons=4, parity=1)
-
-# Create the Hamiltonian corresponding to the anti-crossing we saw in Fig 3
-H =  2.88*two_state + 1*bosons + 0.2*interaction
-```
-
-```python
-psi0 = basis(len(nm_list), 0)
-```
-
-We have said that
-> the business of solving the Schrödinger equation can be reduced to a problem of finding the eigenvalues and eigenvectors of the Hamiltonian
-
-What do we mean by this? Let's see how it works and then go through an example:
-
-1. Transform initial state $\psi_0$ into a new basis defined by the eigenvectors (aka eigenkets) of the Hamiltonian i.e. the states of constant energy (represented here by $|i>$)
-  - $\psi_0 = \underset{i}{\Sigma}   <i|\psi_0> |i>$
-  -  $<i|\psi_0> = $ `psi0.transform(ekets)[i]`
-2. Evolve each part of the state according to its eigenfrequency (aka eigenvalues) $\omega_i$
-  - $\psi (t)= \underset{i}{\Sigma}  <i|\psi_0> e^{-i\omega_i t}\ |i>$
-  - $\omega_i =$ `evals[i]`
-3. Transform the evolved state back into the basis we started with (represented here by $|k>$)
-  - $\psi (t)= \underset{i,k}{\Sigma}  <i|\psi_0> e^{-i\omega_i t}\ <k|i>|k>$
-  - $<k|i> = $ `ekets[i][k]`
-
-
-Let's try it out.
-
-**Step 1**:
-
-```python
-evals, ekets = H.eigenstates()
-psi0_in_H_basis = psi0.transform(ekets)
-```
-
-```python
-psi0_in_H_basis
-```
-
-This way of representing $\psi_0$ shows us that at the anti-crossing $|0,+>$ is mainly a mixture of the 1st and 2nd energy states. QuTiP has a convenient way of visualising the probabilities associated with such a state using [`plot_fock_distribution`](http://qutip.org/docs/latest/apidoc/functions.html?highlight=plot_fock_distribution#qutip.visualization.plot_fock_distribution)
-
-```python
-plot_fock_distribution(psi0_in_H_basis, title=f" |0,+> in constant energy basis     (Fig 14)")
-plt.xlim(-1,10);
-```
-
-Continuing to follow the procedure, we have:
-
-$\psi_0 = \underset{i}{\Sigma}  <i|\psi_0> |i> \\
-\ \ \ \ = -0.103 |0> + 0.697 |1> + 0.709 |2> +...$
-
-**Step 2:**
-
-The frequencies are given by the eigenvalues of the Hamiltonian:
-
-```python
-evals
-```
-
-and so the evolved state becomes:
-
-$\psi (t)= \underset{i}{\Sigma}  <i|\psi_0> e^{-i\omega_i t}\ |i> \\
-\ \ \ \ =  -0.103 e^{-i 0.018t}|0> + 0.697 e^{-i 1.96t}|1> +0.709 e^{-i 1.96t} |2> +...$
-
-
-**Step 3:**
-
-Taking only the $|1>$ part form step 2 above for the sake of brevity, we only need to look at `ekets[1]`
-
-```python
-ekets[1]
-```
-
-Then:
-
-$0.697 e^{-i 1.96t}|1> \rightarrow 0.697 e^{-i 1.96t}0.697|0'> + 0.697 e^{-i 1.96t}0.054|1'> + 0.697 e^{-i 1.96t}(-0.130)|2'> + 0.697 e^{-i 1.96t}0.699|3'> +...$
-
-where the prime in $|n'>$ indicates the original basis and not the energy basis. We can re-label these states to be the more familiar $|n,\pm>$ using the list we made earlier:
-
-```python
-nm_list
-```
-
-and so we have:
-
-$0.697 e^{-i 1.96t}|1> \rightarrow 0.697 e^{-i 1.96t}0.697|0,+> + 0.697 e^{-i 1.96t}0.054|1,-> + 0.697 e^{-i 1.96t}(-0.130)|2,+> + 0.697 e^{-i 1.96t}0.699|3,-> +...$
-
-<!-- #region -->
-All of the above can be automated by the function below. We have labeled the steps to hopefully make it easier to understand.
-
-```python
-def simulate(H, psi0, times):
-    num_states = H.shape[0]
-    
-    psi = np.zeros([num_states,times.size], dtype="complex128")
-    P = np.zeros([num_states,times.size], dtype="complex128")
-    
-    # STEP 1
-    evals, ekets = H.eigenstates()
-    psi0_in_H_basis = psi0.transform(ekets)
-
-    for k in range(0,num_states):
-        amp = 0
-        for i in range(0,num_states):
-            #                                         STEP 2               STEP 3
-            amp +=  psi0_in_H_basis[i][0][0]*np.exp(-1j*evals[i]*times)*ekets[i][k][0][0]
-        psi[k,:] = amp
-        P[k,:] = amp*np.conj(amp)
-    return P, psi
-```
-<!-- #endregion -->
