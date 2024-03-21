@@ -168,7 +168,8 @@ for i, N in enumerate(Ns):
 
     psi0, psi0_ind = create_single_excitation_psi0(nm_list,0)
 
-    # We are using custom simulate function from last tutorial. These are quicker than QuTips solvers for our specific purpose
+    # We are using custom simulate function from last tutorial because it's going to be quicker
+    # in this case because of the long simulation times
     P, psi = simulate(H, psi0, times)
 
     # find_peaks from SciPy helps us find peaks. 
