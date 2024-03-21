@@ -77,48 +77,6 @@ def make_braket_labels(list_of_states):
 
 
 
-def simulate(H, psi0, times):
-    """
-    Solves the time independent Schrödinger equation
-    
-    See https://nbviewer.jupyter.org/github/project-ida/two-state-quantum-systems/blob/master/04-spin-boson-model.ipynb#4.5---Down-conversion for where this function was first created
-    
-    Parameters
-    ----------
-    H     :  QuTiP object, Hamiltonian for the system you want to simulate
-    psi0  :  QuTiP object, Initial state of the system
-    times :  1D numpy array, Times to evaluate the state of the system (best to use use np.linspace to make this) 
-
-    
-    Returns
-    -------
-    P   : numpy array [i,j], Basis state (denoted by i) occupation probabilities at each time j
-    psi : numpy array [i,j], Basis state (denoted by i) values at each time j
-    
-    Examples
-    --------
-    >>> P, psi = simulate(sigmaz() + sigmax(), basis(2, 0),  np.linspace(0.0, 20.0, 1000) )
-    
-    """
-    num_states = H.shape[0]
-    
-    # create placeholder for values of amplitudes for different states
-    psi = np.zeros([num_states,times.size], dtype="complex128")
-     # create placeholder for values of occupation probabilities for different states
-    P = np.zeros([num_states,times.size], dtype="complex128")
-    
-    evals, ekets = H.eigenstates()
-    psi0_in_H_basis = psi0.transform(ekets)
-
-    for k in range(0,num_states):
-        amp = 0
-        for i in range(0,num_states):
-            amp +=  psi0_in_H_basis[i][0][0]*np.exp(-1j*evals[i]*times)*ekets[i][k][0][0]
-        psi[k,:] = amp
-        P[k,:] = amp*np.conj(amp)
-    return P, psi
-
-
 def prettify_states(states, mm_list=None):
     """
     Takes an array of QuTiP states and returns a pandas dataframe that makes it easier to compare the states side by side 
@@ -148,16 +106,16 @@ def prettify_states(states, mm_list=None):
     return df
 
 
-def plot_prob(P, times, labels=None):
+def plot_sim(times, P, labels=None, ylabel="Probability", xlabel="Time", legend="right"):
     """
-    Plots the basis state occupation probabilities that come out of the simulate function
+    Plots simulation results over time
     
     
     Parameters
     ----------
-    P      :  2D numpy array, get this from output of the simulate function
-    times  :  1D numpy array, same time array as used for input of the simulate function
-    labels :  List of strings, labels for each basis state, used for the plot legend, best to use make_braket_labels to make this
+    P      :  List containing ket vectors of 1D numpy arrays. Or a 2D numpy array. P[i][j], i represents things to plot, j represents time
+    times  :  1D numpy array
+    labels :  List of strings, labels to be used for the plot legend
 
     
     """
@@ -165,14 +123,14 @@ def plot_prob(P, times, labels=None):
     ax = f.add_subplot(1, 1, 1)
     
     if (labels == None):
-        for i in range(0,P.shape[0]):
-            ax.plot(times, P[i,:], label=f"{i}")
+        for i in range(0,len(P)):
+            ax.plot(times, P[i][:], label=f"{i}")
     else:
-        for i in range(0,P.shape[0]):
-            ax.plot(times, P[i,:], label=f"{labels[i]}")
+        for i in range(0,len(P)):
+            ax.plot(times, P[i][:], label=f"{labels[i]}")
             
-    ax.set_ylabel("Probability")
-    ax.set_xlabel("Time")
-    ax.legend(loc="right")
+    ax.set_ylabel(xlabel)
+    ax.set_xlabel(ylabel)
+    ax.legend(loc=legend)
     
     return

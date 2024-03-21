@@ -53,8 +53,7 @@ from scipy.optimize import minimize_scalar
 # The helper file below brings functions created in previous tutorials and adds an extra one
 # make_df_for_energy_scan - we made this in tutorial 4
 # make_braket_labels - we made this in tutorial 4
-# simulate - we made this in tutorial 4
-# plot_prob - made from code used for plotting in tutorial 4
+# plot_sim - made from code used for plotting in tutorial 4
 # prettify_states - nice way to display many QuTiP states for side by side comparison
 # 
 from libs.helper_05_tutorial import *
@@ -492,6 +491,36 @@ psi0 = basis(len(nmm_list), 0)
 
 Now we are ready to simulate
 
+
+In previous tutorials we have been using QuTiP's [`sesolve`](http://qutip.org/docs/latest/apidoc/functions.html#module-qutip.sesolve) to solve the Schrödinger equation. This was convenient for us when we were getting started - we only needed a single line of code to run the simulation. It was especially useful when we introduced a time dependent perturbation to our TSS Hamiltonian in [Tutorial 2](https://nbviewer.jupyter.org/github/project-ida/two-state-quantum-systems/blob/master/02-perturbing-a-two-state-system.ipynb#2.2-Time-dependent-perturbation). However, sesolve will cause us problems as we simulate physics over longer and longer timescales. This is because QuTiP's sesolve is numerically solving a differential equation and so has specific time-step requirements that are prohibitive for long simulation times.
+
+Technically, we don't actually need a special solver like sesolve when dealing with time-independent problems (like ours). The business of solving the Schrödinger equation can be reduced to a problem of finding the eigenvalues and eigenvectors of the Hamiltonian. In other words, we can construct an analytical solution. 
+
+We'll not go into the details of how this works right now - head over to the appendix for that. For now, we'll just use the results to run some simulations.
+
+
+```python
+def simulate(H, psi0, times):
+    num_states = H.shape[0]
+
+    # Initialize the psi matrix
+    psi = np.zeros((num_states, len(times)), dtype=complex)
+    evals, ekets = H.eigenstates()
+    psi0_in_H_basis = psi0.transform(ekets)  
+
+    # Pre-compute the exponential factor outside the loop for all evals and times
+    exp_factors = np.exp(-1j * np.outer(evals, times))
+
+    # Vectorised computation for each eigenstate's contribution
+    for i, e in enumerate(ekets):
+        psi += np.outer(psi0_in_H_basis[i] * e.full(), exp_factors[i, :])
+    
+    # Compute probabilities from psi
+    P = np.abs(psi)**2
+
+    return P, psi
+```
+
 ```python
 times = np.linspace(0.0, 100000.0, 10000)
 P, psi = simulate(H, psi0, times)
@@ -503,10 +532,10 @@ We need to recreate the bra-ket labels because we are now only working with even
 bra_labels, ket_labels = make_braket_labels(nmm_list)
 ```
 
-Now let's plot the results using a helper function `plot_prob` that pulls together plotting code that we used in the last tutorial.
+Now let's plot the results using a helper function `plot_sim` that pulls together plotting code that we used in the last tutorial.
 
 ```python
-plot_prob(P, times, ket_labels)
+plot_sim(times, P, ket_labels)
 plt.title(f"2 TSS with {H_latex}  ($\Delta E \\approx 1.9328$, $\omega=1$, $U=0.1$)   (Fig 8)");
 ```
 
@@ -681,7 +710,7 @@ P, psi = simulate(H, psi0, times)
 
 ```python
 bra_labels, ket_labels = make_braket_labels(nmm_list)
-plot_prob(P ,times, ket_labels)
+plot_sim(times, P, ket_labels)
 plt.title(f"2 TSS with {H_latex}  ($\Delta E = 1$, $\omega=1$, $U=0.01$, N=2)   (Fig 10)");
 ```
 
@@ -723,7 +752,7 @@ P, psi = simulate(H, psi0, times)
 ```
 
 ```python
-plot_prob(P ,times, ket_labels)
+plot_sim(times, P, ket_labels)
 plt.title(f"2 TSS with {H_latex}  ($\Delta E = 2.5$, $\omega=1$, $U=0.01$, N=2)   (Fig 11)");
 ```
 
@@ -771,6 +800,128 @@ As always, this is only the beginning. There are so many more questions to ask, 
 - ...
 
 Until next time 👋
+
+
+---
+
+
+## Appendix - Solving the Schrödinger equation
+
+To illustrate how we can construct an analytical solution to the the Schrödinger equation using the function `simulate`, we'll go through an example using non-radiative excitation transfer.
+
+```python
+# Create the operators and state list for even parity universe
+two_state, bosons, interaction, number, nmm_list, J2 = make_operators(max_bosons=6, parity=1)
+
+# Create the Hamiltonian corresponding to non-radiative excitation transfer in Fig 11
+H = 2.5*two_state + 1*bosons + 0.01*interaction
+```
+
+```python
+psi0 = basis(len(nmm_list), 2)
+```
+
+We have said that
+> the business of solving the Schrödinger equation can be reduced to a problem of finding the eigenvalues and eigenvectors of the Hamiltonian
+
+What do we mean by this? Let's see how it works and then go through an example:
+
+1. Transform initial state $\psi_0$ into a new basis defined by the eigenvectors (aka eigenkets) of the Hamiltonian i.e. the states of constant energy (represented here by $|i>$)
+  - $\psi_0 = \underset{i}{\Sigma}   <i|\psi_0> |i>$
+  -  $<i|\psi_0> = $ `psi0.transform(ekets)[i]`
+2. Evolve each part of the state according to its eigenfrequency (aka eigenvalues) $\omega_i$
+  - $\psi (t)= \underset{i}{\Sigma}  <i|\psi_0> e^{-i\omega_i t}\ |i>$
+  - $\omega_i =$ `evals[i]`
+3. Transform the evolved state back into the basis we started with (represented here by $|k>$)
+  - $\psi (t)= \underset{i,k}{\Sigma}  <i|\psi_0> e^{-i\omega_i t}\ <k|i>|k>$
+  - $<k|i> = $ `ekets[i][k]`
+
+
+Let's try it out.
+
+**Step 1**:
+
+```python
+evals, ekets = H.eigenstates()
+psi0_in_H_basis = psi0.transform(ekets)
+```
+
+```python
+psi0_in_H_basis
+```
+
+This way of representing $\psi_0$ shows us that at the anti-crossing $|1,+,->$ is mainly a mixture of the 2nd and 3rd energy states. We already saw this visually with the fock distribution plot in Fig 12.
+
+
+Continuing to follow the procedure, we have:
+
+$\psi_0 = \underset{i}{\Sigma}  <i|\psi_0> |i> \\
+\ \ \ \ = -0.003 |0> - 0.009 |1> + 0.707 |2> + 0.707 |3> + ...$
+
+**Step 2:**
+
+The frequencies are given by the eigenvalues of the Hamiltonian:
+
+```python
+evals
+```
+
+and so the evolved state becomes:
+
+$\psi (t)= \underset{i}{\Sigma}  <i|\psi_0> e^{-i\omega_i t}\ |i> \\
+\ \ \ \ =  -0.003 e^{i 2.00t}|0> -0.009 e^{i 4.38t}|1> +0.707 e^{-i 1.50t} |2> +0.707 e^{-i 1.50t} |3>+......$
+
+
+**Step 3:**
+
+Taking only the $|2>$ part form step 2 above for the sake of brevity, we only need to look at `ekets[2]`
+
+```python
+ekets[2]
+```
+
+Then:
+
+$0.707 e^{-i 1.50t}|2> \rightarrow 0.707 e^{-i 1.50t}0.707|2'> - 0.707 e^{-i 1.50t}0.707|3'>$
+
+where the prime in $|n'>$ indicates the original basis and not the energy basis. We can re-label these states to be the more familiar $|n,\pm,\pm>$ using the list we made earlier:
+
+```python
+nmm_list
+```
+
+and so we have:
+
+$0.707 e^{-i 1.50t}|2> \rightarrow 0.707 e^{-i 1.50t}0.707|1,+,-> - 0.707 e^{-i 1.50t}0.707|1,-,+>$
+
+<!-- #region -->
+All of the above can be automated by the function below. We have labeled the steps to hopefully make it easier to understand. It should be noted that the use of `np.outer` to "vectorise" the computation gives us a 10x speedup over using a conceptually simpler loop. That is to say that I appreciate that the code might be a bit harder to understand, but this optimisation will become essential soon.
+```python
+def simulate(H, psi0, times):
+    num_states = H.shape[0]
+
+    # Initialize the psi matrix
+    psi = np.zeros((num_states, len(times)), dtype=complex)
+
+    # STEP 1
+    evals, ekets = H.eigenstates()
+    psi0_in_H_basis = psi0.transform(ekets)  
+
+    # STEP 2
+    # Pre-compute the exponential factor outside the loop for all evals and times
+    exp_factors = np.exp(-1j * np.outer(evals, times))
+
+    # Vectorised computation for each eigenstate's contribution
+    for i, e in enumerate(ekets):
+                                             # STEP 3
+        psi += np.outer(psi0_in_H_basis[i] * e.full(), exp_factors[i, :])
+    
+    # Compute probabilities from psi
+    P = np.abs(psi)**2
+
+    return P, psi
+```
+<!-- #endregion -->
 
 ```python
 
