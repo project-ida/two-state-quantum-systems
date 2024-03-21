@@ -106,16 +106,16 @@ def prettify_states(states, mm_list=None):
     return df
 
 
-def plot_prob(P, times, labels=None):
+def plot_sim(times, P, labels=None, ylabel="Probability", xlabel="Time", legend="right"):
     """
-    Plots the basis state occupation probabilities that come out of the simulate function
+    Plots simulation results over time
     
     
     Parameters
     ----------
-    P      :  2D numpy array, get this from output of the simulate function
-    times  :  1D numpy array, same time array as used for input of the simulate function
-    labels :  List of strings, labels for each basis state, used for the plot legend, best to use make_braket_labels to make this
+    P      :  List containing ket vectors of 1D numpy arrays
+    times  :  1D numpy array
+    labels :  List of strings, labels to be used for the plot legend
 
     
     """
@@ -123,14 +123,14 @@ def plot_prob(P, times, labels=None):
     ax = f.add_subplot(1, 1, 1)
     
     if (labels == None):
-        for i in range(0,P.shape[0]):
-            ax.plot(times, P[i,:], label=f"{i}")
+        for i in range(0,len(P)):
+            ax.plot(times, P[i][:], label=f"{i}")
     else:
-        for i in range(0,P.shape[0]):
-            ax.plot(times, P[i,:], label=f"{labels[i]}")
+        for i in range(0,len(P)):
+            ax.plot(times, P[i][:], label=f"{labels[i]}")
             
-    ax.set_ylabel("Probability")
-    ax.set_xlabel("Time")
-    ax.legend(loc="right")
+    ax.set_ylabel(xlabel)
+    ax.set_xlabel(ylabel)
+    ax.legend(loc=legend)
     
     return
