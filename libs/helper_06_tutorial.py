@@ -158,7 +158,7 @@ def plot_sim(times, P, labels=None, ylabel="Probability", xlabel="Time", legend=
     
     Parameters
     ----------
-    P      :  List containing ket vectors of 1D numpy arrays
+    P      :  List containing ket vectors of 1D numpy arrays. Or a 2D numpy array. P[i][j], i represents things to plot, j represents time
     times  :  1D numpy array
     labels :  List of strings, labels to be used for the plot legend
 
