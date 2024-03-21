@@ -53,7 +53,7 @@ from scipy.optimize import minimize_scalar
 # The helper file below brings functions created in previous tutorials and adds an extra one
 # make_df_for_energy_scan - we made this in tutorial 4
 # make_braket_labels - we made this in tutorial 4
-# plot_prob - made from code used for plotting in tutorial 4
+# plot_sim - made from code used for plotting in tutorial 4
 # prettify_states - nice way to display many QuTiP states for side by side comparison
 # 
 from libs.helper_05_tutorial import *
@@ -532,10 +532,10 @@ We need to recreate the bra-ket labels because we are now only working with even
 bra_labels, ket_labels = make_braket_labels(nmm_list)
 ```
 
-Now let's plot the results using a helper function `plot_prob` that pulls together plotting code that we used in the last tutorial.
+Now let's plot the results using a helper function `plot_sim` that pulls together plotting code that we used in the last tutorial.
 
 ```python
-plot_prob(P, times, ket_labels)
+plot_sim(times, P, ket_labels)
 plt.title(f"2 TSS with {H_latex}  ($\Delta E \\approx 1.9328$, $\omega=1$, $U=0.1$)   (Fig 8)");
 ```
 
@@ -710,7 +710,7 @@ P, psi = simulate(H, psi0, times)
 
 ```python
 bra_labels, ket_labels = make_braket_labels(nmm_list)
-plot_prob(P ,times, ket_labels)
+plot_sim(times, P, ket_labels)
 plt.title(f"2 TSS with {H_latex}  ($\Delta E = 1$, $\omega=1$, $U=0.01$, N=2)   (Fig 10)");
 ```
 
@@ -752,7 +752,7 @@ P, psi = simulate(H, psi0, times)
 ```
 
 ```python
-plot_prob(P ,times, ket_labels)
+plot_sim(times, P, ket_labels)
 plt.title(f"2 TSS with {H_latex}  ($\Delta E = 2.5$, $\omega=1$, $U=0.01$, N=2)   (Fig 11)");
 ```
 
