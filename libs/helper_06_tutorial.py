@@ -82,7 +82,7 @@ def simulate(H, psi0, times):
     """
     Solves the time independent Schrödinger equation
     
-    See https://nbviewer.jupyter.org/github/project-ida/two-state-quantum-systems/blob/master/04-spin-boson-model.ipynb#4.5---Down-conversion for where this function was first created
+    See https://nbviewer.jupyter.org/github/project-ida/two-state-quantum-systems/blob/master/05-excitation-transfer.ipynb for where this function was first created
     
     Parameters
     ----------
@@ -101,22 +101,24 @@ def simulate(H, psi0, times):
     >>> P, psi = simulate(sigmaz() + sigmax(), basis(2, 0),  np.linspace(0.0, 20.0, 1000) )
     
     """
-    num_states = H.shape[0]
-    
-    # create placeholder for values of amplitudes for different states
-    psi = np.zeros([num_states,times.size], dtype="complex128")
-     # create placeholder for values of occupation probabilities for different states
-    P = np.zeros([num_states,times.size], dtype="complex128")
-    
-    evals, ekets = H.eigenstates()
-    psi0_in_H_basis = psi0.transform(ekets)
 
-    for k in range(0,num_states):
-        amp = 0
-        for i in range(0,num_states):
-            amp +=  psi0_in_H_basis[i][0][0]*np.exp(-1j*evals[i]*times)*ekets[i][k][0][0]
-        psi[k,:] = amp
-        P[k,:] = amp*np.conj(amp)
+    num_states = H.shape[0]
+
+    # Initialize the psi matrix
+    psi = np.zeros((num_states, len(times)), dtype=complex)
+    evals, ekets = H.eigenstates()
+    psi0_in_H_basis = psi0.transform(ekets)  
+
+    # Pre-compute the exponential factor outside the loop for all evals and times
+    exp_factors = np.exp(-1j * np.outer(evals, times))
+
+    # Vectorised computation for each eigenstate's contribution
+    for i, e in enumerate(ekets):
+        psi += np.outer(psi0_in_H_basis[i] * e.full(), exp_factors[i, :])
+    
+    # Compute probabilities from psi
+    P = np.abs(psi)**2
+
     return P, psi
 
 
@@ -149,60 +151,31 @@ def prettify_states(states, mm_list=None):
     return df
 
 
-def plot_prob(P, times, labels=None):
+def plot_sim(times, P, labels=None, ylabel="Probability", xlabel="Time", legend="right"):
     """
-    Plots the basis state occupation probabilities that come out of the simulate function
+    Plots simulation results over time
     
     
     Parameters
     ----------
-    P      :  2D numpy array, get this from output of the simulate function
-    times  :  1D numpy array, same time array as used for input of the simulate function
-    labels :  List of strings, labels for each basis state, used for the plot legend, best to use make_braket_labels to make this
+    P      :  List containing ket vectors of 1D numpy arrays. Or a 2D numpy array. P[i][j], i represents things to plot, j represents time
+    times  :  1D numpy array
+    labels :  List of strings, labels to be used for the plot legend
 
     
     """
     f = plt.figure(figsize=(10,8))
     ax = f.add_subplot(1, 1, 1)
-
-    # NUM_COLORS = len(P)
-    # cm = plt.get_cmap('gist_rainbow')
-    # ax.set_prop_cycle(color=[cm(1.*i/NUM_COLORS) for i in range(NUM_COLORS)])
-
-    line_styles = ['-', '--', '-.', ':']
-
     
     if (labels == None):
-        for i in range(0,P.shape[0]):
-            current_line_style = line_styles[i % len(line_styles)]
-            ax.plot(times, P[i,:], label=f"{i}",linestyle=current_line_style)
+        for i in range(0,len(P)):
+            ax.plot(times, P[i][:], label=f"{i}")
     else:
-        for i in range(0,P.shape[0]):
-            current_line_style = line_styles[i % len(line_styles)]
-            ax.plot(times, P[i,:], label=f"{labels[i]}",linestyle=current_line_style)
+        for i in range(0,len(P)):
+            ax.plot(times, P[i][:], label=f"{labels[i]}")
             
-    ax.set_ylabel("Probability")
-    ax.set_xlabel("Time")
-    ax.legend(loc="right")
+    ax.set_ylabel(xlabel)
+    ax.set_xlabel(ylabel)
+    ax.legend(loc=legend)
     
     return
-
-def expectation(operator, states):
-    """
-    Calculates the expectation of an operator given a array of states
-    
-    
-    Parameters
-    ----------
-    operator      :  QuTiP operator
-    states        :  2D numpy array, get this from output of the simulate function
-
-    
-    """
-    
-    operator_matrix = operator.full()
-    operator_expect = []
-    for i in range(0,shape(states)[1]):
-        e = np.conj(states[:,i])@ (operator_matrix @ states[:,i])
-        operator_expect.append(e)
-    return operator_expect
