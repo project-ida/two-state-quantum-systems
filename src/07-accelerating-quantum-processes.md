@@ -693,6 +693,300 @@ Now that we've seen what acceleration factors are possible for spontaneous emiss
 
 ## Supertransfer
 
+
+**Simulations below showing N^2 for 1 excitation and N exciations. They show N^3 for N/2 excitations. Just need to add narrative for this.**
+
+```python
+def make_operators_AB(max_bosons=2, parity=0, num_TLS_A=1, num_TLS_B=1):
+
+    jmax_A = num_TLS_A/2              # max j gives us Dicke states
+    jmax_B = num_TLS_B/2              # max j gives us Dicke states
+    
+    J_A     = jmat(jmax_A)
+    J_B     = jmat(jmax_B)
+    Jx_A    = tensor(qeye(max_bosons+1), J_A[0], qeye(J_B[0].dims[0][0]))                                     # tensorised Jx operator
+    Jz_A    = tensor(qeye(max_bosons+1), J_A[2], qeye(J_B[0].dims[0][0]))                                     # tensorised Jz operator
+    Jx_B    = tensor(qeye(max_bosons+1), qeye(J_A[0].dims[0][0]), J_B[0])                                     # tensorised Jx operator
+    Jz_B    = tensor(qeye(max_bosons+1), qeye(J_A[0].dims[0][0]), J_B[2])                                     # tensorised Jz operator
+    a       = tensor(destroy(max_bosons+1), qeye(J_A[0].dims[0][0]), qeye(J_B[0].dims[0][0]))                 # tensorised boson destruction operator
+
+    two_state_A     = Jz_A                                 # two state system energy operator   Jz
+    two_state_B     = Jz_B                                 # two state system energy operator   Jz
+    bosons        = (a.dag()*a+0.5)                    # boson energy operator              𝑎†𝑎+1/2
+    number        = a.dag()*a                          # boson number operator              𝑎†𝑎
+    interaction_A  = 2*(a.dag() + a) * Jx_A                # interaction energy operator        2(𝑎†+𝑎)Jx 
+    interaction_B  = 2*(a.dag() + a) * Jx_B                # interaction energy operator        2(𝑎†+𝑎)Jx
+    
+    P = (1j*np.pi*(number + Jz_A + Jz_B + (num_TLS_A + num_TLS_B)/2)).expm()    # parity operator 
+    
+    # map from QuTiP number states to |n,m> states
+    possible_ns = range(0, max_bosons+1)
+    possible_ms_A = range(int(2*jmax_A), -1, -1)
+    possible_ms_B = range(int(2*jmax_B), -1, -1)
+    nmm_list = [(n,m1,m2) for (n,m1,m2) in product(possible_ns, possible_ms_A, possible_ms_B)]
+
+    
+    if (parity==1) | (parity==-1):
+        p               = np.where(P.diag()==parity)[0]
+    else:
+        p               = np.where(P.diag()==P.diag())[0]
+        
+    two_state_A       = two_state_A.extract_states(p)
+    two_state_B       = two_state_B.extract_states(p)
+    bosons          = bosons.extract_states(p)
+    number          = number.extract_states(p)
+    interaction_A     = interaction_A.extract_states(p)
+    interaction_B     = interaction_B.extract_states(p)
+    nmm_list        = [nmm_list[i] for i in p]
+  
+    return two_state_A, two_state_B, bosons, interaction_A, interaction_B, number, nmm_list
+```
+
+```python
+def expectation(operator, states):
+    operator_matrix = operator.full()
+    operator_expect = np.zeros(states.shape[1], dtype=complex)
+    for i in range(0,shape(states)[1]):
+        e = np.conj(states[:,i])@ (operator_matrix @ states[:,i])
+        operator_expect[i] = e
+    return operator_expect
+```
+
+<!-- #region -->
+We can create an operator much like the number operator for bosons but to count the number of excitations in system A or B.
+
+We can do this because our `two_state` operators are just $J_z$ which is just a measure of the $m$ number which can be related to the excitation number via $n_+ = m + N/2$ for Dicke states (as we saw earlier).
+
+
+$\langle J_z\rangle = \langle m\rangle = \langle n_+ \rangle - N/2$
+<!-- #endregion -->
+
+```python
+U=0.01
+omega=1
+DeltaE=2.5
+```
+
+### Fully excited system A
+
+```python
+%%time 
+# %%time must be at the top of the cell and by itself. It tells you the "Wall time" (how long the cell took to run) at the end of the output (should be about 2 min).
+
+Ns = [1,2,4,8,16,32] # number of TLS we want to simulation
+times = np.linspace(0,  50000, 1000)
+rate = [] # For storing emission rates
+
+for i, N in enumerate(Ns):
+
+    two_state_A, two_state_B, bosons, interaction_A, interaction_B, number, nmm_list = make_operators_AB(max_bosons=2, parity=0, num_TLS_A=N, num_TLS_B=N)
+
+    bra_labels, ket_labels = make_braket_labels(nmm_list)    
+    
+    H = DeltaE*two_state_A + DeltaE*two_state_B + omega*bosons + U*interaction_A + U*interaction_B
+
+    # Field in vacuum state (0) with N excitations in A (N) and 0 excitations in B (0)
+    psi0_ind = nmm_list.index((0,N,0))  
+    psi0 = basis(len(nmm_list), psi0_ind)
+
+
+    # We are using custom simulate function from last tutorial because it's going to be quicker
+    # in this case because of the long simulation times
+    P, psi = simulate(H, psi0, times)
+    num_A = expectation(two_state_A + N/2, psi)
+    num_B = expectation(two_state_B + N/2, psi)
+
+    # For fitting, we'll find when the first excitaton is transferred to B, then re-simulate 
+    # up to that point so that we can get a better resolution over the shorter time periods.
+    # We do this because we expect timescales to shorten as we increase TLS number
+    if N==1:
+        # N=1 is special because excitations never crosses 1 so we need to use find_peaks just like in the last tutorial
+        peaks, _ = find_peaks(num_B, prominence=0.05)
+        peak_times = times[peaks]
+        time_to_transfer_one = peak_times[0]
+    else: 
+        # Approximate time when the expected excitations in B reaches 1.
+        crossing_one_index = np.where(np.diff((num_B > 1).astype(int)))[0][0]
+        time_to_transfer_one = times[crossing_one_index]
+
+    times_fit = np.linspace(0,  time_to_transfer_one, 1000)
+    P_fit, psi_fit = simulate(H, psi0, times_fit)
+    num_B_fit = expectation(two_state_B + N/2, psi_fit)
+
+    fit, covariance = curve_fit(model_func, times_fit[0:100], num_B_fit[0:100],p0=[0.01],maxfev=500)
+
+    rate.append(2*fit[0])
+
+
+    plt.plot(times, num_A, label="Expected A excitations")
+    plt.plot(times, num_B, label="Expected B excitations")
+    plt.plot(times,model_func(times,*fit),label="Fit")
+    plt.xlabel("Time")
+    plt.ylim([0,num_A.max()*1.1])
+    plt.legend(loc="right")
+    plt.title(f"{H_latex} (Fig. {i+26})  \n $\Delta E={DeltaE}$, $\omega={omega}$, $U={U}$, N={N} \n $\Psi_0 =$ {ket_labels[psi0_ind]}")
+    plt.show();
+```
+
+```python
+gamma_1 = rate[0]
+gamma_1
+```
+
+```python
+plt.plot(Ns,rate/gamma_1,"-o")
+plt.xlabel("Number of TLS (N)")
+plt.ylabel("Normalised transfer rate ($\Gamma/\Gamma_1$)");
+plt.title("Transfer of $N$ delocalised excitations from A to B (Fig. 31)");
+```
+
+```python
+print("slope = ", linregress(np.log10(Ns), np.log10(rate)).slope)
+```
+
+### Single delocalised excitation in system A
+
+```python
+%%time 
+# %%time must be at the top of the cell and by itself. It tells you the "Wall time" (how long the cell took to run) at the end of the output (should be about 2 min).
+
+Ns = [2,4,8,16,32] # number of TLS we want to simulation
+times = np.linspace(0,  50000, 1000)
+rate = [] # For storing emission rates
+
+for i, N in enumerate(Ns):
+
+    two_state_A, two_state_B, bosons, interaction_A, interaction_B, number, nmm_list = make_operators_AB(max_bosons=2, parity=0, num_TLS_A=N, num_TLS_B=N)
+
+    bra_labels, ket_labels = make_braket_labels(nmm_list)    
+    
+    H = DeltaE*two_state_A + DeltaE*two_state_B + omega*bosons + U*interaction_A + U*interaction_B
+
+    # Field in vacuum state (0) with 1 excitation in A (1) and 0 excitations in B (0)
+    psi0_ind = nmm_list.index((0,1,0))  
+    psi0 = basis(len(nmm_list), psi0_ind)
+
+
+    # We are using custom simulate function from last tutorial because it's going to be quicker
+    # in this case because of the long simulation times
+    P, psi = simulate(H, psi0, times)
+    num_A = expectation(two_state_A + N/2, psi)
+    num_B = expectation(two_state_B + N/2, psi)
+
+    # For fitting, we'll find when the first excitaton is transferred to B, then re-simulate 
+    # up to that point so that we can get a better resolution over the shorter time periods.
+    # We do this because we expect timescales to shorten as we increase TLS number
+
+    # Because we only have a single excitation the number of bosons never crosses 1 
+    # so we need to use find_peaks just like in the last tutorial
+    peaks, _ = find_peaks(num_B, prominence=0.05)
+    peak_times = times[peaks]
+    time_to_transfer_one = peak_times[0]
+
+
+    times_fit = np.linspace(0,  time_to_transfer_one, 1000)
+    P_fit, psi_fit = simulate(H, psi0, times_fit)
+    num_B_fit = expectation(two_state_B + N/2, psi_fit)
+
+    fit, covariance = curve_fit(model_func, times_fit[0:100], num_B_fit[0:100],p0=[0.01],maxfev=500)
+
+    rate.append(2*fit[0])
+
+
+    plt.plot(times, num_A, label="Expected A excitations")
+    plt.plot(times, num_B, label="Expected B excitations")
+    plt.plot(times,model_func(times,*fit),label="Fit")
+    plt.xlabel("Time")
+    plt.ylim([0,num_A.max()*1.1])
+    plt.legend(loc="right")
+    plt.title(f"{H_latex} (Fig. {i+32})  \n $\Delta E={DeltaE}$, $\omega={omega}$, $U={U}$, N={N} \n $\Psi_0 =$ {ket_labels[psi0_ind]}")
+    plt.show();
+```
+
+```python
+plt.plot(Ns,rate/gamma_1,"-o")
+plt.xlabel("Number of TLS (N)")
+plt.ylabel("Normalised transfer rate ($\Gamma/\Gamma_1$)");
+plt.title("Transfer of $N$ delocalised excitations from A to B (Fig. 36)");
+```
+
+```python
+print("slope = ", linregress(np.log10(Ns), np.log10(rate)).slope)
+```
+
+### Half excited system A
+
+```python
+%%time 
+# %%time must be at the top of the cell and by itself. It tells you the "Wall time" (how long the cell took to run) at the end of the output (should be about 2 min).
+
+Ns = [2,4,8,16,32] # number of TLS we want to simulation
+# Ns = [2]
+times = np.linspace(0,  50000, 1000)
+rate = [] # For storing emission rates
+
+for i, N in enumerate(Ns):
+
+    two_state_A, two_state_B, bosons, interaction_A, interaction_B, number, nmm_list = make_operators_AB(max_bosons=2, parity=0, num_TLS_A=N, num_TLS_B=N)
+
+    bra_labels, ket_labels = make_braket_labels(nmm_list)    
+    
+    H = DeltaE*two_state_A + DeltaE*two_state_B + omega*bosons + U*interaction_A + U*interaction_B
+
+    # Field in vacuum state (0) with N/2 excitations in A (int(N/2)) and 0 excitations in B (0)
+    psi0_ind = nmm_list.index((0,int(N/2),0))  
+    psi0 = basis(len(nmm_list), psi0_ind)
+
+
+    # We are using custom simulate function from last tutorial because it's going to be quicker
+    # in this case because of the long simulation times
+    P, psi = simulate(H, psi0, times)
+    num_A = expectation(two_state_A + N/2, psi)
+    num_B = expectation(two_state_B + N/2, psi)
+
+    # For fitting, we'll find when the first excitaton is transferred to B, then re-simulate 
+    # up to that point so that we can get a better resolution over the shorter time periods.
+    # We do this because we expect timescales to shorten as we increase TLS number
+    if N==2:
+        # N=1 is special because excitations never crosses 1 so we need to use find_peaks just like in the last tutorial
+        peaks, _ = find_peaks(num_B, prominence=0.05)
+        peak_times = times[peaks]
+        time_to_transfer_one = peak_times[0]
+    else: 
+        # Approximate time when the expected excitations in B reaches 1.
+        crossing_one_index = np.where(np.diff((num_B > 1).astype(int)))[0][0]
+        time_to_transfer_one = times[crossing_one_index]
+
+    times_fit = np.linspace(0,  time_to_transfer_one, 1000)
+    P_fit, psi_fit = simulate(H, psi0, times_fit)
+    num_B_fit = expectation(two_state_B + N/2, psi_fit)
+
+    fit, covariance = curve_fit(model_func, times_fit[0:100], num_B_fit[0:100],p0=[0.01],maxfev=500)
+
+    rate.append(2*fit[0])
+
+
+    plt.plot(times, num_A, label="Expected A excitations")
+    plt.plot(times, num_B, label="Expected B excitations")
+    plt.plot(times,model_func(times,*fit),label="Fit")
+    plt.xlabel("Time")
+    plt.ylim([0,num_B.max()*1.1])
+    plt.legend(loc="right")
+    plt.title(f"{H_latex} (Fig. {i+37})  \n $\Delta E={DeltaE}$, $\omega={omega}$, $U={U}$, N={N} \n $\Psi_0 =$ {ket_labels[psi0_ind]}")
+    plt.show();
+```
+
+```python
+plt.plot(Ns,rate/gamma_1,"-o")
+plt.xlabel("Number of TLS (N)")
+plt.ylabel("Normalised transfer rate ($\Gamma/\Gamma_1$)");
+plt.title("Transfer of $N/2$ delocalised excitations from A to B (Fig. 31)");
+```
+
+```python
+print("slope = ", linregress(np.log10(Ns[2:]), np.log10(rate[2:])).slope)
+```
+
 ```python
 
 ```
