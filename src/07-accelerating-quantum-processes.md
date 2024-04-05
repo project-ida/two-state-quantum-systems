@@ -297,9 +297,11 @@ Let's simulate it and check. We're going to need to make a some modifications to
 
 First, we need to adapt `make_operators` function to use `j = jmax` (i.e. we'll start with a Dicke state) and we'll also enumerate the states in `nm_list` in terms of number of TLS that are excited $n_+$ instead of using $m$. We can do this because:
 
-$m = n_+ - N/2$$
+$$m = n_+ - N/2$$
 
-Since $m = j, j-1,...-j$ and $N/2 = j$ for Dicke states, then $$n_+ = m+j = 2j, 2j-1, 2j-2, ..., 3,2,1,0$$
+Since $m = j, j-1,...-j$ and $N/2 = j$ for Dicke states, then 
+
+$$n_+ = m+j = 2j, 2j-1, 2j-2, ..., 3,2,1,0$$
 
 
 
@@ -637,7 +639,7 @@ print("slope = ", linregress(np.log10(Ns), np.log10(rate)).slope)
 
 We can see that $\Gamma \sim N^2$ when $n_+ = N/2$. 
 
-This kind of counter intuitive emission rate enhancement was discovered by Dicke in his 1956 paper [Coherence in Spontaneous Radiation Processes](https://journals.aps.org/pr/abstract/10.1103/PhysRev.93.99) where we coined the turn "superradiance".
+This kind of counter intuitive emission rate enhancement was discovered by Dicke in his 1956 paper [Coherence in Spontaneous Radiation Processes](https://journals.aps.org/pr/abstract/10.1103/PhysRev.93.99) where he coined the turn "superradiance".
 
 In general, Dicke found that when $n_+$ excitations are delocalised across $N$ TLS, the emission rate $\Gamma$ is enhanced over the single TLS emission rate $\Gamma_1$ by:
 
@@ -664,13 +666,13 @@ We can see there are 6 different configurations for the TLS. Each of the 2 excit
 
 $\Psi_f = \frac{1}{\sqrt{4}}\left(| 0, +, -, -, - \rangle + | 0, -, +, -, - \rangle + | 0, -, -, +, - \rangle + | 0, -, -, -, + \rangle \right)$
 
-The total number of emission paths is therefore $6\times 2 = 12$. Each of these paths contributes the same to the overall amplitude because the Dicke state is constructed with $+$ between each of the configurations that make up the state. This creates what's called "constructive interference" where the effects of each path add up to a larger effect. 
+The total number of emission paths is therefore $6\times 2 = 12$. Each of these paths contributes the same to the overall emission amplitude because the Dicke state is constructed with $+$ between each of the configurations that make up the state. This creates what's called "constructive interference" where the effects of each path add up to a larger effect. 
 
 To get the numbers right, we must remember that our states are normalised. The 6 configurations in our starting state means dividing the amplitude by $\sqrt{6}$. The 4 configurations in the final state means dividing the amplitude by $\sqrt{4}$. So the overall amplitude enhancement factor is:
 
 $$\frac{6\times 2}{\sqrt{6}\sqrt{4}} = \sqrt{6}$$
 
-and so the probability enhancement factor (which related to emission rates) is the square of this, i.e. 6. This is consistent with Dicke's formula.
+and so the probability enhancement factor (which is proportional to the emission rate) is the square of this, i.e. 6. This is consistent with Dicke's formula.
 
 To derive the general Dicke formula, we just have to do this counting and normalising for the general case:
 
@@ -685,3 +687,12 @@ we instead use
 $\Psi = \frac{1}{\sqrt{2}}\left(| 0, +, -\rangle - | 0, -, + \rangle \right)$
 
 then we get no emission at all because we get complete destructive interference of the two paths. Such states are often referred to as "dark states".
+
+Now that we've seen what acceleration factors are possible for spontaneous emission, we might expect to find something similar in the realm of excitation transfer.
+
+
+## Supertransfer
+
+```python
+
+```
