@@ -591,7 +591,7 @@ for i, N in enumerate(Ns):
     # Note progress bar because the last simulation will take about 5 min
     result = sesolve(H, psi0, times, [number],progress_bar=True)
 
-    # For fitting, we'll find when 1 boson is emitted and re-simulate up to that point
+    # For fitting, we'll find when 1 boson is emitted and re-sim8ulate up to that point
     # so that we can get a better resolution over the shorter time periods. We
     # do this because we expect timescales to shorten as we increase TLS number
 
@@ -694,7 +694,24 @@ Now that we've seen what acceleration factors are possible for spontaneous emiss
 ## Supertransfer
 
 
-**Simulations below showing N^2 for 1 excitation and N exciations. They show N^3 for N/2 excitations. Just need to add narrative for this.**
+Just like with superradiance, we're going to work with Dicke states to allow us to conveniently describe and simulate delocalised excitations.
+
+To describe delocalised excitations transferring from one "place" to another, we need to break-up our overall system into 2 parts - system A and system B. Each system can in principle have its own number of TLS ($N_A$, $N_B$) and its own number of excitations ($n_{+A}$, $n_{+B}$). 
+
+The general Hamiltonian for this AB situation is described by:
+
+$$H =  \Delta E_A J_{N_Az}^{(A)} + \Delta E_B J_{N_Bz}^{(B)} + \hbar\omega\left(a^{\dagger}a +\frac{1}{2}\right) + U_A\left( a^{\dagger} + a \right)2J_{N_Ax}^{(A)} + U_B\left( a^{\dagger} + a \right)2J_{N_Bx}^{(B)}$$
+
+It's a bit full on so, won't worry, we won't investigate this Hamiltonian in all its generality today. We'll focus on the case where:
+- System A and B have the same transition energy: $ \Delta E_A =  \Delta E_B =  \Delta E$
+- System A and B couple to the boson field in the same way: $U_A = U_B = U$
+- System A and B consist of the same number ot TLS: $N_A = N_B = N$
+
+```python
+H_latex_AB = "$H = \Delta E (J_{Nz}^{(A)}+J_{Nz}^{(B)}) + \hbar\omega(a^{{\dagger}}a +1/2) + U( a^{{\dagger}} + a )2(J_{Nx}^{(A)} + J_{Nx}^{(B)})$ "
+```
+
+The process of constructing the additional operators is similar to when we added the quantised field operators back in [tutorial 03](https://github.com/project-ida/two-state-quantum-systems/blob/master/03-a-two-state-system-in-a-quantised-field.ipynb) - we create tensor products of the different operators to make sure they only act on the relevant parts of the state.
 
 ```python
 def make_operators_AB(max_bosons=2, parity=0, num_TLS_A=1, num_TLS_B=1):
@@ -704,18 +721,18 @@ def make_operators_AB(max_bosons=2, parity=0, num_TLS_A=1, num_TLS_B=1):
     
     J_A     = jmat(jmax_A)
     J_B     = jmat(jmax_B)
-    Jx_A    = tensor(qeye(max_bosons+1), J_A[0], qeye(J_B[0].dims[0][0]))                                     # tensorised Jx operator
-    Jz_A    = tensor(qeye(max_bosons+1), J_A[2], qeye(J_B[0].dims[0][0]))                                     # tensorised Jz operator
-    Jx_B    = tensor(qeye(max_bosons+1), qeye(J_A[0].dims[0][0]), J_B[0])                                     # tensorised Jx operator
-    Jz_B    = tensor(qeye(max_bosons+1), qeye(J_A[0].dims[0][0]), J_B[2])                                     # tensorised Jz operator
+    Jx_A    = tensor(qeye(max_bosons+1), J_A[0], qeye(J_B[0].dims[0][0]))                                     # tensorised JxA operator
+    Jz_A    = tensor(qeye(max_bosons+1), J_A[2], qeye(J_B[0].dims[0][0]))                                     # tensorised JzA operator
+    Jx_B    = tensor(qeye(max_bosons+1), qeye(J_A[0].dims[0][0]), J_B[0])                                     # tensorised JxB operator
+    Jz_B    = tensor(qeye(max_bosons+1), qeye(J_A[0].dims[0][0]), J_B[2])                                     # tensorised JzB operator
     a       = tensor(destroy(max_bosons+1), qeye(J_A[0].dims[0][0]), qeye(J_B[0].dims[0][0]))                 # tensorised boson destruction operator
 
-    two_state_A     = Jz_A                                 # two state system energy operator   Jz
-    two_state_B     = Jz_B                                 # two state system energy operator   Jz
-    bosons        = (a.dag()*a+0.5)                    # boson energy operator              𝑎†𝑎+1/2
-    number        = a.dag()*a                          # boson number operator              𝑎†𝑎
-    interaction_A  = 2*(a.dag() + a) * Jx_A                # interaction energy operator        2(𝑎†+𝑎)Jx 
-    interaction_B  = 2*(a.dag() + a) * Jx_B                # interaction energy operator        2(𝑎†+𝑎)Jx
+    two_state_A     = Jz_A                                 # two state system energy operator   JzA
+    two_state_B     = Jz_B                                 # two state system energy operator   JzB
+    bosons        = (a.dag()*a+0.5)                       # boson energy operator              𝑎†𝑎+1/2
+    number        = a.dag()*a                             # boson number operator              𝑎†𝑎
+    interaction_A  = 2*(a.dag() + a) * Jx_A                # interaction energy operator        2(𝑎†+𝑎)JxA 
+    interaction_B  = 2*(a.dag() + a) * Jx_B                # interaction energy operator        2(𝑎†+𝑎)JxB
     
     P = (1j*np.pi*(number + Jz_A + Jz_B + (num_TLS_A + num_TLS_B)/2)).expm()    # parity operator 
     
@@ -742,7 +759,25 @@ def make_operators_AB(max_bosons=2, parity=0, num_TLS_A=1, num_TLS_B=1):
     return two_state_A, two_state_B, bosons, interaction_A, interaction_B, number, nmm_list
 ```
 
+<!-- #region -->
+We're aaaalmost ready to rock and roll, but we need a couple of extra bits.
+
+Firstly, let's create an operator that helps us count the number of excitations in system A or B (a bit like our number operator for bosons). We can create such an operator from our `two_state` operators because they are just $J_z$ which, you may recall from earlier today, is just a measure of the $m$ number which in turn is related to the excitation number via $n_+ = m + N/2$ for Dicke states. In the language of expectation values $\langle ... \rangle$:
+
+
+$\langle \text{two\_state}\rangle = \langle J_z\rangle = \langle m\rangle = \langle n_+ \rangle - N/2$
+
+Next, calculating expectation values. You may recall in the last tutorial that when we simulated excitation transfer we used our custom simulate function from [tutorial 05](https://github.com/project-ida/two-state-quantum-systems/blob/master/05-excitation-transfer.ipynb) because it was quicker over of the long simulation times typically required of excitation transfer. We're going to do the same here. This means we'll need our own way to calculate the expectation values (sesolve did this for us before). Although QuTiP does have the [`expect`](http://qutip.org/docs/latest/guide/guide-states.html#expectation-values) function, it turns out that we need to create a `Qobj` for every time step in order to use this function and that can be very slow. We will instead directly calculate the expectation value using matrix multiplication, i.e.
+
+$<H> = \psi^{\dagger}H\psi = \psi^{\dagger} @ (H @\psi) $
+
+Where @ is the matrix multiplication operator and $\dagger$ in this context means taking the complex conjugate.
+
+Let's automate this process for all time steps using a function.
+<!-- #endregion -->
+
 ```python
+# "states" will be the output of Psi from our "simulate" function
 def expectation(operator, states):
     operator_matrix = operator.full()
     operator_expect = np.zeros(states.shape[1], dtype=complex)
@@ -752,29 +787,22 @@ def expectation(operator, states):
     return operator_expect
 ```
 
-<!-- #region -->
-We can create an operator much like the number operator for bosons but to count the number of excitations in system A or B.
-
-We can do this because our `two_state` operators are just $J_z$ which is just a measure of the $m$ number which can be related to the excitation number via $n_+ = m + N/2$ for Dicke states (as we saw earlier).
-
-
-$\langle J_z\rangle = \langle m\rangle = \langle n_+ \rangle - N/2$
-<!-- #endregion -->
+Let's remember now to adjust the $\Delta E \neq 1$ to make sure we don't get energy transfer to the boson field.
 
 ```python
-U=0.01
-omega=1
-DeltaE=2.5
+DeltaE = 2.5 # Mismatch between boson energy and the TLS energy to make sure we avoid emission
+omega = 1
+U = 0.001 # Coupling is 10x lower than the last tutorial because we are upping the number of TLS
 ```
 
-### Fully excited system A
+### Fully excited system A, de-excited system B
 
 ```python
 %%time 
 # %%time must be at the top of the cell and by itself. It tells you the "Wall time" (how long the cell took to run) at the end of the output (should be about 2 min).
 
 Ns = [1,2,4,8,16,32] # number of TLS we want to simulation
-times = np.linspace(0,  50000, 1000)
+times = np.linspace(0,  5000000, 1000)
 rate = [] # For storing emission rates
 
 for i, N in enumerate(Ns):
@@ -820,38 +848,48 @@ for i, N in enumerate(Ns):
 
     plt.plot(times, num_A, label="Expected A excitations")
     plt.plot(times, num_B, label="Expected B excitations")
-    plt.plot(times,model_func(times,*fit),label="Fit")
+    plt.plot(times,model_func(times,*fit),label="Quadratic fit")
     plt.xlabel("Time")
     plt.ylim([0,num_A.max()*1.1])
     plt.legend(loc="right")
-    plt.title(f"{H_latex} (Fig. {i+26})  \n $\Delta E={DeltaE}$, $\omega={omega}$, $U={U}$, N={N} \n $\Psi_0 =$ {ket_labels[psi0_ind]}")
+    plt.title(f"{H_latex} \n $\Delta E={DeltaE}$, $\omega={omega}$, $U={U}$, N={N} \n $\Psi_0 =$ {ket_labels[psi0_ind]}     (Fig. {i+26})")
     plt.show();
 ```
 
+We'll once again store the "base" rate of excitation transfer $\Gamma_{1}$ for the case of a single TLS in each system A and B so that we might reference it later
+
 ```python
-gamma_1 = rate[0]
-gamma_1
+gamma_1AB = rate[0]
+gamma_1AB
 ```
 
 ```python
-plt.plot(Ns,rate/gamma_1,"-o")
+plt.plot(Ns,rate/gamma_1AB,"-o")
 plt.xlabel("Number of TLS (N)")
 plt.ylabel("Normalised transfer rate ($\Gamma/\Gamma_1$)");
-plt.title("Transfer of $N$ delocalised excitations from A to B (Fig. 31)");
+plt.title("Transfer of $N$ delocalised excitations from A to B (Fig. 32)");
 ```
 
 ```python
 print("slope = ", linregress(np.log10(Ns), np.log10(rate)).slope)
 ```
 
-### Single delocalised excitation in system A
+Fig. 32 confirms the observation from the last tutorial that the excitation transfer has a more favourable scaling with the number of TLS than spontaneous emission - $N^2$ vs $N$ for the fully excited case.
+> Note that in the last tutorial we observed $N$ vs $\sqrt{N}$ because we were looking at the Rabi frequency instead of the emission/transfer rates.
+
+We can think of this $N^2$ scaling in terms of pathways just like with spontaneous emission. When an excitation moves from the fully excited system A to de-excited system B, it leaves behind a "hole" in system A which can be in one of $N$ places and moves to system B where it can be one of $N$ places.
+
+Let's see if we get the same scaling $N^2$ with a single excitation in A - mirroring what we found with spontaneous emission.
+
+
+### Single delocalised excitation in system A, de-excited system B
 
 ```python
 %%time 
 # %%time must be at the top of the cell and by itself. It tells you the "Wall time" (how long the cell took to run) at the end of the output (should be about 2 min).
 
 Ns = [2,4,8,16,32] # number of TLS we want to simulation
-times = np.linspace(0,  50000, 1000)
+times = np.linspace(0,  5000000, 1000)
 rate = [] # For storing emission rates
 
 for i, N in enumerate(Ns):
@@ -895,26 +933,35 @@ for i, N in enumerate(Ns):
 
     plt.plot(times, num_A, label="Expected A excitations")
     plt.plot(times, num_B, label="Expected B excitations")
-    plt.plot(times,model_func(times,*fit),label="Fit")
+    plt.plot(times,model_func(times,*fit),label="Quadratic fit")
     plt.xlabel("Time")
     plt.ylim([0,num_A.max()*1.1])
     plt.legend(loc="right")
-    plt.title(f"{H_latex} (Fig. {i+32})  \n $\Delta E={DeltaE}$, $\omega={omega}$, $U={U}$, N={N} \n $\Psi_0 =$ {ket_labels[psi0_ind]}")
+    plt.title(f"{H_latex_AB} \n $\Delta E={DeltaE}$, $\omega={omega}$, $U={U}$, N={N} \n $\Psi_0 =$ {ket_labels[psi0_ind]}   (Fig. {i+33})")
     plt.show();
 ```
 
 ```python
-plt.plot(Ns,rate/gamma_1,"-o")
+plt.plot(Ns,rate/gamma_1AB,"-o")
 plt.xlabel("Number of TLS (N)")
 plt.ylabel("Normalised transfer rate ($\Gamma/\Gamma_1$)");
-plt.title("Transfer of $N$ delocalised excitations from A to B (Fig. 36)");
+plt.title("Transfer of $N$ delocalised excitations from A to B (Fig. 38)");
 ```
 
 ```python
 print("slope = ", linregress(np.log10(Ns), np.log10(rate)).slope)
 ```
 
-### Half excited system A
+Fig. 38 confirms that we have the same $N^2$ scaling for excitation transfer even when there is only a single excitation in system A.
+
+Thinking again in terms of pathways. The single excitation in system A can be in one of $N$ places and the excitation in each of of those "configurations" can move to one of $N$ "empty" places in the de-excited system B.
+
+The natural next step is to wonder what happens if we play the $N/2$ game. In other words, if we "half-excite" system A, will we find some kind of supertransfer. 
+
+I think you know what the answer is 😉 but let's see it.
+
+
+### Half excited system A, de-excited system B
 
 ```python
 %%time 
@@ -922,7 +969,7 @@ print("slope = ", linregress(np.log10(Ns), np.log10(rate)).slope)
 
 Ns = [2,4,8,16,32] # number of TLS we want to simulation
 # Ns = [2]
-times = np.linspace(0,  50000, 1000)
+times = np.linspace(0,  5000000, 1000)
 rate = [] # For storing emission rates
 
 for i, N in enumerate(Ns):
@@ -968,23 +1015,23 @@ for i, N in enumerate(Ns):
 
     plt.plot(times, num_A, label="Expected A excitations")
     plt.plot(times, num_B, label="Expected B excitations")
-    plt.plot(times,model_func(times,*fit),label="Fit")
+    plt.plot(times,model_func(times,*fit),label="Quadratic fit")
     plt.xlabel("Time")
     plt.ylim([0,num_B.max()*1.1])
     plt.legend(loc="right")
-    plt.title(f"{H_latex} (Fig. {i+37})  \n $\Delta E={DeltaE}$, $\omega={omega}$, $U={U}$, N={N} \n $\Psi_0 =$ {ket_labels[psi0_ind]}")
+    plt.title(f"{H_latex_AB} \n $\Delta E={DeltaE}$, $\omega={omega}$, $U={U}$, N={N} \n $\Psi_0 =$ {ket_labels[psi0_ind]}   (Fig. {i+39})")
     plt.show();
 ```
 
 ```python
-plt.plot(Ns,rate/gamma_1,"-o")
+plt.plot(Ns,rate/gamma_1AB,"-o")
 plt.xlabel("Number of TLS (N)")
 plt.ylabel("Normalised transfer rate ($\Gamma/\Gamma_1$)");
-plt.title("Transfer of $N/2$ delocalised excitations from A to B (Fig. 31)");
+plt.title("Transfer of $N/2$ delocalised excitations from A to B (Fig. 44)");
 ```
 
 ```python
-print("slope = ", linregress(np.log10(Ns[2:]), np.log10(rate[2:])).slope)
+print("slope = ", linregress(np.log10(Ns[:]), np.log10(rate[:])).slope)
 ```
 
 ```python
