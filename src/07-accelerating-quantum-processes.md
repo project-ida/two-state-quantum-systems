@@ -13,6 +13,9 @@ jupyter:
     name: python3
 ---
 
+<a href="https://colab.research.google.com/github/project-ida/two-state-quantum-systems/blob/master/07-accelerating-quantum-processes.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <a href="https://nbviewer.jupyter.org/github/project-ida/two-state-quantum-systems/blob/master/07-accelerating-quantum-processes.ipynb" target="_parent"><img src="https://nbviewer.jupyter.org/static/img/nav_logo.svg" alt="Open In nbviewer" width="100"/></a>
+
+
 # 7 - Accelerating quantum processes
 
 
@@ -20,7 +23,13 @@ Last time, we saw hints of being able to accelerate quantum processes like spont
 
 In this tutorial, we'll see just how much speed-up we can get by developing a description of many TLS (called "Dicke states") that allows us to set up delocalised excitations easily and also helps us avoid getting stuck in a computational bottleneck. 
 
+We're covering a lot of ground today so we've split everything up into the following sections:
 
+1. Recap
+2. Angular momentum
+3. Superradiance
+4. Supertransfer
+5. Superradiance vs Supertransfer
 
 ```python
 # Libraries and helper functions
@@ -50,14 +59,14 @@ from libs.helper_07_tutorial import *
 ## 7.1 -  Recap
 
 <!-- #region -->
-So far, we've described a combined TLS + quantum field using a notation like, e.g. $|0,+,-,-,- \rangle$. The first number (in this case $0$) tells us the number of bosons present (this is often referred to as a [Fock state](https://en.wikipedia.org/wiki/Fock_state)), and the $\pm$ tell us what state each of the $N$ TLS are in ($+$ excited, $-$ ground). This is a complete description in the sense that every configuration of the system can be described as a mixture of these states. For example, a single excitation delocalised across 4 TLS with no bosons can be described by:
+So far, we've described a combined TLS & quantum field using a notation like, e.g. $|0,+,-,-,- \rangle$. The first number (in this case $0$) tells us the number of bosons present (this is often referred to as a [Fock state](https://en.wikipedia.org/wiki/Fock_state)), and the $\pm$ tell us what state each of the $N$ TLS are in ($+$ excited, $-$ ground). This is a complete description in the sense that every configuration of the system can be described as a mixture of these states. For example, a single excitation delocalised across 4 TLS with no bosons can be described by:
 
 $\Psi_0 \sim | 0, +, -, -, - \rangle + | 0, -, +, -, - \rangle + | 0, -, -, +, - \rangle + | 0, -, -, -, + \rangle $
 
 
 The issue with this description is that, for a specific number of bosons, there are $2^N$ possibilities for the state of the TLS and that means it becomes infeasible to simulate more than about 10 TLS.
 
-Because delocalised excitations are of most interest to us today, we don't actually need a lot of the detail that the complete description holds. Superficially, we'd be quite happy with a simpler description like $| n, n_+ \rangle$ - where $n$ is the boson number and $n_+$ is the number of excitations. There would only be $N+1$  possibilities for the state of the TLS in this case - this is much more favourable from a computational perspective. 
+Because delocalised excitations are of most interest to us today, we don't actually need a lot of the detail that the complete description holds. Superficially, we'd be quite happy with a simpler description like $| n, n_+ \rangle$ - where $n$ is the boson number and $n_+$ is the number of excitations. There would then only be $N+1$  possibilities for the state of the TLS in this case - this is much more favourable from a computational perspective. 
 
 Let's see if we can make this simpler description rigorous enough to help us with simulating many TLS.
 <!-- #endregion -->
@@ -65,7 +74,7 @@ Let's see if we can make this simpler description rigorous enough to help us wit
 ## 7.2 - Angular momentum $J$ 
 
 
-Creating a description of delocalised excitations is not quite as simple as $| n, n_+ \rangle$. For example, the following delocalised states contain the same number of delocalised excitations but they're different:
+Creating a description of delocalised excitations is not quite as simple as $| n, n_+ \rangle$. For example, the following delocalised states $\Psi_1$ and $\Psi_2$ contain the same number of delocalised excitations but they're different:
 
 $\Psi_1 \sim | 0, +, - \rangle + | 0, -, + \rangle $
 
@@ -99,7 +108,7 @@ It's not obvious where all those numbers come from and how they can be mapped to
 
 ### Angular momentum numbers
 
-Although we don't explicitly have a description of angular momentum in our TLS, you may recall from tutorial 2 that our system is mathematically equivalent to spin 1/2 particles which do have angular momentum. We can also see this explicitly in the language we've been using to describe our Hamiltonian:
+Although we don't explicitly have a description of angular momentum in our TLS, you may recall from [tutorial 2](https://github.com/project-ida/two-state-quantum-systems/blob/master/02-perturbing-a-two-state-system.ipynb) that our system is mathematically equivalent to spin 1/2 particles which do have angular momentum. We can also see this explicitly in the language we've been using to describe our Hamiltonian:
 
 $$H =  \Delta E J_{Nz} + \hbar\omega\left(a^{\dagger}a +\frac{1}{2}\right) + U\left( a^{\dagger} + a \right)2J_{Nx}$$
 
@@ -158,9 +167,9 @@ evalsJ, eketsJ = J2.eigenstates()
 evalsJ
 ```
 
-Without explicitly looking at all the eigenstates of $J^2$, we know there must be:
-- 1 state with $j=0$ (we've seen that already with $\Psi_1$)
-- 3 states with $j=1$ (we've seen one of those with $\Psi_2$)
+By just looking at these eigenvalues of $J^2$, we know there must be:
+- 1 state with $j=0$ (we've seen that already with $\Psi_2$)
+- 3 states with $j=1$ (we've seen one of those with $\Psi_1$)
 
 
 You might wonder how we're able to have 3 states with the same angular momentum number $j$? They have different $J_z$ - what is known as the "magnetic quantum number" often given the label $m$. 
@@ -183,7 +192,7 @@ For $N=2$, the TLS can therefore be described in terms of angular momentum by gi
 - $|1, 1\rangle$
 
 This is actually a complete description because for 2 TLS there are only 4 states, $| -, - \rangle$, $| +, - \rangle$, $| -, + \rangle$, $| +, + \rangle$. This is not the case for $N>2$.  In general, we lose the ability to describe every state uniquely when we use this angular momentum description. In other words, there can be many states with the same $j,m$ values (degenerate states). When you enumerate all the states in the angular momentum description, there are $\sim N^2$ possibilities compared to the $2^N$ we've been working with up to now. This is ultimately what's going to give us a computational advantage but we do need to be a bit careful as to whether we lose any physics when we do this. 
-> Advanced: Use [`state_degeneracy(N,j)`](https://qutip.org/docs/4.4/apidoc/functions.html?highlight=m_degeneracy#qutip.piqs.state_degeneracy) to calculate the degeneracy of each state. In general there are some subtleties to consider when ignoring degeneracy which might need to be considered depending on the problem at hand (see last paragraph of [Permutational Invariant Quantum Solver](http://qutip.org/docs/latest/guide/dynamics/dynamics-piqs.html)). For now, we don't need to worry about this so we will put a pin in this advanced topic and return to it in a later tutorial.
+> Advanced: Use [`state_degeneracy(N,j)`](https://qutip.org/docs/4.4/apidoc/functions.html?highlight=m_degeneracy#qutip.piqs.state_degeneracy) to calculate the degeneracy of each state. In general there are some subtleties to consider when ignoring degeneracy which might need to be considered depending on the problem at hand (see last paragraph of [Permutational Invariant Quantum Solver](https://qutip.readthedocs.io/en/qutip-5.0.x/guide/guide-piqs.html)). For now, we don't need to worry about this so we will put a pin in this advanced topic and return to it in a later tutorial.
 
 
 Hopefully you've got a better understanding of these angular momentum numbers. Now we need to link it back to the number of TLS $N$ and the number of delocalised excitations $n_+$.
@@ -235,7 +244,7 @@ $\Psi_0 = \frac{1}{\sqrt{4}}\left(| 0, +, -, -, - \rangle + | 0, -, +, -, - \ran
 
 Notice that if you swap any two TLS, the state looks the same.
 
-The reason why $j_{\max}$ is most significant is because of the acceleration properties that these Dicke states offer; something people often describe as superradiance and supertransfer. We're going to see this in action in the next section.
+The reason why $j_{\max}$ is most significant is because of the acceleration properties that these Dicke states offer; something people often describe as superradiance and supertransfer. We're going to see these in action in the next sections.
 
 Before we get there, we need to take a short detour into angular momentum conservation.
 
@@ -246,7 +255,7 @@ Angular momentum is conserved in our model and so we have a choice which $j$ val
 
 Instead of needing to keep track of the $N^2$ different angular momentum states, we only need to keep track of the $2j+1$ different $m$ states that correspond to the $j$ we picked. The worst case scenario is the Dicke states which use $j_{\max} = N/2$. For simulating Dicke states we need to keep track of $N+1$ states. This is an incredible improvement - going from an exponential scaling with number of TLS to linear.
 
-You might think it would be a pain to extract only the states that correspond to a particular $j$, but once again QuTiP has got our back  with [`jmat(j)`](https://qutip.org/docs/latest/apidoc/functions.html?highlight=jmat#qutip.operators.jmat) - it does 2 things:
+You might think it would be a pain to extract only the states that correspond to a particular $j$, but once again QuTiP has got our back  with [`jmat(j)`](https://qutip.readthedocs.io/en/qutip-5.0.x/apidoc/functions.html#qutip.core.operators.jmat) - it does 2 things:
 - Automatically gives us operators in the angular momentum basis, i.e. $|j,m \rangle$
 - Returns only parts of the operators that act on the $j$ we pick
 
@@ -259,7 +268,7 @@ Jz
 ```
 
 <!-- #region -->
-We've got a 3x3 matrix because there are only 3 states corresponding to $m=1,0,-1$ for $j=1$. The matrix also signposts to us QuTip's convention for labeling the angular momentum states.
+We've got a 3x3 matrix because there are only 3 states corresponding to $j=1$, they are $m=1,0,-1$ . The matrix also signposts to us QuTip's convention for labeling the angular momentum states.
 
 
 $$
@@ -282,20 +291,20 @@ $$
 
 Largest $m$ at the top of the state vector, smallest $m$ at the bottom.
 
-Ok, we're ready to explore the suped up version of quantum mechanics.
+Ok, we're ready to explore the suped up version of quantum mechanics. 🚀
 <!-- #endregion -->
 
-## 7.3 Superradiance
+## 7.3 - Superradiance
 
 
-Let's reconsider the case of spontaneous emission. We saw in tutorial 3 that such emission from a TLS can be understood as the result of coupling to a quantised field. The stronger the coupling, the faster the emission as seen by the increased Rabi frequency.
+Let's reconsider the case of spontaneous emission. We saw in [tutorial 3](https://github.com/project-ida/two-state-quantum-systems/blob/master/03-a-two-state-system-in-a-quantised-field.ipynb) that such emission from a TLS can be understood as the result of coupling to a quantised field. The stronger the coupling, the faster the emission as seen by the increased Rabi frequency.
 
 For emission from many TLS, we'd expect the rate to depend on the number of TLS that are excited. We might argue, for example, that the rate of emission is simply the sum of the rates of the individual TLS. In other words, we'd expect a factor of $N$ speed-up for $N$ TLS that are excited.
 
 Let's simulate it and check. We're going to need to make a some modifications to our simulation code and also how we measure "emission rates".
 
 
-First, we need to adapt `make_operators` function to use `j = jmax` (i.e. we'll start with a Dicke state) and we'll also enumerate the states in `nm_list` in terms of number of TLS that are excited $n_+$ instead of using $m$. We can do this because:
+First, we need to adapt `make_operators` function to use `j = jmax` (i.e. we'll initialise with a Dicke state) and we'll also enumerate the states in `nm_list` in terms of number of TLS that are excited $n_+$ instead of using $m$. We can do this because:
 
 $$m = n_+ - N/2$$
 
@@ -322,7 +331,7 @@ def make_operators(max_bosons=2, parity=0, num_TLS=1):
     
     P = (1j*np.pi*(number + Jz + num_TLS/2)).expm()    # parity operator 
     
-    # map from QuTiP number states to |n,m> states
+    # map from QuTiP number states to |n,n_+> states
     possible_ns = range(0, max_bosons+1)
     possible_ms = range(int(2*jmax), -1, -1)
     nm_list = [(n,m) for (n,m) in product(possible_ns, possible_ms)]
@@ -355,13 +364,13 @@ $$\Gamma = \frac{d P_\Psi}{dt}$$
 
 $\Gamma$ essentially tells us how much probability has accumulated per unit time for a transition to occur.
 
-Sometimes it can be more helpful to look at rate of change of the expectation values of certain operators, e.g. the boson number operator $a^{\dagger}a$. A rate defined by:
+Sometimes it can be more helpful to look at rate of change of the expectation values of certain operators, e.g. the boson number operator $a^{\dagger}a$. Defining the rate by:
 
 $$\Gamma = \frac{d \langle a^{\dagger}a \rangle}{dt}$$
 
 gives us a more direct measure of boson emission rates.
 
-In either case, the challenge for us is that these rates approach zero for short times because $P \sim \cos^2\left(... t \right)$ and $\langle a^{\dagger}a\rangle \sim \sin^2\left(... t  \right)$. This makes comparing rates for different numbers of TLS a numerical nightmare because we get uncomfortably close to doing $\frac{0}{0}$ 😬.
+In either case, the challenge for us is that we've seen in previous tutorials that these rates approach zero for short times because $P \sim \cos^2\left(... t \right)$ and $\langle a^{\dagger}a\rangle \sim \sin^2\left(... t  \right)$ initially. This makes comparing rates for different numbers of TLS a numerical nightmare because we get uncomfortably close to doing $\frac{0}{0}$ 😬.
 
 A solution is to create an analytical model of the dynamics at short times scales. Specifically, we can do a taylor expansion up to $t^2$:
 
@@ -393,7 +402,7 @@ def model_func(t, c):
 ```
 
 ```python
-DeltaE = 1 # We match the boson energy to the TLS energy to make sure we'll get emission like behaaviour
+DeltaE = 1 # We match the boson energy to the TLS energy to make sure we'll get emission like behaviour
 omega = 1
 U = 0.001 # Coupling is 10x lower than the last tutorial because we are upping the number of TLS
 ```
@@ -429,7 +438,7 @@ for i, N in enumerate(Ns):
     result = sesolve(H, psi0, times, [number], progress_bar=True)
 
     # For fitting, we'll find when the first boson is emitted, then re-simulate 
-    # up to that pointso that we can get a better resolution over the shorter time periods.
+    # up to that point so that we can get a better resolution over the shorter time periods.
     # We do this because we expect timescales to shorten as we increase TLS number
     if N==1:
         # N=1 is special because number of bosons never crosses 1 so we need to use find_peaks just like in the last tutorial
@@ -441,13 +450,12 @@ for i, N in enumerate(Ns):
         crossing_one_index = np.where(np.diff((result.expect[0] > 1).astype(int)))[0][0]
         time_to_emit_one = times[crossing_one_index]
 
-    times_fit = np.linspace(0,  time_to_emit_one, 1000)
+    times_fit = np.linspace(0,  time_to_emit_one/10, 100)
     result_fit = sesolve(H, psi0, times_fit, [number])
 
-    fit, covariance = curve_fit(model_func, times_fit[0:100], result_fit.expect[0][0:100],p0=[0.01],maxfev=500)
+    fit, covariance = curve_fit(model_func, times_fit, result_fit.expect[0],p0=[0.01],maxfev=500)
 
     rate.append(2*fit[0])
-
 
     plt.plot(times, result.expect[0], label="Expected bosons")
     plt.plot(times,model_func(times,*fit),label="Fit")
@@ -461,25 +469,25 @@ for i, N in enumerate(Ns):
 Although superficially our model fit doesn't look great in e.g. Fig. 8, you'll notice that if we plot for short time scales over which the model was fitted it's fine.
 
 ```python
-plt.plot(times_fit[0:100], result_fit.expect[0][0:100], label="Expected bosons")
-plt.plot(times_fit[0:100],model_func(times_fit[0:100],*fit),label="Fit")
+plt.plot(times_fit, result_fit.expect[0], label="Expected bosons")
+plt.plot(times_fit,model_func(times_fit,*fit),label="Fit")
 plt.xlabel("Time")
 plt.legend(loc="right")
 plt.title(f"{H_latex} (Fig. 9)  \n $\Delta E={DeltaE}$, $\omega={omega}$, $U={U}$, N={N} \n $\Psi_0 =$ {ket_labels[psi0_ind]}")
 plt.show();
 ```
 
-We'll store the "base" rate of emission $\Gamma_1$ for the case of a single TLS so that we might reference it later
+We'll store the "base" rate of emission $\Gamma_{1E}$ for the case of a single TLS so that we might reference it later
 
 ```python
-gamma_1 = rate[0]
-gamma_1
+gamma_1E = rate[0]
+gamma_1E
 ```
 
 Let's now see how the emission rate varies with with number of TLS $N$. 
 
 ```python
-plt.plot(Ns,rate/gamma_1,"-o")
+plt.plot(Ns,rate/gamma_1E,"-o")
 plt.xlabel("Number of TLS (N)")
 plt.ylabel("Normalised emission rate ($\Gamma/\Gamma_1$)");
 plt.title("Emission from N delocalised excitations (Fig. 10)");
@@ -489,7 +497,7 @@ Fig. 9 shows us exactly what we expected - a nice linear relationship.
 
 Let's not celebrate too soon though.
 
-If we apply our intuition to the case of a single delocalised excitation spread acorss $N$ TLS, then we'd expect the emission rates to be independent of $N$. This is however not the case. 
+If we apply our intuition to the case of a single delocalised excitation spread across $N$ TLS, then we'd expect the emission rates to be independent of $N$. This is however not the case. 
 
 Let's see.
 
@@ -531,7 +539,7 @@ for i, N in enumerate(Ns):
     peak_times = times[peaks]
     time_to_emit_one = peak_times[0]
 
-    times_fit = np.linspace(0,  time_to_emit_one, 1000)
+    times_fit = np.linspace(0,  time_to_emit_one/10, 100)
     result_fit = sesolve(H, psi0, times_fit, [number])
 
     fit, covariance = curve_fit(model_func, times_fit[0:100], result_fit.expect[0][0:100],p0=[0.01],maxfev=500)
@@ -549,7 +557,7 @@ for i, N in enumerate(Ns):
 ```
 
 ```python
-plt.plot(Ns,rate/gamma_1,"-o")
+plt.plot(Ns,rate/gamma_1E,"-o")
 plt.xlabel("Number of TLS (N)")
 plt.ylabel("Normalised emission rate ($\Gamma/\Gamma_1$)");
 plt.title("Emission from 1 delocalised excitation (Fig. 18)");
@@ -559,7 +567,6 @@ Fig. 18 shows us that we get the same enhancement of emission rates whether we h
 
 Stranger still is the case where half of the TLS are excited.
 
-Let's check this out.
 
 
 ### Half excited system
@@ -605,10 +612,10 @@ for i, N in enumerate(Ns):
     crossing_one_index = np.where(np.diff((result.expect[0] > 1).astype(int)))[0][0]
     time_to_emit_one = times[crossing_one_index]
 
-    times_fit = np.linspace(0,  time_to_emit_one, 1000)
+    times_fit = np.linspace(0,  time_to_emit_one/10, 100)
     result_fit = sesolve(H, psi0, times_fit, [number])
 
-    fit, covariance = curve_fit(model_func, times_fit[0:100], result_fit.expect[0][0:100],p0=[0.01],maxfev=500)
+    fit, covariance = curve_fit(model_func, times_fit, result_fit.expect[0],p0=[0.01],maxfev=500)
 
     rate.append(2*fit[0])
 
@@ -623,7 +630,7 @@ for i, N in enumerate(Ns):
 ```
 
 ```python
-plt.plot(Ns,rate/gamma_1,"-o")
+plt.plot(Ns,rate/gamma_1E,"-o")
 plt.xlabel("Number of TLS (N)")
 plt.ylabel("Normalised emission rate ($\Gamma/\Gamma_1$)");
 plt.title("Emission from $N/2$ delocalised excitations (Fig. 25)");
@@ -641,11 +648,11 @@ We can see that $\Gamma \sim N^2$ when $n_+ = N/2$.
 
 This kind of counter intuitive emission rate enhancement was discovered by Dicke in his 1956 paper [Coherence in Spontaneous Radiation Processes](https://journals.aps.org/pr/abstract/10.1103/PhysRev.93.99) where he coined the turn "superradiance".
 
-In general, Dicke found that when $n_+$ excitations are delocalised across $N$ TLS, the emission rate $\Gamma$ is enhanced over the single TLS emission rate $\Gamma_1$ by:
+In general, Dicke found that when $n_+$ excitations are delocalised across $N$ TLS, the emission rate $\Gamma$ is enhanced over the single TLS emission rate $\Gamma_{1E}$ by:
 
-$$\frac{\Gamma}{\Gamma_1} = n_+\left(N - n_+ +1\right)$$
+$$\frac{\Gamma}{\Gamma_{1E}} = n_+\left(N - n_+ +1\right)$$
 
-where can see that $\Gamma$ is largest when half the TLS are excited giving a rate of $\Gamma/\Gamma_1 = \frac{N}{2}\left(\frac{N}{2}+1\right)$.
+where we can see that $\Gamma$ is largest when half the TLS are excited giving a rate of $\Gamma/\Gamma_{1E} = \frac{N}{2}\left(\frac{N}{2}+1\right)$.
 
 How can we understand this?
 
@@ -676,9 +683,9 @@ and so the probability enhancement factor (which is proportional to the emission
 
 To derive the general Dicke formula, we just have to do this counting and normalising for the general case:
 
-$$\frac{\Gamma}{\Gamma_1} = \left(\frac{^N C_{n_+} n_+}{\sqrt{^N C_{n_+}}\sqrt{^N C_{{n_+}-1}}}\right)^2 = n_+\left(N-n_++1\right)$$
+$$\frac{\Gamma}{\Gamma_{1E}} = \left(\frac{^N C_{n_+} n_+}{\sqrt{^N C_{n_+}}\sqrt{^N C_{{n_+}-1}}}\right)^2 = n_+\left(N-n_++1\right)$$
 
-Now we can really understand just how important those $+$'s are that make up the Dicke state. As soon as you allow any $-$ you reduce the emission rates. Take for example the case of 2 TLS with a single delocalised excitation. If instead of a Dicke state
+Now we can really understand just how important those "$+$'s" are that make up the Dicke state. As soon as you allow any "$-$" you reduce the emission rates. Take for example the case of 2 TLS with a single delocalised excitation. If instead of a Dicke state
 
 $\Psi = \frac{1}{\sqrt{2}}\left(| 0, +, -\rangle + | 0, -, + \rangle \right)$
 
@@ -691,7 +698,7 @@ then we get no emission at all because we get complete destructive interference 
 Now that we've seen what acceleration factors are possible for spontaneous emission, we might expect to find something similar in the realm of excitation transfer.
 
 
-## Supertransfer
+## 7.4 - Supertransfer
 
 
 Just like with superradiance, we're going to work with Dicke states to allow us to conveniently describe and simulate delocalised excitations.
@@ -702,7 +709,7 @@ The general Hamiltonian for this AB situation is described by:
 
 $$H =  \Delta E_A J_{N_Az}^{(A)} + \Delta E_B J_{N_Bz}^{(B)} + \hbar\omega\left(a^{\dagger}a +\frac{1}{2}\right) + U_A\left( a^{\dagger} + a \right)2J_{N_Ax}^{(A)} + U_B\left( a^{\dagger} + a \right)2J_{N_Bx}^{(B)}$$
 
-It's a bit full on so, won't worry, we won't investigate this Hamiltonian in all its generality today. We'll focus on the case where:
+It's a bit full on so we won't investigate this Hamiltonian in all its generality today. We'll focus on the case where:
 - System A and B have the same transition energy: $ \Delta E_A =  \Delta E_B =  \Delta E$
 - System A and B couple to the boson field in the same way: $U_A = U_B = U$
 - System A and B consist of the same number ot TLS: $N_A = N_B = N$
@@ -736,7 +743,7 @@ def make_operators_AB(max_bosons=2, parity=0, num_TLS_A=1, num_TLS_B=1):
     
     P = (1j*np.pi*(number + Jz_A + Jz_B + (num_TLS_A + num_TLS_B)/2)).expm()    # parity operator 
     
-    # map from QuTiP number states to |n,m> states
+    # map from QuTiP number states to |n,n_+A,n_+B> states
     possible_ns = range(0, max_bosons+1)
     possible_ms_A = range(int(2*jmax_A), -1, -1)
     possible_ms_B = range(int(2*jmax_B), -1, -1)
@@ -762,12 +769,12 @@ def make_operators_AB(max_bosons=2, parity=0, num_TLS_A=1, num_TLS_B=1):
 <!-- #region -->
 We're aaaalmost ready to rock and roll, but we need a couple of extra bits.
 
-Firstly, let's create an operator that helps us count the number of excitations in system A or B (a bit like our number operator for bosons). We can create such an operator from our `two_state` operators because they are just $J_z$ which, you may recall from earlier today, is just a measure of the $m$ number which in turn is related to the excitation number via $n_+ = m + N/2$ for Dicke states. In the language of expectation values $\langle ... \rangle$:
+Firstly, let's create an operator that helps us count the number of excitations in system A or B (a bit like our `number` operator for bosons). We can create such an operator from our `two_state` operators because they are just $J_z$ which is just a measure of the $m$ number which in turn is related to the excitation number via $n_+ = m + N/2$ for Dicke states. In the language of expectation values $\langle ... \rangle$:
 
 
 $\langle \text{two\_state}\rangle = \langle J_z\rangle = \langle m\rangle = \langle n_+ \rangle - N/2$
 
-Next, calculating expectation values. You may recall in the last tutorial that when we simulated excitation transfer we used our custom simulate function from [tutorial 05](https://github.com/project-ida/two-state-quantum-systems/blob/master/05-excitation-transfer.ipynb) because it was quicker over of the long simulation times typically required of excitation transfer. We're going to do the same here. This means we'll need our own way to calculate the expectation values (sesolve did this for us before). Although QuTiP does have the [`expect`](http://qutip.org/docs/latest/guide/guide-states.html#expectation-values) function, it turns out that we need to create a `Qobj` for every time step in order to use this function and that can be very slow. We will instead directly calculate the expectation value using matrix multiplication, i.e.
+Next, calculating expectation values. You may recall in the last tutorial that when we simulated excitation transfer we used our custom simulate function from [tutorial 05](https://github.com/project-ida/two-state-quantum-systems/blob/master/05-excitation-transfer.ipynb) because it was quicker over of the long simulation times typically required of excitation transfer. We're going to do the same here. This means we'll need our own way to calculate the expectation values (sesolve did this for us before). Although QuTiP does have the [`expect`](https://qutip.readthedocs.io/en/qutip-5.0.x/apidoc/functions.html#qutip.core.expect.expect) function, it turns out that we need to create a `Qobj` for every time step in order to use this function and that can be very slow. We will instead directly calculate the expectation value using matrix multiplication, i.e.
 
 $<H> = \psi^{\dagger}H\psi = \psi^{\dagger} @ (H @\psi) $
 
@@ -777,7 +784,7 @@ Let's automate this process for all time steps using a function.
 <!-- #endregion -->
 
 ```python
-# "states" will be the output of Psi from our "simulate" function
+# "states" will be the output of Psi from our custom "simulate" function
 def expectation(operator, states):
     operator_matrix = operator.full()
     operator_expect = np.zeros(states.shape[1], dtype=complex)
@@ -860,15 +867,15 @@ for i, N in enumerate(Ns):
     plt.show();
 ```
 
-We'll once again store the "base" rate of excitation transfer $\Gamma_{1}$ for the case of a single TLS in each system A and B so that we might reference it later
+We'll once again store the "base" rate of excitation transfer $\Gamma_{1T}$ for the case of a single TLS in each system A and B so that we might reference it later
 
 ```python
-gamma_1AB = rate[0]
-gamma_1AB
+gamma_1T = rate[0]
+gamma_1T
 ```
 
 ```python
-plt.plot(Ns,rate/gamma_1AB,"-o")
+plt.plot(Ns,rate/gamma_1T,"-o")
 plt.xlabel("Number of TLS (N)")
 plt.ylabel("Normalised transfer rate ($\Gamma/\Gamma_1$)");
 plt.title("Transfer of $N$ delocalised excitations from A to B (Fig. 33)");
@@ -878,7 +885,7 @@ plt.title("Transfer of $N$ delocalised excitations from A to B (Fig. 33)");
 print("slope = ", linregress(np.log10(Ns), np.log10(rate)).slope)
 ```
 
-Fig. 32 confirms the observation from the last tutorial that the excitation transfer has a more favourable scaling with the number of TLS than spontaneous emission - $N^2$ vs $N$ for the fully excited case.
+Fig. 33 confirms the observation from the last tutorial that the excitation transfer has a more favourable scaling with the number of TLS than spontaneous emission - $N^2$ vs $N$ for the fully excited case.
 > Note that in the last tutorial we observed $N$ vs $\sqrt{N}$ because we were looking at the Rabi frequency instead of the emission/transfer rates.
 
 We can think of this $N^2$ scaling in terms of pathways just like with spontaneous emission. When an excitation moves from the fully excited system A to de-excited system B, it leaves behind a "hole" in system A which can be in one of $N$ places and moves to system B where it can be one of $N$ places.
@@ -946,7 +953,7 @@ for i, N in enumerate(Ns):
 ```
 
 ```python
-plt.plot(Ns,rate/gamma_1AB,"-o")
+plt.plot(Ns,rate/gamma_1T,"-o")
 plt.xlabel("Number of TLS (N)")
 plt.ylabel("Normalised transfer rate ($\Gamma/\Gamma_1$)");
 plt.title("Transfer of $N$ delocalised excitations from A to B (Fig. 40)");
@@ -956,7 +963,7 @@ plt.title("Transfer of $N$ delocalised excitations from A to B (Fig. 40)");
 print("slope = ", linregress(np.log10(Ns), np.log10(rate)).slope)
 ```
 
-Fig. 38 confirms that we have the same $N^2$ scaling for excitation transfer even when there is only a single excitation in system A.
+Fig. 40 confirms that we have the same $N^2$ scaling for excitation transfer even when there is only a single excitation in system A.
 
 Thinking again in terms of pathways. The single excitation in system A can be in one of $N$ places and the excitation in each of of those "configurations" can move to one of $N$ "empty" places in the de-excited system B.
 
@@ -1030,7 +1037,7 @@ for i, N in enumerate(Ns):
 ```
 
 ```python
-plt.plot(Ns,rate/gamma_1AB,"-o")
+plt.plot(Ns,rate/gamma_1T,"-o")
 plt.xlabel("Number of TLS (N)")
 plt.ylabel("Normalised transfer rate ($\Gamma/\Gamma_1$)");
 plt.title("Transfer of $N/2$ delocalised excitations from A to B (Fig. 47)");
@@ -1062,7 +1069,7 @@ $$\left[^{N_{A}}C_{n_{+A}} n_{+A}\right]\left[^{N_{B}} C_{n_{+B}} \left(N_B - n_
 
 Once we've normalised the initial and final states and squared it all to get the rate, we arrive at:
 
-$$\frac{\Gamma}{\Gamma_1} = \left(\frac{\left[^{N_{A}}C_{n_{+A}} n_{+A}\right]\left[^{N_{B}} C_{n_{+B}} \left(N_B - n_{+B}\right)\right]}{\sqrt{^{N_{A}}C_{n_{+A}}\,^{N_{B}}C_{n_{+B}}}\sqrt{^{N_{A}}C_{n_{+A}-1}\,^{N_{B}}C_{n_{+B}+1}}}\right)^2 = n_{+A}\left(N_A-n_{+A}+1\right)\left(n_{+B}+1\right)\left(N_B - n_{+B}\right)$$
+$$\frac{\Gamma}{\Gamma_{1T}} = \left(\frac{\left[^{N_{A}}C_{n_{+A}} n_{+A}\right]\left[^{N_{B}} C_{n_{+B}} \left(N_B - n_{+B}\right)\right]}{\sqrt{^{N_{A}}C_{n_{+A}}\,^{N_{B}}C_{n_{+B}}}\sqrt{^{N_{A}}C_{n_{+A}-1}\,^{N_{B}}C_{n_{+B}+1}}}\right)^2 = n_{+A}\left(N_A-n_{+A}+1\right)\left(n_{+B}+1\right)\left(N_B - n_{+B}\right)$$
 
 I know, it's a lot, but if you grind through all the factorials involved in those [combinations](https://en.wikipedia.org/wiki/Combination) I promise you'll get the same answer.
 
@@ -1071,8 +1078,52 @@ Ok, so let's put our numbers in:
 - $n_{+A} = N/2$
 - $n_{+B} = 0$
 
-$$\frac{\Gamma}{\Gamma_1} =n_{+A}\left(N_A-n_{+A}+1\right)\left(n_{+B}+1\right)\left(N_B - n_{+B}\right) = \frac{N}{2}\left(\frac{N}{2}+1\right)N$$
+$$\frac{\Gamma}{\Gamma_{1T}} =n_{+A}\left(N_A-n_{+A}+1\right)\left(n_{+B}+1\right)\left(N_B - n_{+B}\right) = \frac{N}{2}\left(\frac{N}{2}+1\right)N$$
 
 And so we can see that we get a lovely $N^3$ scaling as we increase the number of TLS. You can also recover the $N^2$ scaling we found for the single and fully excited system A scenarios.
 
 This supertransfer was first proposed by Strȩk in their 1977 paper [Cooperative energy transfer](https://www.sciencedirect.com/science/article/abs/pii/0375960177904273?via%3Dihub), but more recent work explicitly demostrating the $N^3$ dependence can be found in the 2010 work of Lloyd on [Symmetry-enhanced supertransfer of delocalized quantum states](https://iopscience.iop.org/article/10.1088/1367-2630/12/7/075020).
+
+
+## 7.5 - Superradiance vs Supertransfer
+
+<!-- #region -->
+We finish with a reflection on some speculation we made in the last tutorial. There we noted how excitation transfer appeared to have a more favourable scaling with the number of TLS compared with spontaneous emission. We wondered about the possibility that the usually very slow excitation transfer rate $\Gamma_T$ could out-compete the spontaneous emission rate $\Gamma_E$. 
+
+We can  quantify this a bit more now. We can ask when is $\Gamma_T > \Gamma_E$? Roughly we can say:
+
+
+$$
+\begin{align}
+\Gamma_T &> \Gamma_E  \\
+\Gamma_{1T}N^3 &> \Gamma_{1E}N^2  \\
+N^2\left(N\Gamma_{1T} - \Gamma_{1E}\right) &> 0  \\
+N &> \frac{\Gamma_{1E}}{\Gamma_{1T}}  \\
+\end{align}
+$$
+<!-- #endregion -->
+
+A true comparison between the "base" emission and transfer rates requires us to know these rates for the same $\Delta E$. Unfortunately, we've used $\Delta E = 1$ for spontaneous emission and  $\Delta E = 2.5$ for excitation transfer so we can't make an accurate comparison. 
+
+You may recall that the reason we've been using $\Delta E = 2.5$ for excitation transfer is to suppress spontaneous emission. With $\Delta E = 1$ we'd never observe a "base" excitation transfer rate because spontaneous emission would always dominate.
+
+So, what can we do?
+
+We can start by just pretending that the excitation transfer rate is independent of $\Delta E$. We don't anticipate this to be the case, but it can be instructive to do this pretending sometimes. Now we can just plug in our numbers:
+
+```python
+gamma_1E/gamma_1T
+```
+
+We'd need to have $N > 6.9 \times 10^6$ for excitation transfer to dominate. This is well outside of what we can simulate but not outside of what we might find in e.g. a solid system that usually contains on the order of $10^{22}$ particles in every $\text{cm}^3$. 
+
+Food for thought 🤔.
+
+
+## Next up...
+
+A lot of what we've done today has laid the foundations for us to explore emission and transfer rates in many TLS. We've also seen how delocalising our excitations gives us huge speed ups in quantum processes opening up a way to observe otherwise very slow processes like excitation transfer.
+
+Whether excitation transfer can ever truly compete with spontaneous emission remains to be seen. We are however motivated to dig deeper into how the rates depend on the other parameters in our system - specifically $\Delta E$. We'll dig into this next time.
+
+Until then. 👋
