@@ -801,13 +801,17 @@ U = 0.001 # Coupling is 10x lower than the last tutorial because we are upping t
 %%time 
 # %%time must be at the top of the cell and by itself. It tells you the "Wall time" (how long the cell took to run) at the end of the output (should be about 2 min).
 
-Ns = [1,2,4,8,16,32] # number of TLS we want to simulation
+Ns = [1,2,4,8,16,32,64] # number of TLS we want to simulation
 times = np.linspace(0,  5000000, 1000)
 rate = [] # For storing emission rates
 
 for i, N in enumerate(Ns):
+    if N==1:
+        # For N=1 the parity is opposite to the other N's
+        two_state_A, two_state_B, bosons, interaction_A, interaction_B, number, nmm_list = make_operators_AB(max_bosons=2, parity=-1, num_TLS_A=N, num_TLS_B=N)
+    else:
+        two_state_A, two_state_B, bosons, interaction_A, interaction_B, number, nmm_list = make_operators_AB(max_bosons=2, parity=1, num_TLS_A=N, num_TLS_B=N)
 
-    two_state_A, two_state_B, bosons, interaction_A, interaction_B, number, nmm_list = make_operators_AB(max_bosons=2, parity=0, num_TLS_A=N, num_TLS_B=N)
 
     bra_labels, ket_labels = make_braket_labels(nmm_list)    
     
@@ -820,7 +824,7 @@ for i, N in enumerate(Ns):
 
     # We are using custom simulate function from last tutorial because it's going to be quicker
     # in this case because of the long simulation times
-    P, psi = simulate(H, psi0, times)
+    P, psi, evals, ekets = simulate(H, psi0, times)
     num_A = expectation(two_state_A + N/2, psi)
     num_B = expectation(two_state_B + N/2, psi)
 
@@ -837,11 +841,11 @@ for i, N in enumerate(Ns):
         crossing_one_index = np.where(np.diff((num_B > 1).astype(int)))[0][0]
         time_to_transfer_one = times[crossing_one_index]
 
-    times_fit = np.linspace(0,  time_to_transfer_one, 1000)
-    P_fit, psi_fit = simulate(H, psi0, times_fit)
+    times_fit = np.linspace(0,  time_to_transfer_one/10, 100)
+    P_fit, psi_fit, *_ = simulate(H, psi0, times_fit, evals, ekets)
     num_B_fit = expectation(two_state_B + N/2, psi_fit)
 
-    fit, covariance = curve_fit(model_func, times_fit[0:100], num_B_fit[0:100],p0=[0.01],maxfev=500)
+    fit, covariance = curve_fit(model_func, times_fit, num_B_fit,p0=[0.01],maxfev=500)
 
     rate.append(2*fit[0])
 
@@ -852,7 +856,7 @@ for i, N in enumerate(Ns):
     plt.xlabel("Time")
     plt.ylim([0,num_A.max()*1.1])
     plt.legend(loc="right")
-    plt.title(f"{H_latex} \n $\Delta E={DeltaE}$, $\omega={omega}$, $U={U}$, N={N} \n $\Psi_0 =$ {ket_labels[psi0_ind]}     (Fig. {i+26})")
+    plt.title(f"{H_latex_AB} \n $\Delta E={DeltaE}$, $\omega={omega}$, $U={U}$, N={N} \n $\Psi_0 =$ {ket_labels[psi0_ind]}     (Fig. {i+26})")
     plt.show();
 ```
 
@@ -867,7 +871,7 @@ gamma_1AB
 plt.plot(Ns,rate/gamma_1AB,"-o")
 plt.xlabel("Number of TLS (N)")
 plt.ylabel("Normalised transfer rate ($\Gamma/\Gamma_1$)");
-plt.title("Transfer of $N$ delocalised excitations from A to B (Fig. 32)");
+plt.title("Transfer of $N$ delocalised excitations from A to B (Fig. 33)");
 ```
 
 ```python
@@ -888,13 +892,13 @@ Let's see if we get the same scaling $N^2$ with a single excitation in A - mirro
 %%time 
 # %%time must be at the top of the cell and by itself. It tells you the "Wall time" (how long the cell took to run) at the end of the output (should be about 2 min).
 
-Ns = [2,4,8,16,32] # number of TLS we want to simulation
+Ns = [2,4,8,16,32,64] # number of TLS we want to simulation
 times = np.linspace(0,  5000000, 1000)
 rate = [] # For storing emission rates
 
 for i, N in enumerate(Ns):
 
-    two_state_A, two_state_B, bosons, interaction_A, interaction_B, number, nmm_list = make_operators_AB(max_bosons=2, parity=0, num_TLS_A=N, num_TLS_B=N)
+    two_state_A, two_state_B, bosons, interaction_A, interaction_B, number, nmm_list = make_operators_AB(max_bosons=2, parity=-1, num_TLS_A=N, num_TLS_B=N)
 
     bra_labels, ket_labels = make_braket_labels(nmm_list)    
     
@@ -907,7 +911,7 @@ for i, N in enumerate(Ns):
 
     # We are using custom simulate function from last tutorial because it's going to be quicker
     # in this case because of the long simulation times
-    P, psi = simulate(H, psi0, times)
+    P, psi, evals, ekets = simulate(H, psi0, times)
     num_A = expectation(two_state_A + N/2, psi)
     num_B = expectation(two_state_B + N/2, psi)
 
@@ -922,11 +926,11 @@ for i, N in enumerate(Ns):
     time_to_transfer_one = peak_times[0]
 
 
-    times_fit = np.linspace(0,  time_to_transfer_one, 1000)
-    P_fit, psi_fit = simulate(H, psi0, times_fit)
+    times_fit = np.linspace(0,  time_to_transfer_one/10, 100)
+    P_fit, psi_fit, *_ = simulate(H, psi0, times_fit, evals, ekets)
     num_B_fit = expectation(two_state_B + N/2, psi_fit)
 
-    fit, covariance = curve_fit(model_func, times_fit[0:100], num_B_fit[0:100],p0=[0.01],maxfev=500)
+    fit, covariance = curve_fit(model_func, times_fit, num_B_fit,p0=[0.01],maxfev=500)
 
     rate.append(2*fit[0])
 
@@ -937,7 +941,7 @@ for i, N in enumerate(Ns):
     plt.xlabel("Time")
     plt.ylim([0,num_A.max()*1.1])
     plt.legend(loc="right")
-    plt.title(f"{H_latex_AB} \n $\Delta E={DeltaE}$, $\omega={omega}$, $U={U}$, N={N} \n $\Psi_0 =$ {ket_labels[psi0_ind]}   (Fig. {i+33})")
+    plt.title(f"{H_latex_AB} \n $\Delta E={DeltaE}$, $\omega={omega}$, $U={U}$, N={N} \n $\Psi_0 =$ {ket_labels[psi0_ind]}   (Fig. {i+34})")
     plt.show();
 ```
 
@@ -945,7 +949,7 @@ for i, N in enumerate(Ns):
 plt.plot(Ns,rate/gamma_1AB,"-o")
 plt.xlabel("Number of TLS (N)")
 plt.ylabel("Normalised transfer rate ($\Gamma/\Gamma_1$)");
-plt.title("Transfer of $N$ delocalised excitations from A to B (Fig. 38)");
+plt.title("Transfer of $N$ delocalised excitations from A to B (Fig. 40)");
 ```
 
 ```python
@@ -956,7 +960,7 @@ Fig. 38 confirms that we have the same $N^2$ scaling for excitation transfer eve
 
 Thinking again in terms of pathways. The single excitation in system A can be in one of $N$ places and the excitation in each of of those "configurations" can move to one of $N$ "empty" places in the de-excited system B.
 
-The natural next step is to wonder what happens if we play the $N/2$ game. In other words, if we "half-excite" system A, will we find some kind of supertransfer. 
+The natural next step is to wonder what happens if we play the $N/2$ game. In other words, if we "half-excite" system A, will we find some kind of "supertransfer". 
 
 I think you know what the answer is 😉 but let's see it.
 
@@ -967,14 +971,16 @@ I think you know what the answer is 😉 but let's see it.
 %%time 
 # %%time must be at the top of the cell and by itself. It tells you the "Wall time" (how long the cell took to run) at the end of the output (should be about 2 min).
 
-Ns = [2,4,8,16,32] # number of TLS we want to simulation
-# Ns = [2]
+Ns = [2,4,8,16,32,64] # number of TLS we want to simulation
 times = np.linspace(0,  5000000, 1000)
 rate = [] # For storing emission rates
 
 for i, N in enumerate(Ns):
-
-    two_state_A, two_state_B, bosons, interaction_A, interaction_B, number, nmm_list = make_operators_AB(max_bosons=2, parity=0, num_TLS_A=N, num_TLS_B=N)
+    if N==2:
+        # For N=2 the parity is opposite to the other N's
+        two_state_A, two_state_B, bosons, interaction_A, interaction_B, number, nmm_list = make_operators_AB(max_bosons=2, parity=-1, num_TLS_A=N, num_TLS_B=N)
+    else:
+        two_state_A, two_state_B, bosons, interaction_A, interaction_B, number, nmm_list = make_operators_AB(max_bosons=2, parity=1, num_TLS_A=N, num_TLS_B=N)
 
     bra_labels, ket_labels = make_braket_labels(nmm_list)    
     
@@ -987,7 +993,7 @@ for i, N in enumerate(Ns):
 
     # We are using custom simulate function from last tutorial because it's going to be quicker
     # in this case because of the long simulation times
-    P, psi = simulate(H, psi0, times)
+    P, psi, evals, ekets = simulate(H, psi0, times)
     num_A = expectation(two_state_A + N/2, psi)
     num_B = expectation(two_state_B + N/2, psi)
 
@@ -1004,11 +1010,11 @@ for i, N in enumerate(Ns):
         crossing_one_index = np.where(np.diff((num_B > 1).astype(int)))[0][0]
         time_to_transfer_one = times[crossing_one_index]
 
-    times_fit = np.linspace(0,  time_to_transfer_one, 1000)
-    P_fit, psi_fit = simulate(H, psi0, times_fit)
+    times_fit = np.linspace(0,  time_to_transfer_one/10, 100)
+    P_fit, psi_fit, *_ = simulate(H, psi0, times_fit, evals, ekets)
     num_B_fit = expectation(two_state_B + N/2, psi_fit)
 
-    fit, covariance = curve_fit(model_func, times_fit[0:100], num_B_fit[0:100],p0=[0.01],maxfev=500)
+    fit, covariance = curve_fit(model_func, times_fit, num_B_fit,p0=[0.01],maxfev=500)
 
     rate.append(2*fit[0])
 
@@ -1019,7 +1025,7 @@ for i, N in enumerate(Ns):
     plt.xlabel("Time")
     plt.ylim([0,num_B.max()*1.1])
     plt.legend(loc="right")
-    plt.title(f"{H_latex_AB} \n $\Delta E={DeltaE}$, $\omega={omega}$, $U={U}$, N={N} \n $\Psi_0 =$ {ket_labels[psi0_ind]}   (Fig. {i+39})")
+    plt.title(f"{H_latex_AB} \n $\Delta E={DeltaE}$, $\omega={omega}$, $U={U}$, N={N} \n $\Psi_0 =$ {ket_labels[psi0_ind]}   (Fig. {i+41})")
     plt.show();
 ```
 
@@ -1027,13 +1033,46 @@ for i, N in enumerate(Ns):
 plt.plot(Ns,rate/gamma_1AB,"-o")
 plt.xlabel("Number of TLS (N)")
 plt.ylabel("Normalised transfer rate ($\Gamma/\Gamma_1$)");
-plt.title("Transfer of $N/2$ delocalised excitations from A to B (Fig. 44)");
+plt.title("Transfer of $N/2$ delocalised excitations from A to B (Fig. 47)");
 ```
+
+Performing the usual regression of the log of the rate gives:
 
 ```python
 print("slope = ", linregress(np.log10(Ns[:]), np.log10(rate[:])).slope)
 ```
 
-```python
+and if we look at the trend for higher $N$ we see something that appears to approach $N^3$ 🤯.
 
+```python
+print("slope = ", linregress(np.log10(Ns[2:]), np.log10(rate[2:])).slope)
 ```
+
+Super transfer indeed!
+
+And guess what, we can understand this scaling by enumerating the paths once again. It's more fiddly, but we can do it for the general case of different number of TLS and excitations in system A and B. Let's do it 💪:
+1. There are $^{N_{A}}C_{n_{+A}}$ different configurations for the $n_{+A}$ excitations in the $N_A$ TLS of system A
+2. In each of those configurations any of the $n_{+A}$ excitatons can move from A to B
+3. There are $^{N_{B}}C_{n_{+B}}$ different configurations for the $n_{+B}$ excitations in the $N_B$ TLS of system B
+4. In each of those configurations there are $N_B - n_{+B}$ "holes" that can accept an excitation
+
+The total number of paths is therefore:
+
+$$\left[^{N_{A}}C_{n_{+A}} n_{+A}\right]\left[^{N_{B}} C_{n_{+B}} \left(N_B - n_{+B}\right)\right]$$
+
+Once we've normalised the initial and final states and squared it all to get the rate, we arrive at:
+
+$$\frac{\Gamma}{\Gamma_1} = \left(\frac{\left[^{N_{A}}C_{n_{+A}} n_{+A}\right]\left[^{N_{B}} C_{n_{+B}} \left(N_B - n_{+B}\right)\right]}{\sqrt{^{N_{A}}C_{n_{+A}}\,^{N_{B}}C_{n_{+B}}}\sqrt{^{N_{A}}C_{n_{+A}-1}\,^{N_{B}}C_{n_{+B}+1}}}\right)^2 = n_{+A}\left(N_A-n_{+A}+1\right)\left(n_{+B}+1\right)\left(N_B - n_{+B}\right)$$
+
+I know, it's a lot, but if you grind through all the factorials involved in those [combinations](https://en.wikipedia.org/wiki/Combination) I promise you'll get the same answer.
+
+Ok, so let's put our numbers in:
+- $N_A = N_B = N$
+- $n_{+A} = N/2$
+- $n_{+B} = 0$
+
+$$\frac{\Gamma}{\Gamma_1} =n_{+A}\left(N_A-n_{+A}+1\right)\left(n_{+B}+1\right)\left(N_B - n_{+B}\right) = \frac{N}{2}\left(\frac{N}{2}+1\right)N$$
+
+And so we can see that we get a lovely $N^3$ scaling as we increase the number of TLS. You can also recover the $N^2$ scaling we found for the single and fully excited system A scenarios.
+
+This supertransfer was first proposed by Strȩk in their 1977 paper [Cooperative energy transfer](https://www.sciencedirect.com/science/article/abs/pii/0375960177904273?via%3Dihub), but more recent work explicitly demostrating the $N^3$ dependence can be found in the 2010 work of Lloyd on [Symmetry-enhanced supertransfer of delocalized quantum states](https://iopscience.iop.org/article/10.1088/1367-2630/12/7/075020).
