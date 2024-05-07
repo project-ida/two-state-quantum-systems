@@ -5,10 +5,10 @@ jupyter:
     text_representation:
       extension: .md
       format_name: markdown
-      format_version: '1.2'
-      jupytext_version: 1.3.3
+      format_version: '1.3'
+      jupytext_version: 1.15.1
   kernelspec:
-    display_name: Python 3
+    display_name: Python 3 (ipykernel)
     language: python
     name: python3
 ---
@@ -21,7 +21,7 @@ jupyter:
 
 [Last time](https://nbviewer.jupyter.org/github/project-ida/two-state-quantum-systems/blob/master/04-spin-boson-model.ipynb), we explored the spin boson model and found the surprising physics of down conversion. This is where many bosons are emitted/absorbed (rather than a single boson) when a two state system (TSS) makes a transition. This is not what's usually taught to be possible in introductory quantum mechanics courses.
 
-Today, we are going to extend the spin boson model by adding another TSS into the mix. What new lessons does mother nature have for us...the clue is in the name of the tutorial 😉 .
+Today, we are going to extend the spin boson model by adding another TSS into the mix. What new lessons does mother nature have for us... the clue is in the name of the tutorial 😉 .
 
 This tutorial is split up into the following sections:
 1. [Recap](https://nbviewer.jupyter.org/github/project-ida/two-state-quantum-systems/blob/master/05-excitation-transfer.ipynb#5.1---Recap)
@@ -46,14 +46,14 @@ import warnings
 warnings.filterwarnings('ignore')
 
 from qutip import *
+from qutip.piqs import *
 
 from scipy.optimize import minimize_scalar
 
 # The helper file below brings functions created in previous tutorials and adds an extra one
 # make_df_for_energy_scan - we made this in tutorial 4
 # make_braket_labels - we made this in tutorial 4
-# simulate - we made this in tutorial 4
-# plot_prob - made from code used for plotting in tutorial 4
+# plot_sim - made from code used for plotting in tutorial 4
 # prettify_states - nice way to display many QuTiP states for side by side comparison
 # 
 from libs.helper_05_tutorial import *
@@ -65,7 +65,7 @@ Let's remind ourselves of the Hamiltonian that we used in the last tutorial ([Tu
 
 $$H =  \frac{\Delta E}{2} \sigma_z + \hbar\omega\left(a^{\dagger}a +\frac{1}{2}\right) + U\left( a^{\dagger} + a \right)\sigma_x$$
 
-where we recognie $\Delta E$ as the transition energy of the TSS, $\hbar\omega$ the energy of a single boson and $U$ as the strength of the interaction between the TSS and the boson field.
+where we recognise $\Delta E$ as the transition energy of the TSS, $\hbar\omega$ the energy of a single boson and $U$ as the strength of the interaction between the TSS and the boson field.
 
 We described the states of the system above using the notation $|n,\pm \rangle$.
 
@@ -177,7 +177,7 @@ interaction_2   = (a.dag() + a) * sx2                  # interaction_2 energy op
 
 ## 5.3  - Structure of the Hamiltonian
 
-In [tutorial 4](https://nbviewer.jupyter.org/github/project-ida/two-state-quantum-systems/blob/master/04-spin-boson-model.ipynb#4.3---Structure-of-the-Hamiltonian), we learnt a lot from looking at the Hinton diagram of the Hamiltonian. What we we learn this time?
+In [tutorial 4](https://nbviewer.jupyter.org/github/project-ida/two-state-quantum-systems/blob/master/04-spin-boson-model.ipynb#4.3---Structure-of-the-Hamiltonian), we learnt a lot from looking at the Hinton diagram of the Hamiltonian. What will we learn this time?
 
 We'll use an example Hamiltonian with $\Delta E = \omega = U = 1$ for this visual exploration.
 
@@ -197,7 +197,9 @@ ax.tick_params(axis='x',labelrotation=90)
 ax.set_title("Matrix elements of H     (Fig 1)");
 ```
 
-As we might have guessed, the Hinton diagram is more complicated than for a single TSS. Each state is connected to twice as many states as previously. For example, $|0,+, + \rangle$ (top left corner) is directly coupled to the following 2 states:
+First, a short reminder from [last time](https://nbviewer.jupyter.org/github/project-ida/two-state-quantum-systems/blob/master/04-spin-boson-model.ipynb#4.3---Structure-of-the-Hamiltonian). Each off-diagonal coloured square represents an interaction between 2 states of the system (aka a non-zero matrix element of the Hamiltonian). If there is no coloured square then the particular 2 states in question are not connected, i.e. they cannot transform into one another.
+
+Looking now in detail at Fig 1. As we might have guessed, the Hinton diagram in is more complicated than for a single TSS (see [Fig 4 of tutorial 4](https://nbviewer.jupyter.org/github/project-ida/two-state-quantum-systems/blob/master/04-spin-boson-model.ipynb#4.3---Structure-of-the-Hamiltonian)). Each state is connected to twice as many states as previously. For example, $|0,+, + \rangle$ (top left corner) is coupled to the following 2 states:
 - $|1,+, - \rangle$
 - $|1,-, + \rangle$
 
@@ -216,9 +218,9 @@ $|0,+, + \rangle \rightarrow |1,-, + \rangle \rightarrow |2,-, - \rangle \righta
 
 What can we learn from this pathway?
 
-We can expect that the indirect path from $|0,+, + \rangle \rightarrow |2,-, - \rangle$ could be physically realised by each TSS emitting a single boson whose energy matches the TSS transition energy, i.e. $\Delta E = \omega$. We've seen similar physics for single TSS - nothing new here.
+We can expect that the indirect path from $|0,+, + \rangle \rightarrow |2,-, - \rangle$ could be physically realised by each TSS emitting a single boson whose energy matches the TSS transition energy, i.e. $\Delta E = \omega$, - in this way energy is conserved. We've seen similar physics for single TSS - nothing new here.
 
-We can also expect that the indirect path from $|0,+, + \rangle \rightarrow |4,-, - \rangle$ could be physically realised by each TSS emitting a 2 bosons whose energy is half the TSS transition energy, i.e. $\Delta E = 2\omega$. This is another example of down conversion that we found last time - again nothing new here.
+We can also expect that the indirect path from $|0,+, + \rangle \rightarrow |4,-, - \rangle$ could be physically realised by each TSS emitting a 2 bosons whose energy is half the TSS transition energy, i.e. $\Delta E = 2\omega$, - in this way energy is also conserved. This is another example of down conversion that we found last time - again nothing new here.
 
 We can also draw quite different pathways like the one below.
 
@@ -233,7 +235,7 @@ $|1,+, - \rangle \rightarrow |0,+, + \rangle \rightarrow |1,-, + \rangle$
 
 We could describe such an indirect path from $|1,+, - \rangle \rightarrow |1,-, + \rangle$ as **excitation transfer** because the "excitation" (i.e. the +) moves from one TSS to another - this is something that we've not encountered before and we'd like to explore this in more detail through simulation.
 
-Before we are able to simulate, we need to also extend the ideas of party that we [introduced last time](https://nbviewer.jupyter.org/github/project-ida/two-state-quantum-systems/blob/master/04-spin-boson-model.ipynb#4.4---Parity) and bring everything together in a convenient function that we can use again and again.
+Before we are able to simulate, we need to also extend the ideas of parity that we [introduced last time](https://nbviewer.jupyter.org/github/project-ida/two-state-quantum-systems/blob/master/04-spin-boson-model.ipynb#4.4---Parity) and bring everything together in a convenient function that we can use again and again.
 
 
 
@@ -260,7 +262,7 @@ Fig 4 shows us that our guess at parity creates a binary $\pm 1$ similar to what
 commutator(H,P).full
 ```
 
-We have zero commutator - this is exactly what we need.
+We have zero commutator - this shows that partiy is indeed conserved.
 
 We are now ready to put this all together in much the same way we did in the last tutorial, i.e. create a function that can extract the even parity universe (+1) or the odd parity universe (-1).
 
@@ -327,7 +329,7 @@ two_state_1, two_state_2, bosons, interaction_1, interaction_2, number, nmm_list
 # prepare data structure for the energy level scan
 df_odd = make_df_for_energy_scan("$\Delta E$", -4, 4, 201, two_state_1.shape[0])
 
-# fill the data structure with eigevalues of the Hamiltonian i.e. the energy levels
+# fill the data structure with eigenvalues of the Hamiltonian i.e. the energy levels
 for i, row in df_odd.iterrows():
     H =  row["$\Delta E$"]*two_state_1+ row["$\Delta E$"]*two_state_2 + 1*bosons 
     evals, ekets = H.eigenstates()
@@ -344,7 +346,7 @@ two_state_1, two_state_2, bosons, interaction_1, interaction_2, number, nmm_list
 # prepare data structure for the energy level scan
 df_even = make_df_for_energy_scan("$\Delta E$", -4, 4, 201, two_state_1.shape[0])
 
-# fill the data structure with eigevalues of the Hamiltonian i.e. the energy levels
+# fill the data structure with eigenvalues of the Hamiltonian i.e. the energy levels
 for i, row in df_even.iterrows():
     H =  row["$\Delta E$"]*two_state_1+ row["$\Delta E$"]*two_state_2 + 1*bosons 
     evals, ekets = H.eigenstates()
@@ -368,7 +370,7 @@ axes[0].set_ylabel("Energy");
 
 ```
 
-What can we say about th energy levels in Figs 5 and 6?
+What can we say about the energy levels in Figs 5 and 6?
 
 Compared to [Fig 1 of tutorial 4](https://nbviewer.jupyter.org/github/project-ida/two-state-quantum-systems/blob/master/04-spin-boson-model.ipynb#4.2.1---Spin-boson-landscape-$U=0$), we have some similarities and some differences:
 - Similarity - levels that trend up and down with changing $\Delta E$. These correspond to states like $|n,+,+\rangle$ and $|n,-,-\rangle$. For example, in Fig 6 for small positive $\Delta E$ (referring to blue squares in Fig 4 for even parity states) we have:
@@ -386,8 +388,8 @@ Thinking more carefully about these unfamiliar horizontal levels, there are 2 wa
 
 These combinations are reminiscent of the "in phase" and "out of phase" states that we described [back in tutorial 1](https://nbviewer.jupyter.org/github/project-ida/two-state-quantum-systems/blob/master/01-an-isolated-two-state-system.ipynb#1.2-Coupling-between-two-states-of-the-same-energy).  Because there are two combinations, we can expect that each horizontal line in Fig 6 is in fact 2 horizontal lines on top of each other, i.e:
 
- - $|1,+,-\rangle \pm |1,-,+\rangle $ - green/red
- - $|3,+,-\rangle \pm |3,-,+\rangle $ - pink/grey
+ - $|1,+,-\rangle \pm |1,-,+\rangle $ - the lowest horizontal lines with energy = 1.5
+ - $|3,+,-\rangle \pm |3,-,+\rangle $ - the highest horizontal lines with energy = 3.5
 
 What else can we say about Fig 6?
 
@@ -425,12 +427,12 @@ plt.ylabel("Energy");
 There are many things we can see in Fig 7:
 1. Where 2 levels have come together (e.g. levels 4 and 5) we see an anti-crossing as we have come to expect from interacting levels
 2. The horizontal levels of Fig 6 have split into 2 levels as we suspected. This confirms that we do indeed have 4 levels coming together at some anti-crossings, e.g. levels 1,2,3,4
-3. There appear to still be genuine crossings between some levels, most strikingly seen at the intersection of levels 2 and 3 - this indicates there might be non interacting sub-universes with each parity universe 🤔
+3. There appear to still be genuine crossings between some levels, most strikingly seen around $\Delta E \approx 1$ between e.g. levels 2 and 3 - this indicates there might be non interacting sub-universes with each parity universe 🤔
 
-There is a lot to explore and understand here. We'll start with point 1, i.e. two level anti-crossing, as this is the most familiar to us. We'll then take a look at point 3 i.e. the mystery crossing between the states with no overall excitation. Then we'll finish off with point 2, i.e. the unfamiliar 4 level anti-crossing.
+There is a lot to explore and understand here. We'll start with two level anti-crossings, as this is the most familiar to us. We'll then look at what's happening when 4 levels are coming together.
 
 
-### 5.6.1 - Two Level anti-crossing
+### 5.6.1 - Two Levels
 
 In Fig 7, levels 4 and 5 anti-cross at around $\Delta E = 2$. This anti-crossing looks like it could be linked to the $|0,+, + \rangle \rightarrow |4,-, - \rangle$ down conversion that we talked about when we explored the Hinton diagram. Let's see if we can confirm this down conversion via simulation (just as we did in [Fig 12 of tutorial 4](https://nbviewer.jupyter.org/github/project-ida/two-state-quantum-systems/blob/master/04-spin-boson-model.ipynb#4.5---Down-conversion)). 
 
@@ -489,6 +491,36 @@ psi0 = basis(len(nmm_list), 0)
 
 Now we are ready to simulate
 
+
+In previous tutorials we have been using QuTiP's [`sesolve`](http://qutip.org/docs/latest/apidoc/functions.html#module-qutip.sesolve) to solve the Schrödinger equation. This was convenient for us when we were getting started - we only needed a single line of code to run the simulation. It was especially useful when we introduced a time dependent perturbation to our TSS Hamiltonian in [Tutorial 2](https://nbviewer.jupyter.org/github/project-ida/two-state-quantum-systems/blob/master/02-perturbing-a-two-state-system.ipynb#2.2-Time-dependent-perturbation). However, sesolve will cause us problems as we simulate physics over longer and longer timescales. This is because QuTiP's sesolve is numerically solving a differential equation and so has specific time-step requirements that are prohibitive for long simulation times.
+
+Technically, we don't actually need a special solver like sesolve when dealing with time-independent problems (like ours). The business of solving the Schrödinger equation can be reduced to a problem of finding the eigenvalues and eigenvectors of the Hamiltonian. In other words, we can construct an analytical solution. 
+
+We'll not go into the details of how this works right now - head over to the appendix for that. For now, we'll just use the results to run some simulations.
+
+
+```python
+def simulate(H, psi0, times):
+    num_states = H.shape[0]
+
+    # Initialize the psi matrix
+    psi = np.zeros((num_states, len(times)), dtype=complex)
+    evals, ekets = H.eigenstates()
+    psi0_in_H_basis = psi0.transform(ekets)  
+
+    # Pre-compute the exponential factor outside the loop for all evals and times
+    exp_factors = np.exp(-1j * np.outer(evals, times))
+
+    # Vectorised computation for each eigenstate's contribution
+    for i, e in enumerate(ekets):
+        psi += np.outer(psi0_in_H_basis[i] * e.full(), exp_factors[i, :])
+    
+    # Compute probabilities from psi
+    P = np.abs(psi)**2
+
+    return P, psi
+```
+
 ```python
 times = np.linspace(0.0, 100000.0, 10000)
 P, psi = simulate(H, psi0, times)
@@ -500,132 +532,159 @@ We need to recreate the bra-ket labels because we are now only working with even
 bra_labels, ket_labels = make_braket_labels(nmm_list)
 ```
 
-Now let's plot the results using a helper function `plot_prob` that pulls together plotting code that we used in the last tutorial.
+Now let's plot the results using a helper function `plot_sim` that pulls together plotting code that we used in the last tutorial.
 
 ```python
-plot_prob(P, times, ket_labels)
+plot_sim(times, P, ket_labels)
 plt.title(f"2 TSS with {H_latex}  ($\Delta E \\approx 1.9328$, $\omega=1$, $U=0.1$)   (Fig 8)");
 ```
 
-Fig 8 shows exactly what we expected i.e. both TSS transition from "+" to "-" each giving of 2 bosons in the process, i.e. $|0,+, + \rangle \rightarrow |4,-, - \rangle$.
+Fig 8 shows exactly what we expected, namely down conversion - both TSS transition from "+" to "-" each giving of 2 bosons in the process i.e. $|0,+, + \rangle \rightarrow |4,-, - \rangle$.
 
 
-### 5.6.2 - Mystery crossings
+### 5.6.2 - Four levels
 
 
-In Fig 7, we found something unexpected for the energy levels corresponding to no overall excitation, i.e. those consisting of equal number of "+" and "-". We found that e.g. levels 2 and 3 appeared to cross each other. Considering that we are in an even parity universe, the expectation is that all levels can interact with each other and create anti-crossings in the process - so why don't levels 2 and 3 do this?
+In Fig 7, we found something unexpected for the energy levels corresponding to no overall excitation, i.e. those consisting of equal number of "+" and "-". We found that e.g. levels 2 and 3 appeared to cross each other. Considering that we are in an even parity universe, the expectation is that all levels can interact with each other and create anti-crossings in the process - so why don't levels 2 and 3 do this? It has to do with the conservation of angular momentum.
 
-To dig a little deeper, we'll set $\Delta E = 0$ and inspect levels 2 and 3 in more detail - specifically we'll look at their corresponding eigenstates.
+
+Although we don't explicitly have a description of angular momentum in our TSS, you may recall from [tutorial 2](https://nbviewer.jupyter.org/github/project-ida/two-state-quantum-systems/blob/master/02-perturbing-a-two-state-system.ipynb#Transition-probability) that our system is mathematically similar to spin $1/2$ particles which do have angular momentum. In general, the conservation of total angular momentum of a system constrains how that system can behave. We can therefore expect to find constraints in our TSS based on the conservation of what we can call `pseudo-angular momentum`.
+
+We'll spend a lot more time on the details of pseudo-angular momentum in the next tutorial. For now, let's just try and calculate the magnitude of the total pseudo-angular momentum around $\Delta E \approx 1$ for levels 2 and 3 to see what insights we can find.
+
+We'll need to introduce a few new operators:
+
+- The spin operators ($S$) for a [spin 1/2 particle](https://en.wikipedia.org/wiki/Spin-%C2%BD#Observables):
+
+$$
+S_x = \frac{1}{2}\sigma_x \,\,\,\,\,\, S_y = \frac{1}{2}\sigma_y \,\,\,\,\,\, S_z = \frac{1}{2}\sigma_z
+$$
+
+- The [total angular momentum operators](https://www2.ph.ed.ac.uk/~ldeldebb/docs/QM/lect15.pdf) ($J$) for $N$ TSS:
+
+$$J_{Nx} = \overset{N}{\underset{n=1}{\Sigma}} S_{n x} \,\,\,\,\,\, J_{Ny} = \overset{N}{\underset{n=1}{\Sigma}} S_{n y} \,\,\,\,\,\, J_{Nz} = \overset{N}{\underset{n=1}{\Sigma}} S_{n z}$$
+
+
+
+
+Our Hamiltonian then looks like:
+
+$$H =  \Delta E J_{Nz} + \hbar\omega\left(a^{\dagger}a +\frac{1}{2}\right) + U\left( a^{\dagger} + a \right)2J_{Nx}$$
 
 ```python
-DeltaE = 0
+H_latex = "$H = \Delta E J_{Nz} + \hbar\omega(a^{{\dagger}}a +1/2) + U( a^{{\dagger}} + a )2J_{Nx}$ "
+```
+
+To calculate the magnitude of the total pseudo-angular momentum, we'll need to use QuTiP's [`jspin`](http://qutip.org/docs/latest/apidoc/functions.html#qutip.piqs.jspin),  to generate the $J$ operators for any given number of TSS (note, you must import [`qutip.piqs`](http://qutip.org/docs/latest/apidoc/functions.html#module-qutip.piqs) to use this).
+
+```python
+J = jspin(2, basis="uncoupled")
 ```
 
 ```python
-H = DeltaE*two_state_1 + DeltaE*two_state_2 + 1*bosons + 0.1*interaction_1 + 0.1*interaction_2
+J[0] # J_x
 ```
 
 ```python
-evals, ekets = H.eigenstates()
+J[1] # J_y
 ```
 
-Let's first look at the energy of levels 2 and 3
-
 ```python
-print(f"Energy of level 2 = {evals[2]}")
-print(f"Energy of level 3 = {evals[3]}")
+J[2] # J_z
 ```
 
-How intriguing, the energy of level 3 is exactly 1.5 - just as as it was when we didn't have any coupling between the TSS and the boson field.
-
-Now let's look at the corresponding eigenstates using a helper function `prettify_states` that we imported from the helper file.
+The magnitude of the total angular momentum is then represented by an operator that's the sum of the squares of the individual component operators (see [spinors](https://en.wikipedia.org/wiki/Spinors_in_three_dimensions) for a deeper discussion of this).
 
 ```python
-prettify_states(ekets, nmm_list)[[2,3]]
+J2 = J[0]*J[0] + J[1]*J[1] + J[2]*J[2]
 ```
 
-We can see that the eigenstates corresponding to levels 2 and 3 are normalised versions of: 
-- Level 2 = $|1,+,-\rangle  + |1,-,+\rangle$ +  other states with boson number different from 1
-- Level 3 = $|1,+,-\rangle  - |1,-,+\rangle$ 
-
-This pattern persists for all $\Delta E$ - try it out for yourself by changing the $\Delta E$ in the above Hamiltonian. There is always a horizontal level corresponding to  $|1,+,-\rangle  - |1,-,+\rangle$ with energy 1.5. This level (and others like it with different boson number) does not couple to others and so does indeed live in its own sub-universe.
-
-Why is it that changing plus to minus in $|1,+,-\rangle  \pm |1,-,+\rangle$ makes such a difference? What is the nature of this other sub-universe? They are important questions but they take us somewhat away from the primary mission of this tutorial. We'll come back to this in the next tutorial.
-
-> For those who just can't wait that long, it has to do with conservation of spin angular momentum
-
-For now, what we can confidently say is that when we see a 4 level anti-crossing it's actually only 3 levels that are interacting to produce the energy splitting - the other level is a non-interacting one of the form $|n,+,-\rangle  - |n,-,+\rangle$. With that said, let's take a look at these unfamiliar many level anti-crossings.
-
-
-### 5.6.3 - Beyond simple anti-crossings
-
-
-In Fig 7, there is a 4 level "anti-crossing" around $\Delta E = 1$. Because $\Delta E = \omega$ at this point, we suspect that the transition $|0,+, + \rangle \rightarrow |2,-, - \rangle$ (that we spoke of during exploration of the Hinton diagram) might be related to it.
-
-Let's zoom in a take a closer look before we head straight into simulation.
+These new operators will need to be tensorised just like our other operators. We'll adapt our `make_operators` function for this. Note that we've also needed to adapt the parity operator to work with $J_z$.
 
 ```python
-df_even = make_df_for_energy_scan("$\Delta E$", 0.7, 1.3, 201, two_state_1.shape[0])
+def make_operators(max_bosons, parity=0):
+    
+    a     = tensor(destroy(max_bosons+1), qeye(2),qeye(2))                 # tensorised boson destruction operator
+    J     = jspin(2, basis="uncoupled")
+    Jx    = tensor(qeye(max_bosons+1), J[0])                               # tensorised Jx operator
+    Jz    = tensor(qeye(max_bosons+1), J[2])                               # tensorised Jx operator
+    J2    = tensor(qeye(max_bosons+1), J[0]*J[0] + J[1]*J[1] + J[2]*J[2])  # tensorised J^2 operator
+
+    two_state     = Jz                                 # two state system energy operator   Jz
+    bosons        = (a.dag()*a+0.5)                    # boson energy operator              𝑎†𝑎+1/2
+    number        = a.dag()*a                          # boson number operator              𝑎†𝑎
+    interaction   = 2*(a.dag() + a) * Jx               # interaction energy operator        2(𝑎†+𝑎)Jz  
+    
+    P = -(1j*np.pi*(number + Jz)).expm()               # parity operator 
+    
+    # map from QuTiP number states to |n,±, ±> states
+    possible_ns = range(0, max_bosons+1)
+    possible_ms = ["+","-"]
+    nmm_list = [(n,m1,m2) for (n,m1,m2) in product(possible_ns, possible_ms, possible_ms)]
+    
+    # only do parity extraction if a valid parity is being used
+    if (parity==1) | (parity==-1):
+        p               = np.where(P.diag()==parity)[0]
+        
+        two_state       = two_state.extract_states(p)
+        bosons          = bosons.extract_states(p)
+        number          = number.extract_states(p)
+        interaction     = interaction.extract_states(p)
+        J2              = J2.extract_states(p)  
+        nmm_list        = [nmm_list[i] for i in p]
+  
+    
+    return two_state, bosons, interaction, number, nmm_list, J2
+```
+
+Let's now create a zoomed in version of the Fig 6 energy level diagram (where interaction is turned off  $U=0$) around the area of interest for levels 2 and 3.
+
+```python
+two_state, bosons, interaction, number, nmm_list, J2 = make_operators(max_bosons=6, parity=1)
+```
+
+```python
+df_even = make_df_for_energy_scan("$\Delta E$", 0.7, 1.3, 201, two_state.shape[0])
 
 for i, row in df_even.iterrows():
-    H =  row["$\Delta E$"]*two_state_1+ row["$\Delta E$"]*two_state_2 + 1*bosons + 0.1*interaction_1 + 0.1*interaction_2
+    H =  row["$\Delta E$"]*two_state + 1*bosons
     evals, ekets = H.eigenstates()
     df_even.iloc[i,1:] = evals 
 ```
 
 ```python
 df_even.plot(x="$\Delta E$",ylim=[1,2],legend=True, 
-        title=f"Even energy levels for {H_latex}   ($\omega=1$, $U=0.1$)    (Fig 9)",
+        title=f"Even energy levels for {H_latex}   ($\omega=1$, $U=0$, N=2)    (Fig 9)",
              figsize=(10,8));
 
 plt.ylabel("Energy");
 ```
 
-When looking at levels 2 and 3 in Fig 9, we should try and ignore the horizontal part (the non interacting level) and instead imagine the elongated "S" looking shape as a single energy level - let's call it level S.
-
-We can see from Fig 9 that the notion of an anti-crossing is now somewhat ill defined because things don't look very symmetric. In particular:
-- The extrema of the upper (purple) and lower (orange) levels don't occur at the same $\Delta E$
-- The upper and lower levels come closest to the middle level S at a $\Delta E$ that doesn't not coincide with their extrema
-
-It is therefore difficult to choose an appropriate $\Delta E$ for a simulation. We do however know that as $U \rightarrow 0$ all the levels come together at $\Delta E=1 $ (as we saw in Fig 6). Let's therefore reduce $U$ by a factor of 10 to $U=0.01$, set $\Delta E=1 $ and see how we go.
+Let's now look at the 4 energy levels visible in Fig 9 and calculate the square total pseudo-angular momentum. Specifically, we're going to calculate the expectation value of $J^2$ for each energy level at each value of $\Delta E$. For this, we'll use QuTip's [`expect`](https://qutip.org/docs/latest/apidoc/functions.html#module-qutip.expect) function.
 
 ```python
-H = 1*two_state_1 + 1*two_state_2 + 1*bosons + 0.01*interaction_1 + 0.01*interaction_2
+df_J_even = make_df_for_energy_scan("$\Delta E$", 0.7, 1.3, 201, two_state.shape[0])
+
+for i, row in df_J_even.iterrows():
+    H =  row["$\Delta E$"]*two_state + 1*bosons + 0.1*interaction
+    evals, ekets = H.eigenstates()
+    df_J_even.iloc[i,1:] = expect(J2,ekets)  # The expected square total angular momentum for each energy level
+    
+df_J_even[["$\Delta E$", "level_1", "level_2", "level_3", "level_4"]].head()
 ```
 
-We'll again start in the $|0,+, + \rangle$ state.
+We can see that the horizontal level 3 has $<J^2> = 0$ (tiny non-zero values are due to numerical limitations) whereas the others have $<J^2> = 2$. Because pseudo-angular momentum is conserved, level 3 cannot influece the others, even when the energies are the same. For example, at $\Delta E = 1$ when all the levels converge, frequency "beating" will only occur between levels 1, 2 and 4 where the pseudo-angular momentum is the same. Level spltting accompanies that beating, as we've seen several times during these tutorials and we see in Fig 7 when  $U \neq 0$. Level 3 is however excluded from the beating and that's why its energy remains the same whether or not there is any ineraction with the boson field.
 
-```python
-psi0 = basis(len(nmm_list), 0)
-```
 
-```python
-times = np.linspace(0.0, 1000.0, 10000)
-P, psi = simulate(H, psi0, times)
-```
-
-```python
-plot_prob(P ,times, ket_labels)
-plt.title(f"2 TSS with {H_latex}  ($\Delta E = 1$, $\omega=1$, $U=0.01$)   (Fig 10)");
-```
-
-Fig 10 indeed shows the emission of a single boson from each TSS as we predicted when we explored the Hinton diagram.
-
-Things are not quite as simple as for a two level anti-crossing. We see incomplete Rabi oscillations in $|0,+,+ \rangle$ (i.e. probability does not go from 1 to 0 to 1) which results from an asymmetry in the coupling between states with different boson numbers.
-
-> For those wanting to go a bit deeper here in understanding why we don't see a full oscillation in probability from 1 to 0 for $|0,+,+ \rangle$ and $|2,-,- \rangle$. We saw in [Fig 2 of tutorial 4](https://nbviewer.jupyter.org/github/project-ida/two-state-quantum-systems/blob/master/04-spin-boson-model.ipynb#4.2.2---Crossings-and-anti-crossings), that as the boson number increased the separation in levels at anti-crossings also increased - this tells us that the boson number is involved in the amount of coupling between any two levels. Because $|0,+,+ \rangle \rightarrow |2,-,- \rangle$ involves the coupling of 3 levels of different boson number (the third being the intermediate level $|1,+,-\rangle + |1,-,+\rangle$), an asymmetry develops between the intermediate and the upper/lower levels. This asymmetry is then reflected in the time evolution of Fig 10.
-
-Despite the additional complexity, our intuition from looking at both the Hinton diagram and the energy levels still gave us the right idea.
-
-What about the novel feature we found in the Hinton diagram - the suggestion of something we termed excitation transfer?
+So, when we see 4 levels coming together, in practical terms it's 3 + 1. Thinking about 3 interacting levels is more complicated than the 2 we've been used to. We'll not dig into that in this tutorial because what's more interesting is to look at the novel feature we found in the Hinton diagram - the suggestion of something we termed excitation transfer.
 
 
 ## 5.7 - Excitation transfer
 
 
-The Hinton diagram in Fig 3 hinted at an indirect transition of the form $|1,+, - \rangle \rightarrow |1,-, + \rangle$. Since this transition appears to be mediated by  $ |0,+, + \rangle$ (among others), which has one less boson in exchange for an extra +, we should be able simulate excitation transfer using $\Delta E = \omega$ i.e. we can just re-run the last simulation with the starting condition $|1,+, - \rangle$ instead of $|0,+, + \rangle$.
+The Hinton diagram in Fig 3 hinted at an indirect transition of the form $|1,+, - \rangle \rightarrow |1,-, + \rangle$. This transition appears to be mediated by several states. We highlighted $ |0,+, + \rangle$ in particular, but there are others too. Let's run a simulation using $\Delta E = \omega$ with initial condition $|1,+, - \rangle$ and see what other states are involved.
 
-What does $|1,+, - \rangle$ correspond to in QuTiP?
+First, let's find which number state $|1,+, - \rangle$ corresponds to
 
 ```python
 nmm_list
@@ -637,6 +696,12 @@ We need state number 2.
 nmm_list[2]
 ```
 
+For this simulation, we'll reduce the interaction strength.
+
+```python
+H = 1*two_state + 1*bosons + 0.01*interaction
+```
+
 ```python
 psi0 = basis(len(nmm_list), 2)
 times = np.linspace(0.0, 1000.0, 10000)
@@ -644,24 +709,24 @@ P, psi = simulate(H, psi0, times)
 ```
 
 ```python
-plot_prob(P ,times, ket_labels)
-plt.title(f"2 TSS with {H_latex}  ($\Delta E = 1$, $\omega=1$, $U=0.01$)   (Fig 11)");
+bra_labels, ket_labels = make_braket_labels(nmm_list)
+plot_sim(times, P, ket_labels)
+plt.title(f"2 TSS with {H_latex}  ($\Delta E = 1$, $\omega=1$, $U=0.01$, N=2)   (Fig 10)");
 ```
 
 <!-- #region -->
 Success, we do indeed see the system move from $|1,+, - \rangle \rightarrow |1,-, + \rangle$ as we predicted.
 
-We can interpret the excitation transfer in Fig 11 in the following ways:
-1. 
-
+We can interpret the excitation transfer in Fig 10 in the following ways:
+- 1
   - TSS_1 (the one initially in the "+" state) transitions to the lower "-" state, releasing energy
   - The energy goes into emitting an extra boson, taking the field from 1 to 2 bosons
   - TSS_2 (the one initially in the "-" state) absorbs a boson taking it to the "+" state and the field from 2 to 1 boson
   
   
-2. 
+- 2
   - TSS_2 (the one initially in the "-" state) absorbs energy and transitions to upper "+" state
-  - This energy comes from the boson field, taking the number of bosons from 1 to 0
+  - This absorbed energy comes from the boson field, taking the number of bosons from 1 to 0
   - TSS_1 (the one initially in "+" state) emits a boson taking it to the "-" state and the field from 0 to 1 boson
   
  
@@ -675,7 +740,7 @@ Skeptical...you should be. Let's see it in action and then try and understand it
 We're now going to perform the same simulation as above but this time we will set $\Delta E = 2.5\omega$. It is now impossible for an integer number of bosons to transmit the transition energy $\Delta E$ from TSS_1 to TSS_2.
 
 ```python
-H = 2.5*two_state_1 + 2.5*two_state_2 + 1*bosons + 0.01*interaction_1 + 0.01*interaction_2
+H = 2.5*two_state + 1*bosons + 0.01*interaction
 ```
 
 We'll again start the system in the state $|1,+,- \rangle$.
@@ -687,76 +752,177 @@ P, psi = simulate(H, psi0, times)
 ```
 
 ```python
-plot_prob(P ,times, ket_labels)
-plt.title(f"2 TSS with {H_latex}  ($\Delta E = 2.5$, $\omega=1$, $U=0.01$)   (Fig 12)");
+plot_sim(times, P, ket_labels)
+plt.title(f"2 TSS with {H_latex}  ($\Delta E = 2.5$, $\omega=1$, $U=0.01$, N=2)   (Fig 11)");
 ```
 
-Fig 12 shows us that excitation can be transfered from one TSS_1 to TSS_2 without bosons having any significant chance of being emitted/absorbed.
+Fig 11 shows us that excitation can be transfered from one TSS_1 to TSS_2 without bosons having any significant chance of being emitted/absorbed.
 
 How is it possible to transfer energy quantum mechanically without radiation of bosons? We can't do the topic justice in a single notebook, but we can point to similar phenomenon in classical physics. Specifically, the [near field](https://en.wikipedia.org/wiki/Near_and_far_field) is the non-radiative part of the electromagnetic field that can be used to e.g. [transfer power wirelessly](https://en.wikipedia.org/wiki/Wireless_power_transfer) from one device to another without radiating the power in all directions (as we would associate with something like radio transmitter). 
 
 In the context of quantum mechanics, in systems more physically realistic than what we describe in this notebook, such non radiative transfers of energy are made by something called virtual bosons. In general, [virtual particles](https://profmattstrassler.com/articles-and-posts/particle-physics-basics/virtual-particles-what-are-they) are quite a complicated business so we will return to them in a later tutorial. We can however say that their application to the mature research area of [Resonance Energy Transfer](https://www.frontiersin.org/articles/10.3389/fphy.2019.00100/full) (used to explain certain dynamics of photosynthesis in plants among other things) is common place.
 
-We have made a most striking observation, but let's not get too carried away with the surprise of it all. We should make the connection back to the energy level diagram as we always try to do. Let's zoom in in the area around $\Delta E = 2.5$.
+This is a most striking observation, but let's not get too carried away with the surprise of it all. Let's see if we can understand it in terms of concepts we already understand.
+
+
+From our experience over the past few tutorials, when we see such clean oscillations like in Fig 11, it suggests that we've got some kind of frequency ["beating"](https://en.wikipedia.org/wiki/Beat_%28acoustics%29) going on. Let's see this by transforming our initial state $|1,+, - \rangle $ into the basis corresponding to the stationary states (those with constant energy).
 
 ```python
-df_even = make_df_for_energy_scan("$\Delta E$", 2.5, 2.6, 201, two_state_1.shape[0])
-
-for i, row in df_even.iterrows():
-    H =  row["$\Delta E$"]*two_state_1+ row["$\Delta E$"]*two_state_2 + 1*bosons + 0.01*interaction_1 + 0.01*interaction_2
-    evals, ekets = H.eigenstates()
-    df_even.iloc[i,1:] = evals 
+evals, ekets = H.eigenstates()
+psi0_in_H_basis = psi0.transform(ekets)
 ```
 
 ```python
-ax = df_even.plot(x="$\Delta E$",ylim=[1.499,1.501],legend=True, 
-        title=f"Even energy levels for {H_latex}   ($\omega=1$, $U=0.01$)    (Fig 13)",
-             figsize=(10,8));
-
-plt.ylabel("Energy")
-plt.legend(loc="right")
-
-# Use the following to remove the y-offset from the yaxis if you find there is one
-ax.yaxis.get_major_formatter().set_useOffset(False);
+plot_fock_distribution(psi0_in_H_basis, title=f" |1,+,-> in constant energy basis     (Fig 12)")
+plt.xlim(-1,10);
 ```
 
-In Fig 13 we have:
-- Level 2 (green) $ = |1,+,-\rangle - |1,-,+\rangle$. Non-interacting, living in its own sub-universe  
-- Level 3 (red) $ \approx |1,+,-\rangle + |1,-,+\rangle$. 
+Fig 12 shows us that $|1,+, - \rangle $ is actually a mixture of energy levels 2 and 3 (a similar picture could be made for $|1,-, + \rangle $). Just as we've seen in previous tutorials, when we have an initial state that's a mixture of two energy levels, we get Rabi oscillations.
 
-We observe a small difference in energy between these two levels and it is this difference that creates the Rabi like oscillations that gives us 
-the excitation transfer of Fig 12. 
-
-> As an aside, the energy difference has not arisen due to a coupling between the levels themselves (that would be the usual explanation). Indeed, it is not the case that levels 2 and 3 have been split apart - one moving up in energy while the other moves down. Instead, the non-interacting level 2 has maintained its energy of 1.5 while level 3 has shifted up due to its interaction with other levels around it (not seen at this zoom level).
-
-Why does the this energy difference create the oscillations? We set up our system in the $|1,+,-\rangle$ state, but we could also think of this initial state as a mixture of level 2 and 3. Specifically (ignoring normalisations):
-
-$|1,+,-\rangle \approx \text{level_2} + \text{level_3}$
-
-Because these levels have different energies they have different frequencies and we therefore get the same [beat frequency](https://en.wikipedia.org/wiki/Beat_(acoustics%29) phenomenon that we first encountered all the way back in [tutorial 1](https://nbviewer.jupyter.org/github/project-ida/two-state-quantum-systems/blob/master/01-an-isolated-two-state-system.ipynb#1.2-Coupling-between-two-states-of-the-same-energy).
-
-Let's check this by calculating the oscillation period based on this energy difference.
+We can calculate the oscillation period based on this energy difference between the levels.
 
 ```python
-delta = df_even.loc[0]["level_3"] - df_even.loc[0]["level_2"]
-
-2*np.pi / delta
+2*np.pi / (evals[3] - evals[2])
 ```
 
-This time matches up with the excitation transfer period we observed in Fig 12.
+This time matches up with the excitation transfer period we observed in Fig 11.
 
-Although this non-radiative excitation transfer might seem counter intuitive, we see that we can begin to understand it in terms of concepts that we introduced all the way back at the start of our quantum journey. This should give you confidence that with bit more time, we will obtain the quantum mastering that we seek 🧙‍ .
+
+Although this non-radiative excitation transfer might seem counter intuitive, we see that we can begin to understand it in terms of concepts that we introduced all the way back at the start of our quantum journey. This should give you confidence that with bit more time, we will obtain the quantum mastery that we seek 🧙‍ .
 
 
 ## Next up
 
 As always, this is only the beginning. There are so many more questions to ask, details to dig into, avenues to explore...
-- What causes the non interacting sub-universes?
-- Does excitation transfer still work with a spectrum of modes?
-- Can we have excitation transfer when the TSS don't have the same energy? 
 - What happens when we add more TSS?
-- Can we learn more about virtual particles through some simple extensions to our model?
-- Can we transfer extremely large quanta of energy using modes with very low frequencies?
+- Can we have excitation transfer when the TSS don't have exactly the same $\Delta E$? 
+- Does excitation transfer still work with a spectrum of modes?
 - ...
 
 Until next time 👋
+
+
+---
+
+
+## Appendix - Solving the Schrödinger equation
+
+To illustrate how we can construct an analytical solution to the the Schrödinger equation using the function `simulate`, we'll go through an example using non-radiative excitation transfer.
+
+```python
+# Create the operators and state list for even parity universe
+two_state, bosons, interaction, number, nmm_list, J2 = make_operators(max_bosons=6, parity=1)
+
+# Create the Hamiltonian corresponding to non-radiative excitation transfer in Fig 11
+H = 2.5*two_state + 1*bosons + 0.01*interaction
+```
+
+```python
+psi0 = basis(len(nmm_list), 2)
+```
+
+We have said that
+> the business of solving the Schrödinger equation can be reduced to a problem of finding the eigenvalues and eigenvectors of the Hamiltonian
+
+What do we mean by this? Let's see how it works and then go through an example:
+
+1. Transform initial state $\psi_0$ into a new basis defined by the eigenvectors (aka eigenkets) of the Hamiltonian i.e. the states of constant energy (represented here by $|i>$)
+  - $\psi_0 = \underset{i}{\Sigma}   <i|\psi_0> |i>$
+  -  $<i|\psi_0> = $ `psi0.transform(ekets)[i]`
+2. Evolve each part of the state according to its eigenfrequency (aka eigenvalues) $\omega_i$
+  - $\psi (t)= \underset{i}{\Sigma}  <i|\psi_0> e^{-i\omega_i t}\ |i>$
+  - $\omega_i =$ `evals[i]`
+3. Transform the evolved state back into the basis we started with (represented here by $|k>$)
+  - $\psi (t)= \underset{i,k}{\Sigma}  <i|\psi_0> e^{-i\omega_i t}\ <k|i>|k>$
+  - $<k|i> = $ `ekets[i][k]`
+
+
+Let's try it out.
+
+**Step 1**:
+
+```python
+evals, ekets = H.eigenstates()
+psi0_in_H_basis = psi0.transform(ekets)
+```
+
+```python
+psi0_in_H_basis
+```
+
+This way of representing $\psi_0$ shows us that at the anti-crossing $|1,+,->$ is mainly a mixture of the 2nd and 3rd energy states. We already saw this visually with the fock distribution plot in Fig 12.
+
+
+Continuing to follow the procedure, we have:
+
+$\psi_0 = \underset{i}{\Sigma}  <i|\psi_0> |i> \\
+\ \ \ \ = -0.003 |0> - 0.009 |1> + 0.707 |2> + 0.707 |3> + ...$
+
+**Step 2:**
+
+The frequencies are given by the eigenvalues of the Hamiltonian:
+
+```python
+evals
+```
+
+and so the evolved state becomes:
+
+$\psi (t)= \underset{i}{\Sigma}  <i|\psi_0> e^{-i\omega_i t}\ |i> \\
+\ \ \ \ =  -0.003 e^{i 2.00t}|0> -0.009 e^{i 4.38t}|1> +0.707 e^{-i 1.50t} |2> +0.707 e^{-i 1.50t} |3>+......$
+
+
+**Step 3:**
+
+Taking only the $|2>$ part form step 2 above for the sake of brevity, we only need to look at `ekets[2]`
+
+```python
+ekets[2]
+```
+
+Then:
+
+$0.707 e^{-i 1.50t}|2> \rightarrow 0.707 e^{-i 1.50t}0.707|2'> - 0.707 e^{-i 1.50t}0.707|3'>$
+
+where the prime in $|n'>$ indicates the original basis and not the energy basis. We can re-label these states to be the more familiar $|n,\pm,\pm>$ using the list we made earlier:
+
+```python
+nmm_list
+```
+
+and so we have:
+
+$0.707 e^{-i 1.50t}|2> \rightarrow 0.707 e^{-i 1.50t}0.707|1,+,-> - 0.707 e^{-i 1.50t}0.707|1,-,+>$
+
+<!-- #region -->
+All of the above can be automated by the function below. We have labeled the steps to hopefully make it easier to understand. It should be noted that the use of `np.outer` to "vectorise" the computation gives us a 10x speedup over using a conceptually simpler loop. That is to say that I appreciate that the code might be a bit harder to understand, but this optimisation will become essential soon.
+```python
+def simulate(H, psi0, times):
+    num_states = H.shape[0]
+
+    # Initialize the psi matrix
+    psi = np.zeros((num_states, len(times)), dtype=complex)
+
+    # STEP 1
+    evals, ekets = H.eigenstates()
+    psi0_in_H_basis = psi0.transform(ekets)  
+
+    # STEP 2
+    # Pre-compute the exponential factor outside the loop for all evals and times
+    exp_factors = np.exp(-1j * np.outer(evals, times))
+
+    # Vectorised computation for each eigenstate's contribution
+    for i, e in enumerate(ekets):
+                                             # STEP 3
+        psi += np.outer(psi0_in_H_basis[i] * e.full(), exp_factors[i, :])
+    
+    # Compute probabilities from psi
+    P = np.abs(psi)**2
+
+    return P, psi
+```
+<!-- #endregion -->
+
+```python
+
+```

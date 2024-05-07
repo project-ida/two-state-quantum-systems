@@ -227,7 +227,6 @@ Although $P(\Psi_0)$ was relevant for excitation transfer, it's more informative
 Ns = [1,2,4,8,10] # number of TLS we want to simulation
 times = np.linspace(0.0, 1200.0, 1000) # simulation time
 rabi = [] # For storing rabi frequency associated with excitation transfer
-rate = []
 
 for i, N in enumerate(Ns):
     two_state, bosons, interaction, number, nm_list, J2 = make_operators(max_bosons=2, parity=-1, num_TLS=N)
@@ -251,8 +250,6 @@ for i, N in enumerate(Ns):
    
     rabi.append(2*np.pi / (peak_times[1] - peak_times[0]))
     # print((peak_times[1] - peak_times[0]))
-    rate.append(np.float64(-expect(commutator(H,commutator(H,number)),psi0)))
-
 
     plt.plot(times, result.expect[0], label="Expected bosons")
     plt.xlabel("Time")
@@ -274,18 +271,7 @@ plt.ylabel("Normalised Rabi frequency ($\Omega$)");
 plt.title("Spontaneous emission as a function of TLS number (N) (Fig. 10)");
 ```
 
-```python
-plt.plot(Ns,rate/rate[0],"-o")
-plt.xlabel("Number of TLS (N)")
-plt.ylabel("Normalised Rabi frequency ($\Omega$)");
-plt.title("Spontaneous emission as a function of TLS number (N) (Fig. 10)");
-```
-
 Unlike excitation transfer, spontaneous emission appears to not benefit as much from increasing TLS number. We can see if the scaling is a power of $N$ by looking at the slope of $log_{10}(N)$ vs $log_{10}(\Omega)$:
-
-```python
-print("slope = ", linregress(np.log10(Ns), np.log10(rate)).slope)
-```
 
 ```python
 print("slope = ", linregress(np.log10(Ns), np.log10(rabi)).slope)
