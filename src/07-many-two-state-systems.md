@@ -13,10 +13,10 @@ jupyter:
     name: python3
 ---
 
-<a href="https://colab.research.google.com/github/project-ida/two-state-quantum-systems/blob/master/06-many-two-state-systems.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <a href="https://nbviewer.jupyter.org/github/project-ida/two-state-quantum-systems/blob/master/06-many-two-state-systems.ipynb" target="_parent"><img src="https://nbviewer.jupyter.org/static/img/nav_logo.svg" alt="Open In nbviewer" width="100"/></a>
+<a href="https://colab.research.google.com/github/project-ida/two-state-quantum-systems/blob/master/07-many-two-state-systems.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <a href="https://nbviewer.jupyter.org/github/project-ida/two-state-quantum-systems/blob/master/07-many-two-state-systems.ipynb" target="_parent"><img src="https://nbviewer.jupyter.org/static/img/nav_logo.svg" alt="Open In nbviewer" width="100"/></a>
 
 
-# 6 - Many two state systems
+# 7 - Many two state systems
 
 
 **INTRODUCTION OF TERMINOLOGY: TLS (Two level system) used interchangeably with of TSS (Two state system)**
@@ -48,7 +48,7 @@ from scipy.signal import find_peaks
 from libs.helper_06_tutorial import *
 ```
 
-## 6.1 - Recap
+## 7.1 - Recap
 
 
 Last time, we motivated that for many TLS, a helpful way to write the Hamiltonian is
@@ -111,7 +111,7 @@ def make_operators(max_bosons, parity=0, num_TLS=1):
     return two_state, bosons, interaction, number, nm_list, J2
 ```
 
-## 6.2 - Excitation transfer
+## 7.2 - Excitation transfer
 
 
 Let's jump straight into it and have a go at simulating excitation transfer when we have 2, 4, 8 and 10 TLS. (You can try 16 and see if your computer can handle it 😉)
@@ -206,7 +206,7 @@ Although Fig. 5 suggests that excitation transfer is enhanced by a factor of $N$
 Let's hold off drawing any conclusions at this stage and instead explore the effect of increasing TLS number on other quantum processes that we've studied. In particular, let's look at spontaneous emission.
 
 
-## 6.3 - Spontaneous emission
+## 7.3 - Spontaneous emission
 
 
 To look at the effects of increasing TLS number on spontaneous emission, we to first change the TLS transition energy to match the boson energy:
@@ -294,7 +294,7 @@ Let's not get too ahead of ourselves though. Before we can explore the competiti
 To tackle 1, we need to revisit our choice of initial state and see how it relates to the stationary states of the system.
 
 
-## 6.4 - Setting up excited states
+## 7.4 - Setting up excited states
 
 
 You may recall that if the system is in an eigenstate of the Hamiltonian, then it does not evolve in time - we say the system is in a stationary state.
