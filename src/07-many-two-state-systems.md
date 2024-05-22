@@ -19,11 +19,11 @@ jupyter:
 # 7 - Many two state systems
 
 
-**INTRODUCTION OF TERMINOLOGY: TLS (Two level system) used interchangeably with of TSS (Two state system)**
+Last time, we did a bit of a deep dive into excitation transfer between 2 TLS and discovered that, for realistic systems, it's likely to be such a slow process that we might never see it.
 
-Last time, we added just one extra TLS and we got some surprising new physics - non-radiative excitation transfer. Excitations can move from one TLS to another without the emission and absorption processes that one would normally consider essential.
+What happens when we continue to add more TLS though? Are we stuck with the same slowness or  is there more physics waiting to be found? (I think you know the answer already 😉)  
 
-As you might imagine, there's more physics waiting to be found as we continue adding more TLS. We'll see the first hints of accelerated quantum processes in this notebook as we explore not only the number of TLS but the relationship between them.
+In this notebook we'll we explore not only the number of TLS but the relationship between them to see whether a kind of quantum acceleration is possible.
 
 ```python
 # Libraries and helper functions
@@ -51,7 +51,7 @@ from libs.helper_06_tutorial import *
 ## 7.1 - Recap
 
 
-Last time, we motivated that for many TLS, a helpful way to write the Hamiltonian is
+Towards the end of [tutorial 5](https://github.com/project-ida/two-state-quantum-systems/blob/matt-sandbox/05-excitation-transfer.ipynb), we motivated that for many identical TLS, a helpful way to write the Hamiltonian is
 
 $$H =  \Delta E J_{Nz} + \hbar\omega\left(a^{\dagger}a +\frac{1}{2}\right) + U\left( a^{\dagger} + a \right)2J_{Nx}$$
 
@@ -168,7 +168,7 @@ for i, N in enumerate(Ns):
 
     psi0, psi0_ind = create_single_excitation_psi0(nm_list,0)
 
-    # We are using custom simulate function from last tutorial because it's going to be quicker
+    # We are using custom simulate function from tutorial 5 because it's going to be quicker
     # in this case because of the long simulation times
     P, psi = simulate(H, psi0, times)
 
@@ -186,7 +186,7 @@ for i, N in enumerate(Ns):
     plt.show();
 ```
 
-Fig 1 shows the same simulation results as Fig 11 from the last tutorial. Here we have complete excitation transfer from the first TLS into the second because the probability oscillates between 1 and 0. 
+Fig 1 shows the same simulation results as Fig 11 from the [tutorial 5](https://github.com/project-ida/two-state-quantum-systems/blob/matt-sandbox/05-excitation-transfer.ipynb). Here we have complete excitation transfer from the first TLS into the second because the probability oscillates between 1 and 0. 
 
 As we increase the number of TLS (Fig 2,3,4) we see:
 1. the frequency of the transfer cycles increases
@@ -500,9 +500,13 @@ Entanglement is in general a [complicated topic for more than two systems](https
 ## Next up...
 
 There are a certain class of entangled states called "Dicke states" that are particularly useful for studying many particle systems. Specifically, they allow us to:
-- easily describe and set up initial states of "delocaised" excitations
+- easily describe and set up initial states of "delocalised" excitations
 - simulate with more than 10 TLS
 
 Next time, we'll move into this new way of describing our system to get a fuller picture of the accelerations that we've seen hints of here and we'll see whether excitation transfer can indeed compete with spontaneous emission.
 
 Until then 👋
+
+```python
+
+```
