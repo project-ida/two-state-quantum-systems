@@ -13,6 +13,9 @@ jupyter:
     name: python3
 ---
 
+<a href="https://colab.research.google.com/github/project-ida/two-state-quantum-systems/blob/master/06-excitation-transfer-revisited.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <a href="https://nbviewer.jupyter.org/github/project-ida/two-state-quantum-systems/blob/master/06-excitation-transfer-revisited.ipynb" target="_parent"><img src="https://nbviewer.jupyter.org/static/img/nav_logo.svg" alt="Open In nbviewer" width="100"/></a>
+
+
 # 6 - Excitation transfer revisited
 
 **INTRODUCTION OF TERMINOLOGY: TLS (Two level system) used interchangeably with of TSS (Two state system)**
