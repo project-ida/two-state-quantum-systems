@@ -78,7 +78,7 @@ def make_braket_labels(list_of_states):
 
 
 
-def simulate(H, psi0, times, evals=None, ekets=None):
+def simulate(H, psi0, times):
     """
     Solves the time independent Schrödinger equation
     
@@ -89,16 +89,12 @@ def simulate(H, psi0, times, evals=None, ekets=None):
     H     :  QuTiP object, Hamiltonian for the system you want to simulate
     psi0  :  QuTiP object, Initial state of the system
     times :  1D numpy array, Times to evaluate the state of the system (best to use use np.linspace to make this) 
-    evals :  Result of a previous H.eigenstates() calculation
-    ekets :  Result of a previous H.eigenstates() calculation
 
     
     Returns
     -------
-    P     : numpy array [i,j], Basis state (denoted by i) occupation probabilities at each time j
-    psi   : numpy array [i,j], Basis state (denoted by i) values at each time j
-    evals : Output from QuTips H.eigenstates()
-    ekets : Output from QuTips H.eigenstates()
+    P   : numpy array [i,j], Basis state (denoted by i) occupation probabilities at each time j
+    psi : numpy array [i,j], Basis state (denoted by i) values at each time j
     
     Examples
     --------
@@ -110,8 +106,7 @@ def simulate(H, psi0, times, evals=None, ekets=None):
 
     # Initialize the psi matrix
     psi = np.zeros((num_states, len(times)), dtype=complex)
-    if ((evals is None) or (ekets is None)):
-        evals, ekets = H.eigenstates()
+    evals, ekets = H.eigenstates()
     psi0_in_H_basis = psi0.transform(ekets)  
 
     # Pre-compute the exponential factor outside the loop for all evals and times
@@ -124,7 +119,7 @@ def simulate(H, psi0, times, evals=None, ekets=None):
     # Compute probabilities from psi
     P = np.abs(psi)**2
 
-    return P, psi, evals, ekets
+    return P, psi
 
 
 def prettify_states(states, mm_list=None):

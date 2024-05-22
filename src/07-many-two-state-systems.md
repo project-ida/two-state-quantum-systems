@@ -44,8 +44,8 @@ from qutip.piqs import *
 from scipy.stats import linregress
 from scipy.signal import find_peaks
 
-# The helper file below brings functions created in previous tutorials and adds an extra one
-from libs.helper_06_tutorial import *
+# The helper file below brings functions created in previous tutorials
+from libs.helper_07_tutorial import *
 ```
 
 ## 7.1 - Recap
