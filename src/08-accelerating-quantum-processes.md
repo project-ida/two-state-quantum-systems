@@ -53,7 +53,7 @@ from scipy.signal import find_peaks
 from scipy.optimize import curve_fit
 
 # The helper file below brings functions created in previous tutorials
-from libs.helper_07_tutorial import *
+from libs.helper_08_tutorial import *
 ```
 
 ## 8.1 -  Recap
