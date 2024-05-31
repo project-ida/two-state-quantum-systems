@@ -625,7 +625,7 @@ plt.annotate('$\Delta E_2$', xy=(0.15, 1.5*10**9));
 
 The gradients in Fig. 13 are not the same - this tells us that the $C=20$ in $T \sim C^{\Delta n}$ is not universal. It also tells us that the gradient depends on the $\Delta E$'s, but how?
 
-If we look at Fig. 13, we can see that as we increase the $\Delta E$'s, the gradients increase but less so for higher values of $\Delta E$'s compared to lower. That behaviour is a hallmark of the $\log$ function. We might therefore conjecture that the gradient $\log\left(C\right) = \log\left(\Delta E\right)$ and so $C \sim \Delta E$ where $\Delta E = \left(\Delta E_1 + \Delta E_2\right)/2$. Futhermore, we might also conjecture that $T \sim \Delta E^{2+ \Delta n}$ to align with the scaling we found earlier when we have matched TLS and $\Delta n=0$. 
+If we look at Fig. 13, we can see that as we increase the $\Delta E$'s, the gradients increase but less so for higher values of $\Delta E$'s compared to lower. That behaviour is a hallmark of the $\log$ function. We might therefore conjecture that the gradient $\log\left(C\right) = \log\left(\Delta E\right)$ and so $C \sim \Delta E$ where $\Delta E = \left(\Delta E_1 + \Delta E_2\right)/2$. Furthermore, we might also conjecture that $T \sim \Delta E^{2+ \Delta n}$ to align with the scaling we found earlier when we have matched TLS and $\Delta n=0$. 
 
 If we take each of the lines in Fig. 13 and divide them by $\Delta E^{2+ \Delta n}$ and they all end up on top of each other, then we can say that our conjecture is true. 
 
