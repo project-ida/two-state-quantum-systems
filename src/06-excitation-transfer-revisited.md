@@ -620,7 +620,8 @@ transfer_times_df = pd.DataFrame(data=transfer_times_obj)
 ax = transfer_times_df.plot(x="bosons", logy = True, title=f"Excitation transfer time for mismatched TLS with  \n {H_latex} \n $\omega=1$, $U=0.1$ (Fig. 13)", legend=True, style='o-');
 ax.set_xlabel("$\Delta E_1 - \Delta E_2$ (Bosons emitted $\Delta n$)");
 ax.set_ylabel("$\log(T)$");
-plt.annotate('$\Delta E_2$', xy=(0.15, 1.5*10**9));
+handles, labels = ax.get_legend_handles_labels()
+ax.legend(handles, labels, title="$\Delta E_2$");
 ```
 
 The gradients in Fig. 13 are not the same - this tells us that the $C=20$ in $T \sim C^{\Delta n}$ is not universal. It also tells us that the gradient depends on the $\Delta E$'s, but how?
@@ -642,7 +643,8 @@ for index, row in scaled_transfer_times_df.iterrows():
 ax = scaled_transfer_times_df.plot(x="bosons", logy = True, title=f"Scaled Excitation transfer time for mismatched TLS with  \n {H_latex} \n $\omega=1$, $U=0.1$ (Fig. 14)", legend=True, style='o-');
 ax.set_xlabel("$\Delta E_1 - \Delta E_2$ (Bosons emitted $\Delta n$)");
 ax.set_ylabel("$\log(T)$");
-plt.annotate('$\Delta E_2$', xy=(0.15, 1.2*10**3));
+handles, labels = ax.get_legend_handles_labels()
+ax.legend(handles, labels, title="$\Delta E_2$");
 ```
 
 Other than for $\Delta E_2 = 2.5$, The scaling $T \sim \Delta E^{2+ \Delta n}$ does a good job of explaining the differences between excitation transfer times when varying TLS transition energy.
@@ -666,7 +668,8 @@ for index, row in scaled_transfer_times_df.iterrows():
 ax = scaled_transfer_times_df.plot(x="bosons", logy = True, title=f"Scaled Excitation transfer time for mismatched TLS with  \n {H_latex} \n $\omega=1$, $U=0.1$ (Fig. 15)", legend=True, style='o-');
 ax.set_xlabel("$\Delta E_1 - \Delta E_2$ (Bosons emitted $\Delta n$)");
 ax.set_ylabel("$\log(T)$");
-plt.annotate('$\Delta E_2$', xy=(0.15, 1.2*10**3));
+handles, labels = ax.get_legend_handles_labels()
+ax.legend(handles, labels, title="$\Delta E_2$");
 ```
 
 Looks like we've overcompensated in Fig. 15. At this point, we could start getting more systematic to find the best coefficients in our model. If we look again at the 2008 work of [Hagelstein](http://dx.doi.org/10.1088/0953-4075/41/13/135501), we find that all we're missing is a $\sqrt{8}$:
@@ -686,7 +689,8 @@ for index, row in scaled_transfer_times_df.iterrows():
 ax = scaled_transfer_times_df.plot(x="bosons", logy = True, title=f"Scaled Excitation transfer time for mismatched TLS with  \n {H_latex} \n $\omega=1$, $U=0.1$ (Fig. 16)", legend=True, style='o-');
 ax.set_xlabel("$\Delta E_1 - \Delta E_2$ (Bosons emitted $\Delta n$)");
 ax.set_ylabel("$\log(T)$");
-plt.annotate('$\Delta E_2$', xy=(0.15, 1.2*10**3));
+handles, labels = ax.get_legend_handles_labels()
+ax.legend(handles, labels, title="$\Delta E_2$");
 ```
 
 Of the 14 orders of magnitude difference that we saw in Fig 13, our model for the scaling of excitation transfer time explains 13 of them. This is not bad considering that the analytical work of Hagelstein works on the assumption of a highly excited oscillator (i.e, lots of bosons already present in the system) which we didn't have in our simulations.
