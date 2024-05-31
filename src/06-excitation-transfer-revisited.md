@@ -179,9 +179,7 @@ Let's start by looking at $\Delta E$ and then $U$.
 <!-- #region -->
 
 
-In general, it's not possible to simply vary $\Delta E$ continuously across large range and look at how long it takes for e.g. state $|1,+, - \rangle$ to transform into state $|1,-, + \rangle$. The reason is that "excitation transfer" cannot be totally separated from  what we might call `energy exchange`. 
-
-Energy exchange occurs when $\Delta E = n\omega$. That's when spontaneous emission and down convertsion can occur. Close to those "resonances", energy exchange dominates over excitation transfer.
+In general, it's not possible to simply vary $\Delta E$ continuously across a large range and look at how long it takes for e.g. state $|1,+, - \rangle$ to transform into state $|1,-, + \rangle$. The reason is that other processes can dominate over excitation transfer and so we'd never see it. Specifically, as we vary $\Delta E$, we'll encounter "energy exchange" resonances when $\Delta E = n\omega$ ($n=1,3,5,7 ... $) where a TLS makes a transition by matching its energy to an odd number of bosons in the field. These are the resonances that are responsible for the spontaneous emission and down conversation that we explored in [tutorial 03](https://nbviewer.org/github/project-ida/two-state-quantum-systems/blob/master/03-a-two-state-system-in-a-quantised-field.ipynb) and [tutorial 04](https://nbviewer.org/github/project-ida/two-state-quantum-systems/blob/master/04-spin-boson-model.ipynb).
 
 We can however, artificially suppress the energy exchange resonances by limiting the number of bosons in the system to 2. We can motivate that this is a good approximation by referring to the Hinton diagram (Fig 3) from the [last tutorial](https://nbviewer.org/github/project-ida/two-state-quantum-systems/blob/master/05-excitation-transfer.ipynb).
 
