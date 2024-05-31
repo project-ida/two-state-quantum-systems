@@ -71,7 +71,7 @@ $$
 S_x = \frac{1}{2}\sigma_x \,\,\,\,\,\, S_y = \frac{1}{2}\sigma_y \,\,\,\,\,\, S_z = \frac{1}{2}\sigma_z
 $$
 
-and where the characterisitc energies in the system are 
+and where the characteristic energies in the system are 
 - $\Delta E$ for the TLS transition from state $+$ to $-$ 
 - $\hbar\omega$ for each quantum of the boson field
 - $U$ for the coupling between the TLS and the boson field
@@ -520,7 +520,7 @@ plt.title(f"{H_latex} \n $\Delta E_2 = {DeltaE2}$, $\omega={omega}$, $U={U}$   (
 ```
 
 <!-- #region -->
-Fig. 11 shows us a kind of hybrid between radiative and non-radiative excitation transfer. Although the TLS transition energies are not matched ($\Delta E_1 - \Delta E_2 = 2$), the excitation can move from TLS_1 to TLS_2 by emitting a number of bosons to make up the energy difference. In this case, 2 bosons are emitted which allows us to Rabi osscilate between $|1,+, - \rangle $ and $|3,-, + \rangle $. 
+Fig. 11 shows us a kind of hybrid between radiative and non-radiative excitation transfer. Although the TLS transition energies are not matched ($\Delta E_1 - \Delta E_2 = 2$), the excitation can move from TLS_1 to TLS_2 by emitting a number of bosons to make up the energy difference. In this case, 2 bosons are emitted which allows us to Rabi oscillate between $|1,+, - \rangle $ and $|3,-, + \rangle $. 
 
 > Side note, this resonance is very sensitive, try re-running the simulation with `H = 4.5*two_state_1 + 2.5*two_state_2 + 1*bosons + 0.1*interaction_1 + 0.1*interaction_2` and you'll find no excitation transfer at all
 
