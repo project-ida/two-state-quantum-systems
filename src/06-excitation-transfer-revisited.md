@@ -201,7 +201,7 @@ We can therefore expect that the most important states contributing to the excit
 max_bosons = 2
 ```
 
-Let's now proceed as we've done before by mapping out the energy levels for the system. In other words, we'll look at how the eigenvalues of the Hamiltonian change as we vary $\Delta E$.
+Let's now proceed as we've done before by mapping out the energy levels for the system. In other words, we'll look at how the eigenvalues of the Hamiltonian change as we vary $\Delta E$ and we'll make a plot with those energy eigenvalues on the y-axis.
 
 ```python
 two_state_1, two_state_2, bosons, interaction_1, interaction_2, number, nmm_list = make_operators(max_bosons=max_bosons, parity=parity)
