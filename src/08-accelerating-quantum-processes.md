@@ -13,10 +13,10 @@ jupyter:
     name: python3
 ---
 
-<a href="https://colab.research.google.com/github/project-ida/two-state-quantum-systems/blob/master/07-accelerating-quantum-processes.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <a href="https://nbviewer.jupyter.org/github/project-ida/two-state-quantum-systems/blob/master/07-accelerating-quantum-processes.ipynb" target="_parent"><img src="https://nbviewer.jupyter.org/static/img/nav_logo.svg" alt="Open In nbviewer" width="100"/></a>
+<a href="https://colab.research.google.com/github/project-ida/two-state-quantum-systems/blob/master/08-accelerating-quantum-processes.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <a href="https://nbviewer.jupyter.org/github/project-ida/two-state-quantum-systems/blob/master/08-accelerating-quantum-processes.ipynb" target="_parent"><img src="https://nbviewer.jupyter.org/static/img/nav_logo.svg" alt="Open In nbviewer" width="100"/></a>
 
 
-# 7 - Accelerating quantum processes
+# 8 - Accelerating quantum processes
 
 
 Last time, we saw hints of being able to accelerate quantum processes like spontaneous emission and excitation transfer by "delocalising" excitations across many TLS. 
@@ -53,10 +53,10 @@ from scipy.signal import find_peaks
 from scipy.optimize import curve_fit
 
 # The helper file below brings functions created in previous tutorials
-from libs.helper_07_tutorial import *
+from libs.helper_08_tutorial import *
 ```
 
-## 7.1 -  Recap
+## 8.1 -  Recap
 
 <!-- #region -->
 So far, we've described a combined TLS & quantum field using a notation like, e.g. $|0,+,-,-,- \rangle$. The first number (in this case $0$) tells us the number of bosons present (this is often referred to as a [Fock state](https://en.wikipedia.org/wiki/Fock_state)), and the $\pm$ tell us what state each of the $N$ TLS are in ($+$ excited, $-$ ground). This is a complete description in the sense that every configuration of the system can be described as a mixture of these states. For example, a single excitation delocalised across 4 TLS with no bosons can be described by:
@@ -71,7 +71,7 @@ Because delocalised excitations are of most interest to us today, we don't actua
 Let's see if we can make this simpler description rigorous enough to help us with simulating many TLS.
 <!-- #endregion -->
 
-## 7.2 - Angular momentum $J$ 
+## 8.2 - Angular momentum $J$ 
 
 
 Creating a description of delocalised excitations is not quite as simple as $| n, n_+ \rangle$. For example, the following delocalised states $\Psi_1$ and $\Psi_2$ contain the same number of delocalised excitations but they're different:
@@ -294,7 +294,7 @@ Largest $m$ at the top of the state vector, smallest $m$ at the bottom.
 Ok, we're ready to explore the suped up version of quantum mechanics. 🚀
 <!-- #endregion -->
 
-## 7.3 - Superradiance
+## 8.3 - Superradiance
 
 
 Let's reconsider the case of spontaneous emission. We saw in [tutorial 3](https://github.com/project-ida/two-state-quantum-systems/blob/master/03-a-two-state-system-in-a-quantised-field.ipynb) that such emission from a TLS can be understood as the result of coupling to a quantised field. The stronger the coupling, the faster the emission as seen by the increased Rabi frequency.
@@ -698,7 +698,7 @@ then we get no emission at all because we get complete destructive interference 
 Now that we've seen what acceleration factors are possible for spontaneous emission, we might expect to find something similar in the realm of excitation transfer.
 
 
-## 7.4 - Supertransfer
+## 8.4 - Supertransfer
 
 
 Just like with superradiance, we're going to work with Dicke states to allow us to conveniently describe and simulate delocalised excitations.
@@ -1085,7 +1085,7 @@ And so we can see that we get a lovely $N^3$ scaling as we increase the number o
 This supertransfer was first proposed by Strȩk in their 1977 paper [Cooperative energy transfer](https://www.sciencedirect.com/science/article/abs/pii/0375960177904273?via%3Dihub), but more recent work explicitly demostrating the $N^3$ dependence can be found in the 2010 work of Lloyd on [Symmetry-enhanced supertransfer of delocalized quantum states](https://iopscience.iop.org/article/10.1088/1367-2630/12/7/075020).
 
 
-## 7.5 - Superradiance vs Supertransfer
+## 8.5 - Superradiance vs Supertransfer
 
 <!-- #region -->
 We finish with a reflection on some speculation we made in the last tutorial. There we noted how excitation transfer appeared to have a more favourable scaling with the number of TLS compared with spontaneous emission. We wondered about the possibility that the usually very slow excitation transfer rate $\Gamma_T$ could out-compete the spontaneous emission rate $\Gamma_E$. 
