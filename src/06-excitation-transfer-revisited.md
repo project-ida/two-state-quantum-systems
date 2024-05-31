@@ -201,6 +201,8 @@ We can therefore expect that the most important states contributing to the excit
 max_bosons = 2
 ```
 
+Let's now proceed as we've done before by mapping out the energy levels for the system. In other words, we'll look at how the eigenvalues of the Hamiltonian change as we vary $\Delta E$.
+
 ```python
 two_state_1, two_state_2, bosons, interaction_1, interaction_2, number, nmm_list = make_operators(max_bosons=max_bosons, parity=parity)
 ```
@@ -225,7 +227,7 @@ plt.ylabel("Energy");
 ```
 
 <!-- #region -->
-Fig. 1 shows us 4 levels coming together at $\Delta E = 1$ - we explored this situation last time where $|1,+, - \rangle \rightarrow |1,-, + \rangle$ through the intermediate states $|0,+, + \rangle$ and $|2,-, - \rangle$. In that case, energy can be exchanged between the TLS and the boson field because they have the same energy.
+Fig. 1 shows us level 1 (orange), level 2 (green) level 3 (red) and level 4 (purple), approaching/crossing each other at $\Delta E = 1$ - we explored this situation last time when we simulated $|1,+, - \rangle \rightarrow |1,-, + \rangle$ through the intermediate states $|0,+, + \rangle$ and $|2,-, - \rangle$. In that case, energy was exchanged between the TLS and the boson field because they had the same energy.
 
 
 Non-radiative excitation transfer does not occur around $\Delta E = 1$ because of the energy exchange resonance that occurs there.
