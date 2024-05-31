@@ -179,7 +179,7 @@ Let's start by looking at $\Delta E$ and then $U$.
 <!-- #region -->
 
 
-In general, it's not possible to simply vary $\Delta E$ continuously across large range and look at how long it takes for e.g. $|1,+, - \rangle$ to transform into $|1,-, + \rangle$. The reason is that "excitation transfer" cannot be totally separated from  what we might call `energy exchange`. 
+In general, it's not possible to simply vary $\Delta E$ continuously across large range and look at how long it takes for e.g. state $|1,+, - \rangle$ to transform into state $|1,-, + \rangle$. The reason is that "excitation transfer" cannot be totally separated from  what we might call `energy exchange`. 
 
 Energy exchange occurs when $\Delta E = n\omega$. That's when spontaneous emission and down convertsion can occur. Close to those "resonances", energy exchange dominates over excitation transfer.
 
@@ -194,7 +194,7 @@ $|1,+, - \rangle $ is coupled to 4 other states (i.e. they have non-zero matrix 
 
 and those states are then coupled to the final state $|1,-, + \rangle $. In that sense, we say $|1,+, - \rangle $ is indirectly coupled to $|1,-, + \rangle $.
 
-> It is interesting to observe that the excitation transfer between $|1,+, - \rangle $ and $|1,+, - \rangle $ involves states that appear to violate our usual sense of conservation of energy. For example, the state $|2,+, + \rangle $ has an extra boson and an extra excitation in the TSS compared to $|1,+, - \rangle $. These are called `virtual states`.
+> Aside: It is interesting to observe that the excitation transfer between $|1,+, - \rangle $ and $|1,+, - \rangle $ involves states that appear to violate our usual sense of conservation of energy. For example, the state $|2,+, + \rangle $ has an extra boson and an extra excitation in the TSS compared to $|1,+, - \rangle $. These are called `virtual states` that can only ever exist as temporary intermediates between real states.
 
 We can therefore expect that the most important states contributing to the excitation transfer process can be captured by setting `max_bosons=2` (so long as the coupling is weak).
 <!-- #endregion -->
@@ -232,9 +232,9 @@ Fig. 1 shows us 4 levels coming together at $\Delta E = 1$ - we explored this si
 
 Non-radiative excitation transfer does not occur around $\Delta E = 1$ because of the energy exchange resonance that occurs there.
 
-> You might be wondering why we don't have the same 4 level crossing at the down conversion resonances $\Delta E = 3, 5, 7$ and so on. In reality we do, but we have suppressed that physics by setting max_bosons = 2
+> Aside: You might be wondering why we don't have the same 4 level crossing at the down conversion resonances $\Delta E = 3, 5, 7$ and so on. In reality we do, but we have suppressed that physics by setting max_bosons = 2
 
-Away from $\Delta E = 1$, excitation transfer can be understood as as result of frequency beating between levels 2 and 3 as we showed last time. To calculate the excitation transfer time, we therefore need to do: 
+Away from $\Delta E = 1$, excitation transfer can be understood as as result of frequency beating between level 2 (green) and level 3 (red) as we showed last time. To calculate the excitation transfer time, we therefore need to do: 
 
 $$T = \frac{2 \pi}{E_\text{level 3} - E_\text{level 2} }$$
 
@@ -470,9 +470,9 @@ plt.ylabel("Energy");
 
 There are several new things to talk about in Fig. 9.
 
-At $\Delta E_1 = 3$ we've got an anti-crossing associated with down conversion between levels 3 and 4. This is where TLS_1 transitions and the energy is converted into 3 bosons. We explored this in [Tutorial 04](https://nbviewer.jupyter.org/github/project-ida/two-state-quantum-systems/blob/master/04-spin-boson-model.ipynb).
+At $\Delta E_1 = 3$ we've got an anti-crossing associated with down conversion between levels 3 (red) and 4 (purple). This is where TLS_1 transitions and the energy is converted into 3 bosons. We explored this in [Tutorial 04](https://nbviewer.jupyter.org/github/project-ida/two-state-quantum-systems/blob/master/04-spin-boson-model.ipynb).
 
-At $\Delta E_1 = 4.5$, we've got another anti-crossing between levels 4 and 5. What's going on here? Let's first get a zoomed in view to check that it's a genuine anti-crossing.
+At $\Delta E_1 = 4.5$, we've got another anti-crossing between levels 4 (purple) and 5 (brown). What's going on here? Let's first get a zoomed in view to check that it's a genuine anti-crossing.
 
 ```python
 DeltaE1 = 4.5 # This is our starting guess for the DeltaE1 
@@ -520,7 +520,7 @@ plt.title(f"{H_latex} \n $\Delta E_2 = {DeltaE2}$, $\omega={omega}$, $U={U}$   (
 ```
 
 <!-- #region -->
-Fig. 11 shows us a kind of hybrid between radiative and non-radiative excitation transfer. Although the TLS transition energies are not matched ($\Delta E_1 - \Delta E_2 = 2$), the excitation can move from TLS_1 to TLS_2 by emitting a number of bosons to make up the energy difference. In this case, 2 bosons are emitted which allows us to Rabi oscillate between $|1,+, - \rangle $ and $|3,-, + \rangle $. 
+Fig. 11 shows us a kind of hybrid between radiative and non-radiative excitation transfer. Although the TLS transition energies are not matched ($\Delta E_1 - \Delta E_2 = 2$), the excitation can move from TLS_1 to TLS_2 by emitting a number of bosons to make up the energy difference. In this case, 2 bosons are emitted which allows us to Rabi oscillate between state $|1,+, - \rangle $ and state $|3,-, + \rangle $. 
 
 > Side note, this resonance is very sensitive, try re-running the simulation with `H = 4.5*two_state_1 + 2.5*two_state_2 + 1*bosons + 0.1*interaction_1 + 0.1*interaction_2` and you'll find no excitation transfer at all
 
