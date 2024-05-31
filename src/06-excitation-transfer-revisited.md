@@ -71,12 +71,19 @@ $$
 S_x = \frac{1}{2}\sigma_x \,\,\,\,\,\, S_y = \frac{1}{2}\sigma_y \,\,\,\,\,\, S_z = \frac{1}{2}\sigma_z
 $$
 
+and where the characterisitc energies in the system are 
+- $\Delta E$ for the TLS transition from state $+$ to $-$ 
+- $\hbar\omega$ for each quantum of the boson field
+- $U$ for the coupling between the TLS and the boson field
+
 
 This angular momentum description is going to be invaluable for investigating many identical TLS in future tutorials. For this tutorial, however, we're going to be interested in a version of the Hamiltonian that allows us to adjust the characteristics of the individual TLS. We'll therefore work with the more verbose (but more flexible) Hamiltonian of the form:
 
 $$H =  \frac{\Delta E_1}{2} \sigma_{z1} + \frac{\Delta E_2}{2}\sigma_{z2} + \hbar\omega\left(a^{\dagger}a +\frac{1}{2}\right) + U_1\left( a^{\dagger} + a \right)\sigma_{x1} + U_2\left( a^{\dagger} + a \right)\sigma_{x2}$$
 
-for which we can use the following `make_operators` function from the last tutorial:
+where each TLS has its own transition energy $\Delta E_1$, $\Delta E_2$ and its own coupling to the boson field $U_1$, $U_2$.
+
+With this Hamiltonian, we can use the following `make_operators` function from the last tutorial:
 
 ```python
 def make_operators(max_bosons, parity=0):
