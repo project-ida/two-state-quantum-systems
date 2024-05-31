@@ -18,7 +18,7 @@ jupyter:
 
 # 6 - Excitation transfer revisited
 
-**INTRODUCTION OF TERMINOLOGY: TLS (Two level system) used interchangeably with of TSS (Two state system)**
+**INTRODUCTION OF TERMINOLOGY: TLS (Two level system) used interchangeably with TSS (Two state system)**
 
 
 
@@ -26,7 +26,7 @@ Last time, we added just one extra TLS and we got some surprising new physics - 
 
 In this tutorial, we'll try and develop some intuition for excitation transfer by experimenting with different TLS parameters. From this, we'll get a sense of how excitation transfer times scale and thus how likely it would be to observe this phenomenon in real life systems.
 
-Spolier alert, we're going to see that excitation transfer is a particularly sensitive little thing.
+Spoiler alert, we're going to see that excitation transfer is a particularly sensitive little thing.
 
 ```python
 # Libraries and helper functions
