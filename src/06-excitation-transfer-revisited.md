@@ -515,7 +515,7 @@ P, psi = simulate(H, psi0, times)
 
 ```python
 bra_labels, ket_labels = make_braket_labels(nmm_list)
-plot_prob(P ,times, ket_labels)
+plot_sim(times, P, ket_labels)
 plt.title(f"{H_latex} \n $\Delta E_2 = {DeltaE2}$, $\omega={omega}$, $U={U}$   (Fig. 11)");
 ```
 
