@@ -102,7 +102,7 @@ def simulate(H, psi0, times, evals=None, ekets=None):
     
     Examples
     --------
-    >>> P, psi = simulate(sigmaz() + sigmax(), basis(2, 0),  np.linspace(0.0, 20.0, 1000) )
+    >>> P, psi, evals, ekets = simulate(sigmaz() + sigmax(), basis(2, 0),  np.linspace(0.0, 20.0, 1000) )
     
     """
 
@@ -179,8 +179,8 @@ def plot_sim(times, P, labels=None, ylabel="Probability", xlabel="Time", legend=
         for i in range(0,len(P)):
             ax.plot(times, P[i][:], label=f"{labels[i]}")
             
-    ax.set_ylabel(xlabel)
-    ax.set_xlabel(ylabel)
+    ax.set_ylabel(ylabel)
+    ax.set_xlabel(xlabel)
     ax.legend(loc=legend)
     
     return
