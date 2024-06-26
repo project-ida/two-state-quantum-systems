@@ -273,7 +273,7 @@ In other words, the frequencies are proportional to the diagonal matrix elements
 The classical equivalent of our excitation transfer problem is a 4 pendulum system that we can see in action in Fig. 6 below.
 
 
-**Fig. 6**
+**Fig. 6** (If no video displays then [view notebook in nbviewer](https://nbviewer.jupyter.org/github/project-ida/two-state-quantum-systems/blob/master/09-destrctive-interference.ipynb))
 
 <video src="img/pendulum-destructive.mp4" width="600" controls>
   Your browser does not support the video tag.
@@ -477,7 +477,7 @@ This is all conceptual though, we can't just get rid of pathways by simply willi
 We can look to the classical world for inspiration. In the world of pendulums, there is never a truly perfect swing - there's always some energy lost to due friction of all kinds. If we add a friction force only to the green pendulum from Fig. 6 then we'll create an asymmetry between the intermediate pendulums. If we make that friction force really large then we might hope to produce the classical equivalent of Fig. 8. Let's see.
 
 
-**Fig. 9**
+**Fig. 9** (If no video displays then [view notebook in nbviewer](https://nbviewer.jupyter.org/github/project-ida/two-state-quantum-systems/blob/master/09-destrctive-interference.ipynb))
 
 <video src="img/pendulum-remove-destructive.mp4" width="600" controls>
   Your browser does not support the video tag.
