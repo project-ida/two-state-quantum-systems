@@ -267,8 +267,7 @@ At the start of this tutorial series ([tutorial 1](https://nbviewer.jupyter.org/
 $$H_0 =  \Delta E_A J_{N_Az}^{(A)} + \Delta E_B J_{N_Bz}^{(B)} + \hbar\omega\left(a^{\dagger}a +\frac{1}{2}\right)$$
 
 In other words, the frequencies are proportional to the diagonal matrix elements of $H$. The coupling between the pendulums is modelled via a connecting spring, whose stiffness is proportional to the off diagonal matrix elements of H.
-> Aside: We'll not prove all this here because it will take us to too far off track. If you're interested to go down that delightful rabbit hole then check out e.g. [Coherent quantum states from classical oscillator amplitudes
-](https://journals.aps.org/pra/abstract/10.1103/PhysRevA.85.052111) by Briggs et.al.
+> Aside: We'll not prove all this here because it will take us to too far off track. If you're interested to go down that delightful rabbit hole then check out e.g. [Coherent quantum states from classical oscillator amplitudes](https://journals.aps.org/pra/abstract/10.1103/PhysRevA.85.052111) by Briggs et.al.
 
 The classical equivalent of our excitation transfer problem is a 4 pendulum system that we can see in action in Fig. 6 below.
 
