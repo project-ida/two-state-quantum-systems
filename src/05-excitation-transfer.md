@@ -33,6 +33,16 @@ This tutorial is split up into the following sections:
 7. [Excitation transfer](https://nbviewer.jupyter.org/github/project-ida/two-state-quantum-systems/blob/master/05-excitation-transfer.ipynb#5.7---Excitation-transfer)
 
 ```python
+# RUN THIS IF YOU ARE USING GOOGLE COLAB
+import sys
+import os
+!pip install qutip==4.7.6
+!git clone https://github.com/project-ida/two-state-quantum-systems.git
+sys.path.insert(0,'/content/two-state-quantum-systems')
+os.chdir('/content/two-state-quantum-systems')
+```
+
+```python
 # Libraries and helper functions
 
 %matplotlib inline
