@@ -966,7 +966,7 @@ for i, N in enumerate(Ns):
 plt.plot(Ns,rate/gamma_1T,"-o")
 plt.xlabel("Number of TLS (N)")
 plt.ylabel("Normalised transfer rate ($\Gamma/\Gamma_1$)");
-plt.title("Transfer of $N$ delocalised excitations from A to B (Fig. 40)");
+plt.title("Transfer of a single delocalised excitation from A to B (Fig. 40)");
 ```
 
 ```python
