@@ -5,10 +5,10 @@ jupyter:
     text_representation:
       extension: .md
       format_name: markdown
-      format_version: '1.2'
-      jupytext_version: 1.3.3
+      format_version: '1.3'
+      jupytext_version: 1.15.1
   kernelspec:
-    display_name: Python 3
+    display_name: Python 3 (ipykernel)
     language: python
     name: python3
 ---
@@ -27,6 +27,16 @@ A reminder that in QuTiP $\hbar=1$ and so frequency and energy are completely in
 
 
 First, let's load the libraries and some custom code to make plotting easier later.
+
+```python
+# RUN THIS IF YOU ARE USING GOOGLE COLAB
+import sys
+import os
+!pip install qutip==4.7.6
+!git clone https://github.com/project-ida/two-state-quantum-systems.git
+sys.path.insert(0,'/content/two-state-quantum-systems')
+os.chdir('/content/two-state-quantum-systems')
+```
 
 ```python
 # Libraries
