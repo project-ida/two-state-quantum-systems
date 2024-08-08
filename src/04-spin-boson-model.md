@@ -31,6 +31,16 @@ This tutorial is split up into the following sections:
 5. Down conversion
 
 ```python
+# RUN THIS IF YOU ARE USING GOOGLE COLAB
+import sys
+import os
+!pip install qutip==4.7.6 gif
+!git clone https://github.com/project-ida/two-state-quantum-systems.git
+sys.path.insert(0,'/content/two-state-quantum-systems')
+os.chdir('/content/two-state-quantum-systems')
+```
+
+```python
 # Libraries
 %matplotlib inline
 import matplotlib.pyplot as plt

@@ -29,6 +29,16 @@ In this tutorial, we'll try and develop some intuition for excitation transfer b
 Spoiler alert, we're going to see that excitation transfer is a particularly sensitive little thing.
 
 ```python
+# RUN THIS IF YOU ARE USING GOOGLE COLAB
+import sys
+import os
+!pip install qutip==4.7.6
+!git clone https://github.com/project-ida/two-state-quantum-systems.git
+sys.path.insert(0,'/content/two-state-quantum-systems')
+os.chdir('/content/two-state-quantum-systems')
+```
+
+```python
 # Libraries and helper functions
 
 %matplotlib inline

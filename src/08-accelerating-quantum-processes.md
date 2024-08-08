@@ -32,6 +32,16 @@ We're covering a lot of ground today so we've split everything up into the follo
 5. Superradiance vs Supertransfer
 
 ```python
+# RUN THIS IF YOU ARE USING GOOGLE COLAB
+import sys
+import os
+!pip install qutip==4.7.6
+!git clone https://github.com/project-ida/two-state-quantum-systems.git
+sys.path.insert(0,'/content/two-state-quantum-systems')
+os.chdir('/content/two-state-quantum-systems')
+```
+
+```python
 # Libraries and helper functions
 
 %matplotlib inline
@@ -956,7 +966,7 @@ for i, N in enumerate(Ns):
 plt.plot(Ns,rate/gamma_1T,"-o")
 plt.xlabel("Number of TLS (N)")
 plt.ylabel("Normalised transfer rate ($\Gamma/\Gamma_1$)");
-plt.title("Transfer of $N$ delocalised excitations from A to B (Fig. 40)");
+plt.title("Transfer of a single delocalised excitation from A to B (Fig. 40)");
 ```
 
 ```python
