@@ -26,6 +26,16 @@ What happens when we continue to add more TLS though? Are we stuck with the same
 In this notebook we'll we explore not only the number of TLS but the relationship between them to see whether a kind of quantum acceleration is possible.
 
 ```python
+# RUN THIS IF YOU ARE USING GOOGLE COLAB
+import sys
+import os
+!pip install qutip==4.7.6
+!git clone https://github.com/project-ida/two-state-quantum-systems.git
+sys.path.insert(0,'/content/two-state-quantum-systems')
+os.chdir('/content/two-state-quantum-systems')
+```
+
+```python
 # Libraries and helper functions
 
 %matplotlib inline

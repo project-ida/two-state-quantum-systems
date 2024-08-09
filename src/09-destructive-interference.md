@@ -24,6 +24,16 @@ In the last tutorial we observed speed-ups in emission and excitation transfer r
 In this tutorial, we'll look at the other side of the coin - destructive interference. We'll see where it comes from, how it manifests in our quantum system and discuss what options are available for controlling/removing it.
 
 ```python
+# RUN THIS IF YOU ARE USING GOOGLE COLAB
+import sys
+import os
+!pip install qutip==4.7.6
+!git clone https://github.com/project-ida/two-state-quantum-systems.git
+sys.path.insert(0,'/content/two-state-quantum-systems')
+os.chdir('/content/two-state-quantum-systems')
+```
+
+```python
 # Libraries and helper functions
 
 %matplotlib inline
@@ -210,6 +220,7 @@ psi0 = basis(len(nmm_list), psi0_ind)
 ```
 
 ```python
+# THIS WILL USE A LOT OF RAM. COLAB MIGHT CRASH DEPENDING ON RESOURCES AVAILABLE ON YOUR ACCOUNT
 # We're using a very high resolution in time because we're going to be interested in 
 # looking at the wavefunction as well as the probability 
 # and the wavefunction has high frequency oscillations that we want to resolve.
@@ -272,7 +283,7 @@ In other words, the frequencies are proportional to the diagonal matrix elements
 The classical equivalent of our excitation transfer problem is a 4 pendulum system that we can see in action in Fig. 6 below.
 
 
-**Fig. 6** (If no video displays then [view notebook in nbviewer](https://nbviewer.jupyter.org/github/project-ida/two-state-quantum-systems/blob/master/09-destrctive-interference.ipynb))
+**Fig. 6** (If no video displays then [view notebook in nbviewer](https://nbviewer.jupyter.org/github/project-ida/two-state-quantum-systems/blob/master/09-destructive-interference.ipynb)) or run `Video("img/pendulum-destructive.mp4", embed=True)`
 
 <video src="img/pendulum-destructive.mp4" width="600" controls>
   Your browser does not support the video tag.
@@ -476,7 +487,7 @@ This is all conceptual though, we can't just get rid of pathways by simply willi
 We can look to the classical world for inspiration. In the world of pendulums, there is never a truly perfect swing - there's always some energy lost to due friction of all kinds. If we add a friction force only to the green pendulum from Fig. 6 then we'll create an asymmetry between the intermediate pendulums. If we make that friction force really large then we might hope to produce the classical equivalent of Fig. 8. Let's see.
 
 
-**Fig. 9** (If no video displays then [view notebook in nbviewer](https://nbviewer.jupyter.org/github/project-ida/two-state-quantum-systems/blob/master/09-destrctive-interference.ipynb))
+**Fig. 9** (If no video displays then [view notebook in nbviewer](https://nbviewer.jupyter.org/github/project-ida/two-state-quantum-systems/blob/master/09-destructive-interference.ipynb)) or run `Video("img/pendulum-remove-destructive.mp4.mp4", embed=True)`
 
 <video src="img/pendulum-remove-destructive.mp4" width="600" controls>
   Your browser does not support the video tag.
@@ -674,5 +685,5 @@ ani.save('ani.mp4', writer='ffmpeg', fps=30)
 
 ```python
 from IPython.display import Video
-Video("ani.mp4")
+Video("ani.mp4") # Google Colab users might need to add embed=True to the Video function
 ```
