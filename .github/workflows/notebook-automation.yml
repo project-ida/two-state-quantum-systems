@@ -1,0 +1,83 @@
+name: Notebook Automation
+
+on:
+  push:
+    paths:
+      - "**/*.ipynb"
+
+jobs:
+  process-notebooks:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Identify Modified and Deleted Notebooks
+        id: diff-notebooks
+        run: |
+          if git cat-file -e ${{ github.event.before }}^{commit} 2>/dev/null; then
+            git diff --name-status ${{ github.event.before }} ${{ github.sha }} | grep '\.ipynb$' > notebook_changes.txt
+          else
+            git fetch origin ${{ github.event.before }} --depth=1
+            git diff --name-status ${{ github.event.before }} ${{ github.sha }} | grep '\.ipynb$' > notebook_changes.txt
+          fi
+          cat notebook_changes.txt
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install nbformat jupytext
+
+      - name: Add Links to Notebooks
+        run: python .github/scripts/add_links_to_notebooks.py notebook_changes.txt
+        env:
+          REPO_OWNER: ${{ github.repository_owner }}
+          REPO_NAME: ${{ github.event.repository.name }}
+          BRANCH_NAME: ${{ github.ref_name }}
+
+      - name: Commit Notebook Changes
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "*.ipynb"
+          git commit -m "Added Colab and nbviewer links to notebooks" || echo "No changes to commit"
+
+      - name: Convert Notebooks to Jupytext
+        run: |
+          while IFS=$'\t' read -r status file; do
+            relative_path="${file#./}"
+            dir_part="$(dirname "$relative_path")"
+            if [[ "$dir_part" == "." ]]; then
+              target_dir="src"
+            else
+              target_dir="src/$dir_part"
+            fi
+            target_file="$target_dir/$(basename "$file" .ipynb).md"
+      
+            if [[ "$status" == "D" ]]; then
+              if [[ -f "$target_file" ]]; then
+                echo "Deleting source file: $target_file"
+                rm -f "$target_file"
+              fi
+            elif [[ "$status" == "A" || "$status" == "M" ]]; then
+              echo "Processing modified/added notebook: $file"
+              mkdir -p "$target_dir"
+              jupytext --to md --output "$target_file" "$file"
+            fi
+          done < notebook_changes.txt
+          
+      - name: Commit Jupytext Changes
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "*.md"
+          git commit -m "Updated source files for modified notebooks" || echo "No changes to commit"
+
+      - name: Push All Changes
+        run: |
+          git push
