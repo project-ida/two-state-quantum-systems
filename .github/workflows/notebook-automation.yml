@@ -10,7 +10,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
+        with:
+          ssh-key: ${{ secrets.ACTIONS_BOT_KEY }}
 
       - name: Identify Modified and Deleted Notebooks
         id: diff-notebooks
