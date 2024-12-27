@@ -16,7 +16,7 @@ jupyter:
 <a href="https://colab.research.google.com/github/project-ida/two-state-quantum-systems/blob/master/01-an-isolated-two-state-system.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <a href="https://nbviewer.jupyter.org/github/project-ida/two-state-quantum-systems/blob/master/01-an-isolated-two-state-system.ipynb" target="_parent"><img src="https://nbviewer.jupyter.org/static/img/nav_logo.svg" alt="Open In nbviewer" width="100"/></a>
 
 
-# 1 - An isolated two state system
+# 1 - An isolated two state system 
 
 
 In this tutorial we are going to look at a single two state system that doesn't talk to the environment around it. We'll look at two examples
