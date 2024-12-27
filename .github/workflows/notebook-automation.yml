@@ -44,8 +44,8 @@ jobs:
 
       - name: Commit Notebook Changes
         run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "github-actions@github.com"
           git add "*.ipynb"
           git commit -m "Added Colab and nbviewer links to notebooks" || echo "No changes to commit"
 
@@ -75,8 +75,8 @@ jobs:
           
       - name: Commit Jupytext Changes
         run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "github-actions@github.com"
           git add "*.md"
           git commit -m "Updated source files for modified notebooks" || echo "No changes to commit"
 
