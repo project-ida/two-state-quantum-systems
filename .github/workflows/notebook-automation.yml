@@ -15,13 +15,17 @@ jobs:
           ssh-key: ${{ secrets.ACTIONS_BOT_KEY }}
 
       - name: Identify Modified and Deleted Notebooks
-        id: diff-notebooks
         run: |
-          if git cat-file -e ${{ github.event.before }}^{commit} 2>/dev/null; then
-            git diff --name-status ${{ github.event.before }} ${{ github.sha }} | grep '\.ipynb$' > notebook_changes.txt
+          if [ "${{ github.event.before }}" = "0000000000000000000000000000000000000000" ]; then
+            echo "First push to this branch. Listing all notebooks in the commit."
+            git diff --name-status ${{ github.sha }}^! | grep '\.ipynb$' > notebook_changes.txt
           else
-            git fetch origin ${{ github.event.before }} --depth=1
-            git diff --name-status ${{ github.event.before }} ${{ github.sha }} | grep '\.ipynb$' > notebook_changes.txt
+            if git cat-file -e ${{ github.event.before }}^{commit} 2>/dev/null; then
+              git diff --name-status ${{ github.event.before }} ${{ github.sha }} | grep '\.ipynb$' > notebook_changes.txt
+            else
+              git fetch origin ${{ github.event.before }} --depth=1
+              git diff --name-status ${{ github.event.before }} ${{ github.sha }} | grep '\.ipynb$' > notebook_changes.txt
+            fi
           fi
           cat notebook_changes.txt
 
