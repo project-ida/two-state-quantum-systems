@@ -932,21 +932,13 @@ for a in alphas:
 
 ```python
 plt.figure(figsize=(10,8))
-plt.plot(alphas*alphas, dn_simulate, label="Simulation")
-plt.plot(alphas*alphas,  dn_model, label="Model")
+plt.plot(alphas*alphas,  dn_model, '-', color='orange', label="Model")
+plt.plot(alphas*alphas, dn_simulate, '.', color='blue', label="Simulation")
 plt.title(f" {H_latex}    (Fig. 14) \n $\Delta E={DeltaE}$, $\omega={omega}$, $U={U}$ ");
 plt.legend()
 plt.ylabel("Max change in $\\delta <n>$")
 plt.xlabel("$<n_0>=\\alpha^2$");
 ```
-
-Astonishingly, Fig. 14 shows that we have a perfect fit between our model and the simulations 🤩 !
-
-We can say for sure now that the more highly excited the field, the more bosons can get spontaneously created and destroyed.
-
-
-### Coherent emission rates
-
 
 All quantum system eventually have to interact with their environment. For deep strong coupled systems, if "measurement" happens on a timescale shorter than the half a wave period, then we'd observe more bosons than when we started with. The longer we wait, the more bosons there would be. We can construct a "coherent emission rate" based on this idea.
 
