@@ -18,7 +18,7 @@ jobs:
         run: |
           if [ "${{ github.event.before }}" = "0000000000000000000000000000000000000000" ]; then
             echo "First push to this branch. Listing all notebooks in the commit."
-            git diff --name-status ${{ github.sha }}^! | grep '\.ipynb$' > notebook_changes.txt
+            git show --name-status --pretty="" ${{ github.sha }} | grep '\.ipynb$' > notebook_changes.txt
           else
             if git cat-file -e ${{ github.event.before }}^{commit} 2>/dev/null; then
               git diff --name-status ${{ github.event.before }} ${{ github.sha }} | grep '\.ipynb$' > notebook_changes.txt
