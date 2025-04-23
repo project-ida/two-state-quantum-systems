@@ -20,7 +20,7 @@ jupyter:
 
 So far in this tutorial series, we've explored how two-level-systems (TLS) behave when the coupling between them is small. In general, much of the "intuition" for how quantum systems behave is based on small couplings in one form or another.
 
-In this tutorial, we'll let the coupling become so strong it dominates the dynamics - so called "Deep strong coupling". In this regime, what's usually forbidden becomes common place. Bosons are created from no where and resonance no longer seems important! 🤯
+In this tutorial, we'll let the coupling become so strong that it dominates the dynamics - so called "Deep strong coupling". In this regime, what's usually forbidden becomes common place. Bosons are created from no where and resonance no longer seems important! 🤯
 
 Ready to challenge your intuition? Let's do it!
 
@@ -54,7 +54,7 @@ from libs.helper_10_tutorial import *
 <!-- #region jp-MarkdownHeadingCollapsed=true -->
 For the last few tutorials, we've been spending a lot of time building up capabilities for studying many TLS.
 
-For this tutorial, we've going to return to a single TLS coupled to a quantised boson field. We've previously called this the spin-boson model, but it's also called the Rabi model. The Hamiltonian is given by:
+For this tutorial, we're going to return to a single TLS coupled to a quantised boson field. We've previously called this the single mode spin-boson model, but it's better known as the Rabi model. The Hamiltonian is given by:
 
 $$H =  \frac{\Delta E}{2} \sigma_z + \hbar\omega\left(a^{\dagger}a +\frac{1}{2}\right) + U\left( a^{\dagger} + a \right)(\sigma_+ + \sigma_-)$$
 
@@ -114,12 +114,12 @@ Before we get into the calculations, let's try and build some intuition for what
 
 Let's consider the case (as we've done many times throughout this tutorial series) of two coupled pendulums with frequencies $\omega_1$ and $\omega_2$. The coupling can be described in terms of a frequency $\omega_{\rm coupling}$ (imagine a spring connecting the two pendulums) and dissipation can be described by a rate $\gamma_{\rm diss}$.
 
-The different coupling regimes are determined by how large $\omega_{\rm coupling}$ is compared to $\omega_1$, $\omega_2$ and $\gamma_{\rm diss}$. The naming conventions used in the [quantum optics literature](https://www.nature.com/articles/s42254-018-0006-2) are going to be useful for us. They describe the coupling as:
+The different coupling regimes are determined by how large $\omega_{\rm coupling}$ is compared to $\omega_1$, $\omega_2$ and the dissipation $\gamma_{\rm diss}$. The naming conventions used in the [quantum optics literature](https://www.nature.com/articles/s42254-018-0006-2) are going to be useful for us. They describe the coupling as:
 
-- Weak -  $\omega_{\rm coupling} \ll \gamma_{\rm diss} \ll \omega_1,\omega_2$
-- Strong - $\gamma_{\rm diss} \ll \omega_{\rm coupling} \ll \omega_1,\omega_2$
-- Ultra strong - $\gamma_{\rm diss} \ll \omega_{\rm coupling} \sim 0.1\times  \omega_1,\omega_2$
-- Deep strong - $\gamma_{\rm diss} \ll \omega_1,\omega_2 \lesssim \omega_{\rm coupling}$
+- Weak:  $\omega_{\rm coupling} \ll \gamma_{\rm diss} \ll \omega_1,\omega_2$
+- Strong: $\gamma_{\rm diss} \ll \omega_{\rm coupling} \ll \omega_1,\omega_2$
+- Ultra strong: $\gamma_{\rm diss} \ll \omega_{\rm coupling} \sim 0.1  \omega_1,\omega_2$
+- Deep strong: $\gamma_{\rm diss} \ll \omega_1,\omega_2 \lesssim \omega_{\rm coupling}$
 
 
 ### Weak coupling
@@ -145,7 +145,7 @@ When the coupling is strong, the dissipation is small enough to allow energy to 
 <!-- #region -->
 ### Ultra strong coupling
 
-When the coupling is ultra strong, energy exchange happens on the time scale of a single swing of one of the pendulums.  The two natural natural frequencies - when both pendulums move in the same and in opposite directions to one another - can be noticeably discerned. The coupling is getting strong enough so that more energy can be exchanged between pendulums of different lengths. This exact boundary for this regime is somewhat artificial - there is nothing particularly special about the value $0.1 \omega_{\rm 1}, \omega_2$. This value was first used as part of the quantum optics literature.
+When the coupling is ultra strong, energy exchange happens on the time scale of a single swing of one of the pendulums.  The two natural natural frequencies - when both pendulums move in the same and in opposite directions to one another - can be noticeably discerned. The coupling is getting strong enough so that more energy can be exchanged between pendulums of different lengths. This exact boundary for this regime is somewhat artificial - there is nothing particularly special about the value $0.1 \omega_{\rm 1}, \omega_2$. This value was first used as part of the [quantum optics literature](https://www.nature.com/articles/s42254-018-0006-2).
 
 
 <video src="img/ultra-strong-coupling-dsc.mp4" width="600" controls>
@@ -164,12 +164,12 @@ When the coupling is deep strong, the coupling begins to dominate over everythin
 <!-- #region jp-MarkdownHeadingCollapsed=true -->
 ### From classical to quantum 
 
-A full account of the correspondence between quantum system and classical oscillators is well documented in [Briggs et.al](http://dx.doi.org/10.1103/PhysRevA.85.052111). It's helpful to give a simplified summary here. 
+A full account of the correspondence between quantum systems and classical oscillators is well documented in [Briggs et.al](http://dx.doi.org/10.1103/PhysRevA.85.052111). It's helpful to give a simplified summary here. 
 
-In the quantum case, each state $|\psi_i \rangle$ is like a pendulum whose frequency is determined by the state's energy $E_i$ and whose amplitude is determined by the state's quantum amplitude $\langle\psi_i|\psi\rangle$ (and hence the state's occupation probability $|\langle\psi_i|\psi\rangle|^2$). When the quantum pendulums are coupled together, instead of thinking about energy being exchanged between the pendulums, we should think in terms of exchange of occupation probability. In other words, the system makes a transition from one state to another when the pendulum amplitude moves from one pendulum to another.
-> It should be noted that when the coupling becomes ultra-strong, the equivalent classical pendulum frequency departs from $E_i/\hbar$ significantly. This means that although there is a formal mathematical equivalence between the the quantum and and classical systems, the classical mapping becomes more difficult to interpret the stronger the coupling gets.
+In the quantum case, each state $|\psi_i \rangle$ is like a pendulum whose frequency is determined by the state's energy $E_i$ and whose amplitude is determined by the state's quantum amplitude $\langle\psi_i|\psi\rangle$ -- and hence the state's occupation probability $|\langle\psi_i|\psi\rangle|^2$. When the "quantum pendulums" are coupled together, instead of thinking about energy being exchanged between the pendulums, we should think in terms of exchange of occupation probability. In other words, the system makes a transition from one state to another when the pendulum amplitude moves from one pendulum to another.
+> Aside: It should be noted that when the coupling becomes ultra-strong, the equivalent classical pendulum frequency departs from $E_i/\hbar$ significantly. This means that although there is a formal mathematical equivalence between the the quantum and and classical systems, the classical mapping becomes more difficult to interpret the stronger the coupling gets.
 
-The Rabi probability oscillations that we've observed throughout this tutorial series are a signal that we've been working in the "strong coupling" regime. Indeed, we've not included any quantum dissipation such as dephasing or decoherence in our models ($\gamma_{\rm diss}=0$) and so $\gamma_{\rm diss} \ll \omega_{\rm coupling} \ll \omega_1,\omega_2$ has always been satisfied.
+The Rabi probability oscillations that we've observed throughout this tutorial series are a signal that we've been operating in the "strong coupling" regime. Indeed, we've not included any quantum dissipation such as dephasing or decoherence in our models ($\gamma_{\rm diss}=0$) and so $\gamma_{\rm diss} \ll \omega_{\rm coupling} \ll \omega_1,\omega_2$ has always been satisfied.
 
 Now we're going to consider the deep strong coupling regime of the Rabi model.
 <!-- #endregion -->
@@ -177,7 +177,7 @@ Now we're going to consider the deep strong coupling regime of the Rabi model.
 ## 10.3 Vacuum field deep strong coupling ($n=0$)
 
 
-Much like the classical pendulum, the dynamics of the the Rabi model depend on the relative sizes of the different frequencies/energies in the system, which are represented by $\Delta E, \hbar\omega, U$ in the Hamilonian:
+Much like the classical pendulum, the dynamics of the the Rabi model depend on the relative magnitudes of the different frequencies/energies in the system, which are represented by $\Delta E, \hbar\omega, U$ in the Hamilonian:
 
 
 $$H = \frac{\Delta E}{2} \sigma_z + \hbar\omega\left(a^{\dagger}a +\frac{1}{2}\right) + U\left( a^{\dagger} + a \right)(\sigma_+ + \sigma_-)$$
@@ -189,7 +189,7 @@ $$
 \Delta E , \hbar \omega \lesssim U
 $$
 
-Casanova first focussed on the case when the TLS is degenerate, so that $\Delta E=0$. We'll follow their lead in order to reduce complexity in these initial stages of exploration. In this case, the condition for deep strong coupling reduces to:
+Casanova et al. first focussed on the case when the TLS is degenerate, so that $\Delta E=0$. We'll follow their lead in order to reduce complexity in these initial stages of exploration. In this case, the condition for deep strong coupling reduces to:
 
 $$
 1 \lesssim \frac{U}{\hbar\omega}
@@ -198,18 +198,20 @@ $$
 Before we start simulating, let's see if we can predict what will happen.
 
 
-Ideally, we'd like to appeal to our classical pendulum picture, but this is challenging because the number of states (aka quantum pendulums) that are involved. Each state of the system is described by combining the two states of the TLS (denoted $\pm$) with the boson states (denoted by the number of quanta $n$). There are an infinite number of such states $|n, \pm\rangle$.
+Ideally, we'd like to appeal to our classical pendulum picture, but this is challenging because the number of states (an hence "quantum pendulums") that are involved in the dynamics -- an infinite number. Each state of the system is described by combining the two states of the TLS (denoted $\pm$) with the boson states (denoted by the number of quanta $n$). There are an infinite number of such states $|n, \pm\rangle$.
 
-Thnking about infinity is hard, so let's begin with thinking about two states and see how far we get.
+Thinking about infinity is hard, so let's begin with thinking about two states and see how far we get.
 
-Let's imagine we start the system in the ground state of the TLS and in vacuum - in other words $\psi_0 = |0,-\rangle$. Because of parity conservation, we know that this state is only coupled to states that simultaneously flip the TLS and shift the boson number by one. The only state that satisfies this is $|1,+\rangle$. The two states have different energies/frequencies from one another and so the pendulum set-up looks like this.
+Let's imagine we start the system in the ground state of the TLS and in vacuum - in other words $\psi_0 = |0,-\rangle$. Because of parity conservation, we know that this state is only coupled to states that simultaneously flip the TLS and shift the boson number by one. The only state that satisfies this is $|1,+\rangle$. The two states have different energies/frequencies from one another and so the equivalent pendulum set-up looks like this.
 
 ![](./img/pendulums-dsc-01.png)
 
 
-If the pendulums were weakly coupled, then we'd not expect the second pendulum to move much at all because it's natural frequency is very different from the first. For pendulums that are coupled in a deep strong way, we've already seen that one displaced pendulum will pull the other one out of equilibrium even when the natural frequencies are highly mismatched. 
+Because the initial state is $\psi_0 =|0,-\rangle$, its "quantum pendulum" has maximum amplitude. The other state $|1,+\rangle$ has zero amplitude because it's not initially occupied.
 
-What we can predict for the quantum system is that the vacuum state won't be stable. We're not going to be able to initialise the vacuum state and have it just sit there - other states (with potentially very different energies) are likely to get occupied.
+If the pendulums were weakly coupled, then we'd not expect the second pendulum to move much at all because its natural frequency is very different from the first. For pendulums that are coupled in a deep strong way, we've already seen that one displaced pendulum will pull the other one out of equilibrium even when the natural frequencies are highly mismatched. 
+
+For the quantum system, we can therefore predict that the vacuum state $|0,-\rangle$ won't be stable. In other words, we're not going to be able to initialise the vacuum state and have it just sit there - other states with very different energies (in this case the only other state is $|1,+\rangle$) are likely to get occupied.
 
 Our prediction seems to violate energy conservation so we should be a bit skeptical. Let's do the actual quantum calculations.
 
@@ -285,7 +287,7 @@ plt.title(f" {H_latex}   \n $\Delta E={DeltaE}$, $\omega={omega}$, $U={U}$, $\Ps
 plt.xlabel("Time ($2\pi/\omega$)");
 ```
 
-Fig. 1 shows us that our picture is correct. The vacuum state "pulls" the other state into almost 100% occupation probability on a timescale associated with the [Rabi frequency](https://en.wikipedia.org/wiki/Vacuum_Rabi_oscillation) $\Omega = \sqrt{4U^2 + \delta^2}$ where $\delta$ is often called the "detuning" which is just the difference in energies of the two states. 
+Fig. 1 shows us that our picture is correct. The vacuum state "pulls" the other state into almost 100% occupation probability on a timescale associated with the [Rabi frequency](https://en.wikipedia.org/wiki/Vacuum_Rabi_oscillation) $\Omega = \sqrt{4U^2 + \delta^2}$ where $\delta$ is often called the "detuning parameter" which is just the difference in energies of the two states. 
 
 ```python
 rabi_omega = np.sqrt(4*U**2 + 1**2)
@@ -317,7 +319,7 @@ Fig. 2 shows is that the boson energy is being "borrowed" from interaction energ
 ### Arbitrary number of coupled states
 
 
-What happens when we remove the artificial restriction of having only two states? How does our picture change?
+What happens when we remove the artificial restriction of simulating only two states? How does our picture change?
 
 A significant change is that the coupling between the states is not constant - it depends on how many field quanta $n$ we have. This is because of how the field operators work:
 
@@ -336,7 +338,7 @@ Far from being constant, the coupling scales as $\sim 2U\sqrt{n}$. Our picture i
 
 In general, as we increase the number of quantum states, the simple pendulum picture starts to lose exact equivalence. Notwistanding this, the pictures can still help guide our intuition.
 
-From the picture above, we might expect that several states are going to become occupied. This would mean that several bosons get created as the amplitude of the initial $|0,-\rangle$ pendulum moves across from left to right. There will likely be a limit to how far the amplitude spreads because of the increasing mismatch in pendulum frequencies. It's hard to predict exactly how far the spread will go because although the mismatch increases, so too does the coupling 🤷‍♂️.
+From the picture above, we might expect that several states are going to become occupied. This would mean that several bosons get created as the amplitude of the initial $|0,-\rangle$ pendulum moves across from left to right. There will likely be a limit to how far the amplitude spreads because of the increasing mismatch in pendulum frequencies. It's hard to predict exactly how far the spread will go because, although the mismatch increases, so too does the coupling 🤷‍♂️.
 
 Let's simulate and find out if our intuition is right.
 
@@ -389,7 +391,7 @@ plt.title(f" {H_latex}   \n $\Delta E={DeltaE}$, $\omega={omega}$, $U={U}$, $\Ps
 plt.xlabel("Time ($2\pi/\omega$)");
 ```
 
-Fig. 3 shows that we've got many more states occupied that just $|1,+\rangle$. Let's take a look at the expectation value of the boson number to see how many we've got.
+Fig. 3 shows that we've got many more states occupied than just $|1,+\rangle$. Let's take a look at the expectation value of the boson number to see how many we've got.
 
 ```python
 plt.figure(figsize=(10,8))
