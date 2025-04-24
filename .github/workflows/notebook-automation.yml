@@ -12,27 +12,43 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
+          fetch-depth: 2
           ssh-key: ${{ secrets.ACTIONS_BOT_KEY }}
 
       - name: Identify Modified and Deleted Notebooks
         run: |
+          echo "Current SHA: ${{ github.sha }}"
+          echo "Before SHA: ${{ github.event.before }}"
           if [ "${{ github.event.before }}" = "0000000000000000000000000000000000000000" ]; then
             echo "First push to this branch. Checking for parents."
-            if git log --pretty=%P -n 1 ${{ github.sha }} | grep -q .; then
-              echo "Commit has parent(s). Diffing against first parent."
-              git diff --name-status ${{ github.sha }}^ ${{ github.sha }} | grep '\.ipynb$' > notebook_changes.txt
+            parent_sha=$(git log --pretty=%P -n 1 ${{ github.sha }} | cut -d' ' -f1)
+            echo "Parent SHA: $parent_sha"
+            if [ -n "$parent_sha" ]; then
+              echo "Commit has parent: $parent_sha. Diffing against it."
+              if ! git cat-file -e "$parent_sha^{commit}" 2>/dev/null; then
+                echo "Parent not in shallow clone. Fetching."
+                git fetch origin "$parent_sha" --depth=1
+              fi
+              git diff --name-status "$parent_sha" "${{ github.sha }}" | grep '\.ipynb$' > notebook_changes.txt
             else
               echo "No parent (orphan branch). Diffing against empty tree."
-              git diff --name-status 4b825dc642cb6eb9a060e54bf8d69288fbee4904 ${{ github.sha }} | grep '\.ipynb$' > notebook_changes.txt
+              git diff --name-status 4b825dc642cb6eb9a060e54bf8d69288fbee4904 "${{ github.sha }}" | grep '\.ipynb$' > notebook_changes.txt
             fi
           else
-            if git cat-file -e ${{ github.event.before }}^{commit} 2>/dev/null; then
-              git diff --name-status ${{ github.event.before }} ${{ github.sha }} | grep '\.ipynb$' > notebook_changes.txt
+            if git cat-file -e "${{ github.event.before }}^{commit}" 2>/dev/null; then
+              echo "Diffing against previous commit: ${{ github.event.before }}"
+              git diff --name-status "${{ github.event.before }}" "${{ github.sha }}" | grep '\.ipynb$' > notebook_changes.txt
             else
-              git fetch origin ${{ github.event.before }} --depth=1
-              git diff --name-status ${{ github.event.before }} ${{ github.sha }} | grep '\.ipynb$' > notebook_changes.txt
+              echo "Fetching previous commit: ${{ github.event.before }}"
+              git fetch origin "${{ github.event.before }}" --depth=1
+              git diff --name-status "${{ github.event.before }}" "${{ github.sha }}" | grep '\.ipynb$' > notebook_changes.txt
             fi
           fi
+          if [ ! -s notebook_changes.txt ]; then
+            echo "No notebook changes detected."
+            echo "A	.dummy.ipynb" > notebook_changes.txt
+          fi
+          echo "Contents of notebook_changes.txt:"
           cat notebook_changes.txt
 
       - name: Set up Python
