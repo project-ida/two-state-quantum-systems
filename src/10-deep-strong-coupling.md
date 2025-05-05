@@ -5,7 +5,7 @@ jupyter:
       extension: .md
       format_name: markdown
       format_version: '1.3'
-      jupytext_version: 1.17.0
+      jupytext_version: 1.17.1
   kernelspec:
     display_name: Python 3 (ipykernel)
     language: python
@@ -678,7 +678,7 @@ def make_operators(max_bosons, parity=0, offset=0):
     bosons       =  (number + 0.5)                  # boson energy operator              𝑎†𝑎+1/2
     interaction  = (ad + a) * sx                    # interaction energy operator        (𝑎†+𝑎)𝜎𝑥  
     
-    P = sz*(1j*np.pi*a.dag()*a).expm()              # parity operator 
+    P = sz*(1j*np.pi*number).expm()              # parity operator 
     P = Qobj(P.full().real, dims=P.dims)            # makes sure no small imaginary parts that can happen for larger number of bosons 
     
     # map from QuTiP number states to |n,±> states
