@@ -27,7 +27,7 @@ In this tutorial we are going to look at a single two state system that doesn't 
 # RUN THIS IF YOU ARE USING GOOGLE COLAB
 import sys
 import os
-!pip install qutip==4.7.6
+!pip install qutip==5.2.0
 !git clone https://github.com/project-ida/two-state-quantum-systems.git
 sys.path.insert(0,'/content/two-state-quantum-systems')
 os.chdir('/content/two-state-quantum-systems')
@@ -39,6 +39,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from qutip import *
+import warnings
+warnings.filterwarnings('ignore')
 
 ## note, if you start getting errors when using pandas with complex numbers then update Pandas
 ## - there was a bug that's been recently fixed https://github.com/pandas-dev/pandas/issues/27484
