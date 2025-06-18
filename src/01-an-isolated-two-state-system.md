@@ -6,14 +6,14 @@ jupyter:
       extension: .md
       format_name: markdown
       format_version: '1.3'
-      jupytext_version: 1.16.6
+      jupytext_version: 1.17.2
   kernelspec:
-    display_name: Python 3 (ipykernel)
+    display_name: .venv
     language: python
     name: python3
 ---
 
-<a href="https://colab.research.google.com/github/project-ida/two-state-quantum-systems/blob/master/01-an-isolated-two-state-system.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="https://nbviewer.org/github/project-ida/two-state-quantum-systems/blob/master/01-an-isolated-two-state-system.ipynb" target="_parent"><img src="https://nbviewer.org/static/img/nav_logo.svg" alt="Open In nbviewer" width="100"/></a>
+<a href="https://colab.research.google.com/github/project-ida/two-state-quantum-systems/blob/qutip_v5/01-an-isolated-two-state-system.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="https://nbviewer.org/github/project-ida/two-state-quantum-systems/blob/qutip_v5/01-an-isolated-two-state-system.ipynb" target="_parent"><img src="https://nbviewer.org/static/img/nav_logo.svg" alt="Open In nbviewer" width="100"/></a>
 
 
 # 1 - An isolated two state system
@@ -27,7 +27,7 @@ In this tutorial we are going to look at a single two state system that doesn't 
 # RUN THIS IF YOU ARE USING GOOGLE COLAB
 import sys
 import os
-!pip install qutip==4.7.6
+!pip install qutip==5.2.0
 !git clone https://github.com/project-ida/two-state-quantum-systems.git
 sys.path.insert(0,'/content/two-state-quantum-systems')
 os.chdir('/content/two-state-quantum-systems')
@@ -39,6 +39,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from qutip import *
+import warnings
+warnings.filterwarnings('ignore')
 
 ## note, if you start getting errors when using pandas with complex numbers then update Pandas
 ## - there was a bug that's been recently fixed https://github.com/pandas-dev/pandas/issues/27484
@@ -128,8 +130,8 @@ def states_to_df(states,times):
     psi_minus = np.zeros(len(times),dtype="complex128") # To store the amplitude of the |-> state
 
     for i, state in enumerate(states):
-        psi_plus[i] = state[0][0][0]
-        psi_minus[i] = state[1][0][0]
+        psi_plus[i] = state[0][0]
+        psi_minus[i] = state[1][0]
 
     return pd.DataFrame(data={"+":psi_plus, "-":psi_minus}, index=times)
 ```
